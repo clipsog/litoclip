@@ -1,0 +1,11 @@
+# Secrets – never commit
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+data.db
+
+# Node
+node_modules/

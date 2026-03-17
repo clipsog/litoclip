@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from shardcreators.com/achievements by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 09 Feb 2026 19:28:19 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="assets/IMG_20251214_194749_797-Photoroom.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achievements - Shard Creators</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shard-theme.css">
+  <style>
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .achievement-progress {
+      margin-top: 12px;
+    }
+    .achievement-progress-bar {
+      height: 6px;
+      background: var(--bg-card);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .achievement-progress-fill {
+      height: 100%;
+      background: var(--teal);
+      border-radius: 3px;
+    }
+    .achievement-progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="index.html" class="logo">
+      <div class="logo-icon"><img src="assets/IMG_20251214_194749_797-Photoroom.png" alt="Shard"></div>
+      <span class="logo-text">Shard Creators</span>
+    </a>
+    <div class="header-right">
+      <a href="index.html" class="header-link">Home</a>
+      <div class="level-pill">
+        <div class="level-circle" id="headerLevel">1</div>
+        <div class="level-info">
+          <span class="level-label">Level</span>
+          <span class="level-xp">0 / 100 XP</span>
+        </div>
+      </div>
+      <button class="user-btn">
+        <div class="user-avatar">👤</div>
+        <span id="userName">User</span>
+      </button>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <a href="dashboard-creator.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Overview
+      </a>
+      <a href="browse-campaigns.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Browse Campaigns
+      </a>
+      <a href="my-campaigns.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        My Campaigns
+      </a>
+      <a href="submissions.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+        </svg>
+        Submissions
+      </a>
+      <a href="wallet.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        Wallet
+      </a>
+      <a href="achievements.html" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+        </svg>
+        Achievements
+      </a>
+      <a href="https://shardcreators.com/leaderboards" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/>
+          <path d="m8.21 13.89-1.96 9.07L12 20l5.75 2.96-1.96-9.07"/>
+        </svg>
+        Leaderboards
+      </a>
+      <a href="settings.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Settings
+      </a>
+    </aside>
+
+    <main class="main">
+      <div class="page-header">
+        <h1>Your <span>Achievements</span></h1>
+        <p>Track your progress and unlock rewards</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 32px;">
+        <div class="stat-card">
+          <div class="stat-icon teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value"><span id="earnedCount">0</span> / <span id="totalCount">0</span></div>
+            <div class="stat-label">Achievements Earned</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" id="totalXP">0</div>
+            <div class="stat-label">Total XP Earned</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20V10M18 20V4M6 20v-4"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" id="completionRate">0%</div>
+            <div class="stat-label">Completion Rate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-category="all">All</button>
+        <button class="tab" data-category="submissions">Submissions</button>
+        <button class="tab" data-category="views">Views</button>
+        <button class="tab" data-category="earnings">Earnings</button>
+        <button class="tab" data-category="streaks">Streaks</button>
+        <button class="tab" data-category="special">Special</button>
+      </div>
+
+      <!-- Achievements Grid -->
+      <div class="achievements-grid" id="achievementsGrid">
+        <!-- Achievements loaded here -->
+      </div>
+    </main>
+  </div>
+
+  <script src="dashboard.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocalhost ? 'http://localhost:37373/api' : `${window.location.origin}/api`;
+
+    const ACHIEVEMENTS = [
+      { id: 'first_submission', name: 'First Blood', desc: 'Submit your first content', icon: '🎯', xp: 100, category: 'submissions' },
+      { id: 'five_submissions', name: 'Getting Started', desc: 'Submit 5 pieces of content', icon: '📝', xp: 200, category: 'submissions' },
+      { id: 'twenty_submissions', name: 'Content Creator', desc: 'Submit 20 pieces of content', icon: '🎬', xp: 500, category: 'submissions' },
+      { id: 'fifty_submissions', name: 'Prolific', desc: 'Submit 50 pieces of content', icon: '🏭', xp: 1000, category: 'submissions' },
+      { id: 'hundred_submissions', name: 'Content Machine', desc: 'Submit 100 pieces of content', icon: '🤖', xp: 2500, category: 'submissions' },
+      
+      { id: 'first_1k_views', name: 'View Getter', desc: 'Reach 1,000 total views', icon: '👁️', xp: 100, category: 'views' },
+      { id: 'ten_k_views', name: 'Going Viral', desc: 'Reach 10,000 total views', icon: '📈', xp: 300, category: 'views' },
+      { id: 'hundred_k_views', name: 'View Machine', desc: 'Reach 100,000 total views', icon: '🔥', xp: 1000, category: 'views' },
+      { id: 'million_views', name: 'Viral Sensation', desc: 'Reach 1,000,000 total views', icon: '🌟', xp: 5000, category: 'views' },
+      
+      { id: 'first_earning', name: 'First Paycheck', desc: 'Earn your first dollar', icon: '💵', xp: 150, category: 'earnings' },
+      { id: 'ten_dollars', name: 'Money Maker', desc: 'Earn $10 total', icon: '💰', xp: 200, category: 'earnings' },
+      { id: 'hundred_dollars', name: 'Hustler', desc: 'Earn $100 total', icon: '💎', xp: 500, category: 'earnings' },
+      { id: 'thousand_dollars', name: 'Big Earner', desc: 'Earn $1,000 total', icon: '🏆', xp: 2000, category: 'earnings' },
+      
+      { id: 'week_streak', name: 'Weekly Warrior', desc: 'Maintain a 7-day login streak', icon: '📅', xp: 100, category: 'streaks' },
+      { id: 'month_streak', name: 'Dedicated', desc: 'Maintain a 30-day login streak', icon: '🗓️', xp: 500, category: 'streaks' },
+      { id: 'hundred_streak', name: 'Unstoppable', desc: 'Maintain a 100-day login streak', icon: '🔥', xp: 2000, category: 'streaks' },
+      
+      { id: 'all_platforms', name: 'Platform Master', desc: 'Submit on all 4 platforms', icon: '🌐', xp: 500, category: 'special' },
+      { id: 'referral', name: 'Networker', desc: 'Refer a friend who joins', icon: '🤝', xp: 300, category: 'special' },
+      { id: 'level_10', name: 'Rising Star', desc: 'Reach level 10', icon: '⭐', xp: 1000, category: 'special' },
+      { id: 'level_25', name: 'Expert', desc: 'Reach level 25', icon: '💫', xp: 2500, category: 'special' },
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUserData();
+      loadAchievements();
+      setupTabs();
+    });
+
+    async function loadUserData() {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await fetch(`${API_URL}/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            const user = await response.json();
+            document.getElementById('userName').textContent = user.name || 'User';
+          }
+          
+          // Load gamification profile for XP/Level
+          const gamRes = await fetch(`${API_URL}/gamification/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (gamRes.ok) {
+            const profile = await gamRes.json();
+            updateHeaderXP(profile);
+          }
+        }
+      } catch (e) { console.error(e); }
+    }
+    
+    function updateHeaderXP(profile) {
+      const level = profile.level || 1;
+      const xp = profile.xp || 0;
+      const nextLevelXP = profile.nextLevelXP || 100;
+      
+      const levelCircle = document.getElementById('headerLevel');
+      const levelXP = document.querySelector('.level-xp');
+      
+      if (levelCircle) levelCircle.textContent = level;
+      if (levelXP) levelXP.textContent = `${xp} / ${nextLevelXP} XP`;
+    }
+
+    async function loadAchievements() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/gamification/achievements`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        let userAchievements = [];
+        if (response.ok) {
+          const data = await response.json();
+          userAchievements = data.achievements || [];
+        }
+
+        renderAchievements(ACHIEVEMENTS, userAchievements);
+        updateStats(userAchievements);
+      } catch (e) {
+        console.error(e);
+        renderAchievements(ACHIEVEMENTS, []);
+      }
+    }
+
+    function renderAchievements(allAchievements, userAchievements) {
+      const grid = document.getElementById('achievementsGrid');
+      const earnedIds = new Set(userAchievements.filter(a => a.earned).map(a => a.id));
+
+      grid.innerHTML = allAchievements.map(achievement => {
+        const isEarned = earnedIds.has(achievement.id);
+        const userAchievement = userAchievements.find(a => a.id === achievement.id);
+        const progress = userAchievement?.progress || 0;
+        const target = userAchievement?.target || 1;
+
+        return `
+          <div class="achievement-card ${isEarned ? 'earned' : 'locked'}">
+            <div class="achievement-icon">${achievement.icon}</div>
+            <div class="achievement-name">${achievement.name}</div>
+            <div class="achievement-desc">${achievement.desc}</div>
+            <div class="achievement-xp">+${achievement.xp} XP</div>
+            ${!isEarned ? `
+              <div class="achievement-progress">
+                <div class="achievement-progress-text">
+                  <span>Progress</span>
+                  <span>${progress}/${target}</span>
+                </div>
+                <div class="achievement-progress-bar">
+                  <div class="achievement-progress-fill" style="width: ${Math.min(100, (progress / target) * 100)}%"></div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateStats(userAchievements) {
+      const earned = userAchievements.filter(a => a.earned).length;
+      const total = ACHIEVEMENTS.length;
+      const xp = userAchievements.filter(a => a.earned).reduce((sum, a) => {
+        const achievement = ACHIEVEMENTS.find(ach => ach.id === a.id);
+        return sum + (achievement?.xp || 0);
+      }, 0);
+
+      document.getElementById('earnedCount').textContent = earned;
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('totalXP').textContent = xp.toLocaleString();
+      document.getElementById('completionRate').textContent = Math.round((earned / total) * 100) + '%';
+    }
+
+    function setupTabs() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          const category = tab.dataset.category;
+          filterAchievements(category);
+        });
+      });
+    }
+
+    function filterAchievements(category) {
+      const filtered = category === 'all' 
+        ? ACHIEVEMENTS 
+        : ACHIEVEMENTS.filter(a => a.category === category);
+      
+      // Re-render with filtered achievements
+      loadAchievements();
+    }
+
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = 'index-2.html';
+    });
+  </script>
+</body>
+
+<!-- Mirrored from shardcreators.com/achievements by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 09 Feb 2026 19:28:19 GMT -->
+</html>

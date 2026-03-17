@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from shardcreators.com/my-campaigns by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 09 Feb 2026 19:28:17 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="assets/IMG_20251214_194749_797-Photoroom.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Campaigns - Shard Creators</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shard-theme.css">
+</head>
+<body>
+  <header class="header">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+      <a href="index.html" class="logo">
+      <div class="logo-icon"><img src="assets/IMG_20251214_194749_797-Photoroom.png" alt="Shard"></div>
+      <span class="logo-text">Shard Creators</span>
+    </a>
+    </div>
+    <div class="header-right">
+      <a href="index.html" class="header-link">Home</a>
+      <div class="level-pill">
+        <div class="level-circle" id="headerLevel">1</div>
+        <div class="level-info">
+          <span class="level-label">Level</span>
+          <span class="level-xp">0 / 100 XP</span>
+        </div>
+      </div>
+      <button class="user-btn">
+        <div class="user-avatar">👤</div>
+        <span id="userName">User</span>
+      </button>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <a href="dashboard-creator.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Overview
+      </a>
+      <a href="browse-campaigns.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Browse Campaigns
+      </a>
+      <a href="my-campaigns.html" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        My Campaigns
+      </a>
+      <a href="submissions.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+        </svg>
+        Submissions
+      </a>
+      <a href="wallet.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        Wallet
+      </a>
+      <a href="settings.html" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Settings
+      </a>
+    </aside>
+
+    <main class="main">
+      <div class="page-header">
+        <h1>My <span>Campaigns</span></h1>
+        <p>Track your joined campaigns and manage submissions</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-card">
+          <div class="stat-icon teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" id="activeCampaigns">0</div>
+            <div class="stat-label">Active Campaigns</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" id="totalSubmissions">0</div>
+            <div class="stat-label">Total Submissions</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" id="totalEarned">$0</div>
+            <div class="stat-label">Total Earned</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-filter="all">All</button>
+        <button class="tab" data-filter="active">Active</button>
+        <button class="tab" data-filter="completed">Completed</button>
+      </div>
+
+      <!-- Campaigns List -->
+      <div id="campaignsList">
+        <div class="empty-state">
+          <div class="empty-state-icon">📁</div>
+          <div class="empty-state-title">No campaigns yet</div>
+          <div class="empty-state-text">Browse campaigns and join one to get started</div>
+          <a href="browse-campaigns.html" class="btn btn-primary" style="margin-top: 16px;">Browse Campaigns</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: linear-gradient(145deg, var(--bg-card), rgba(20, 20, 25, 0.98));
+      border-radius: 20px;
+      border: 1px solid rgba(20, 184, 166, 0.2);
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(20, 184, 166, 0.1);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(20, 184, 166, 0.03);
+    }
+    .modal-header h2 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-header h2::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: var(--teal);
+      border-radius: 2px;
+    }
+    .modal-close {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 20px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .modal-close:hover {
+      color: var(--text-primary);
+      border-color: var(--teal);
+      background: rgba(20, 184, 166, 0.1);
+    }
+    .modal-body {
+      padding: 28px;
+    }
+    
+    .modal-body select,
+    .modal-body textarea {
+      font-family: inherit;
+    }
+    
+    .modal-body select:focus,
+    .modal-body textarea:focus {
+      outline: none;
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+    }
+    
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+    
+    .modal-footer .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .modal-footer .btn-cancel {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    
+    .modal-footer .btn-cancel:hover {
+      background: var(--bg-hover);
+    }
+    
+    .modal-footer .btn-submit {
+      background: linear-gradient(135deg, var(--teal), #0d9488);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+    }
+    
+    .modal-footer .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+    }
+    
+    .modal-footer .btn-submit {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Batch Modal Specific Styles */
+    .batch-campaign-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 18px;
+      background: rgba(20, 184, 166, 0.08);
+      border: 1px solid rgba(20, 184, 166, 0.2);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .batch-label {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    
+    .batch-campaign-name {
+      color: var(--teal);
+      font-weight: 700;
+      font-size: 15px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    .form-label svg {
+      color: var(--teal);
+    }
+    
+    .label-hint {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 13px;
+    }
+    
+    .form-select {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 20px;
+    }
+    
+    .form-select:hover {
+      border-color: rgba(20, 184, 166, 0.4);
+    }
+    
+    .form-textarea {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      resize: vertical;
+      min-height: 160px;
+      line-height: 1.6;
+    }
+    
+    .form-textarea::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+    
+    .form-textarea:hover {
+      border-color: rgba(20, 184, 166, 0.4);
+    }
+    
+    .form-hint {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .batch-results {
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    
+    .batch-results:not(:empty) {
+      padding: 16px;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    
+    .batch-results .result-summary {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+    
+    .batch-results .result-success {
+      color: #22c55e;
+    }
+    
+    .batch-results .result-fail {
+      color: #ef4444;
+    }
+    
+    .batch-results .result-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    
+    .batch-results .result-item.success {
+      color: #22c55e;
+    }
+    
+    .batch-results .result-item.error {
+      color: #ef4444;
+    }
+    
+    /* Form Input */
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .form-input:hover {
+      border-color: rgba(20, 184, 166, 0.4);
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+    }
+    
+    .form-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+    
+    /* Submit Result Messages */
+    .submit-result {
+      margin-top: 16px;
+      min-height: 24px;
+    }
+    
+    .submit-result:not(:empty) {
+      padding: 12px 16px;
+      border-radius: 10px;
+    }
+    
+    .result-loading {
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .result-loading::before {
+      content: '';
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--teal);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .result-success {
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    
+    .result-error {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+    }
+    
+    /* Campaign Action Buttons */
+    .campaign-actions {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      border: none;
+    }
+    
+    .action-btn svg {
+      flex-shrink: 0;
+    }
+    
+    .batch-btn {
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(20, 184, 166, 0.05));
+      color: var(--teal);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+    }
+    
+    .batch-btn:hover {
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.25), rgba(20, 184, 166, 0.1));
+      border-color: var(--teal);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2);
+    }
+    
+    .submit-btn {
+      background: linear-gradient(135deg, var(--teal), #0d9488);
+      color: white;
+      border: none;
+      box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
+    }
+    
+    .submit-btn:hover {
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(20, 184, 166, 0.4);
+    }
+    
+    /* Submission item layout fix */
+    .submission-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .submission-item:hover {
+      border-color: rgba(20, 184, 166, 0.3);
+      background: rgba(20, 184, 166, 0.02);
+    }
+    
+    .submission-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .submission-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .submission-campaign {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .submission-stats {
+      display: flex;
+      gap: 24px;
+    }
+    
+    .submission-stat {
+      text-align: center;
+    }
+    
+    .submission-stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .submission-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+    
+    .badge-success {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+    }
+    
+    .badge-info {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+    }
+  </style>
+
+  <script src="dashboard.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocalhost ? 'http://localhost:37373/api' : `${window.location.origin}/api`;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadMyCampaigns();
+      loadUserData();
+      setupTabs();
+    });
+
+    async function loadUserData() {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          // Load user info
+          const response = await fetch(`${API_URL}/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            const user = await response.json();
+            document.getElementById('userName').textContent = user.name || 'User';
+          }
+          
+          // Load gamification profile for XP/Level
+          const gamRes = await fetch(`${API_URL}/gamification/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (gamRes.ok) {
+            const profile = await gamRes.json();
+            updateHeaderXP(profile);
+          }
+        }
+      } catch (e) { console.error(e); }
+    }
+    
+    function updateHeaderXP(profile) {
+      const level = profile.level || 1;
+      const xp = profile.xp || 0;
+      const nextLevelXP = profile.nextLevelXP || 100;
+      
+      const levelCircle = document.getElementById('headerLevel');
+      const levelXP = document.querySelector('.level-xp');
+      
+      if (levelCircle) levelCircle.textContent = level;
+      if (levelXP) levelXP.textContent = `${xp} / ${nextLevelXP} XP`;
+    }
+
+    async function loadMyCampaigns() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/campaigns/my-campaigns`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const campaigns = await response.json();
+          renderCampaigns(campaigns || []);
+          updateStats(campaigns || []);
+        }
+      } catch (e) {
+        console.error('Failed to load campaigns:', e);
+      }
+    }
+
+    function updateStats(campaigns) {
+      const active = campaigns.filter(c => c.status === 'active').length;
+      document.getElementById('activeCampaigns').textContent = active;
+      document.getElementById('totalSubmissions').textContent = campaigns.reduce((sum, c) => sum + (c.submissionCount || 0), 0);
+      document.getElementById('totalEarned').textContent = '$' + campaigns.reduce((sum, c) => sum + (c.earnings || 0), 0).toFixed(2);
+    }
+
+    function renderCampaigns(campaigns) {
+      const container = document.getElementById('campaignsList');
+      
+      if (!campaigns || campaigns.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📁</div>
+            <div class="empty-state-title">No campaigns yet</div>
+            <div class="empty-state-text">Browse campaigns and join one to get started</div>
+            <a href="/browse-campaigns" class="btn btn-primary" style="margin-top: 16px;">Browse Campaigns</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = campaigns.map(campaign => `
+        <div class="submission-item" style="cursor: pointer;" onclick="viewCampaign('${campaign.id}')">
+          <div style="width: 80px; height: 80px; border-radius: 12px; background: var(--bg-elevated); overflow: hidden; flex-shrink: 0;">
+            <img src="${campaign.cover_image || campaign.image || 'https://placehold.co/80x80/142424/14b8a6?text=C'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null;this.src='https://placehold.co/80x80/142424/14b8a6?text=C'">
+          </div>
+          <div class="submission-info">
+            <div class="submission-title">${campaign.title}</div>
+            <div class="submission-campaign">$${(campaign.cpmRate || campaign.cpm_rate || 0).toFixed(2)}/1K views • Joined ${new Date(campaign.joinedAt).toLocaleDateString()}</div>
+          </div>
+          <div class="submission-stats">
+            <div class="submission-stat">
+              <div class="submission-stat-value">${campaign.submissionCount || 0}</div>
+              <div class="submission-stat-label">Submissions</div>
+            </div>
+            <div class="submission-stat">
+              <div class="submission-stat-value">${formatViews(campaign.totalViews || 0)}</div>
+              <div class="submission-stat-label">Views</div>
+            </div>
+            <div class="submission-stat">
+              <div class="submission-stat-value" style="color: var(--teal);">$${(campaign.earnings || 0).toFixed(2)}</div>
+              <div class="submission-stat-label">Earned</div>
+            </div>
+          </div>
+          <span class="badge ${campaign.status === 'active' ? 'badge-success' : 'badge-info'}">${campaign.status}</span>
+          <div class="campaign-actions">
+            <a href="batch-submit.html?campaign=${campaign.id}&title=${encodeURIComponent(campaign.title)}" class="action-btn batch-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+              </svg>
+              Batch
+            </a>
+            <a href="submit.html?campaign=${campaign.id}&title=${encodeURIComponent(campaign.title)}" class="action-btn submit-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Submit
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatViews(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    }
+
+    function setupTabs() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          // Filter campaigns by status
+        });
+      });
+    }
+
+    function viewCampaign(id) {
+      // Open campaign details
+    }
+
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = 'index.html';
+    });
+
+    // Mobile menu toggle
+    document.getElementById('mobileMenuToggle')?.addEventListener('click', () => {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar?.classList.toggle('active');
+    });
+
+    // Close sidebar when clicking outside
+    document.addEventListener('click', (e) => {
+      const sidebar = document.querySelector('.sidebar');
+      const toggle = document.getElementById('mobileMenuToggle');
+      if (sidebar && toggle && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+        sidebar.classList.remove('active');
+      }
+    });
+  </script>
+</body>
+
+<!-- Mirrored from shardcreators.com/my-campaigns by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 09 Feb 2026 19:28:17 GMT -->
+</html>

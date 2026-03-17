@@ -1,0 +1,16 @@
+# Render Blueprint — LitoClips backend
+# Deploy: connect this repo in Render Dashboard, or use "New > Blueprint" and point to repo.
+# Set all environment variables in the Render Dashboard (Environment tab); do not commit secrets.
+
+services:
+  - type: web
+    name: litoclips-backend
+    runtime: node
+    rootDir: backend
+
+    buildCommand: npm install
+    startCommand: npm start
+
+    # Render sets PORT automatically; app uses process.env.PORT
+    # Add in Dashboard: NODE_ENV, JWT_SECRET, FRONTEND_ORIGIN, DATABASE_PATH, Stripe keys, etc.
+    # See docs/RENDER_DEPLOY.md for the full list.

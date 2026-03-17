@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — LitoClips</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    body.dashboard-theme { background: #f8fafc; color: #0f172a; }
+    body.dashboard-theme .header { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+    body.dashboard-theme .header .logo-text { color: #0f172a; }
+    body.dashboard-theme .nav-links a { color: #475569; }
+    body.dashboard-theme .nav-links a:hover { color: #2563eb; }
+    body.dashboard-theme .nav-cta { color: #2563eb !important; }
+    body.dashboard-theme .user-name { color: #334155; }
+    .dashboard-page { max-width: 1000px; margin: 0 auto; padding: 48px 24px 80px; }
+    .welcome-banner { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 16px; padding: 32px; color: white; margin-bottom: 40px; }
+    .welcome-banner h1 { font-size: 24px; margin-bottom: 8px; font-weight: 600; }
+    .welcome-banner p { opacity: 0.95; font-size: 15px; }
+    .dashboard-section { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+    .dashboard-section h2 { font-size: 18px; color: #0f172a; margin-bottom: 20px; font-weight: 600; }
+    .empty-state { text-align: center; padding: 48px 24px; }
+    .empty-state-icon { width: 64px; height: 64px; margin: 0 auto 16px; background: #f1f5f9; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #94a3b8; }
+    .empty-state h3 { font-size: 18px; color: #0f172a; margin-bottom: 8px; }
+    .empty-state p { color: #64748b; font-size: 14px; margin-bottom: 24px; max-width: 360px; margin-left: auto; margin-right: auto; }
+    .btn-start-campaign { display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border-radius: 12px; font-weight: 600; text-decoration: none; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; }
+    .btn-start-campaign:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35); color: white; }
+    .campaign-list { display: flex; flex-direction: column; gap: 12px; }
+    .campaign-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
+    .campaign-card h4 { font-size: 16px; color: #0f172a; margin-bottom: 4px; }
+    .campaign-card .meta { font-size: 13px; color: #64748b; }
+    .campaign-card .status { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+    .campaign-card .status.active { background: #dcfce7; color: #166534; }
+    .quick-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+    .quick-actions a { color: #2563eb; text-decoration: none; font-size: 14px; }
+    .quick-actions a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body class="dashboard-theme">
+  <header class="header scrolled">
+    <div class="header-container">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Logo">
+        <span class="logo-text">LitoClips</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html#how-it-works">How It Works</a>
+        <a href="index.html#who-its-for">Who It's For</a>
+        <a href="brand-overview.html">Dashboard</a>
+        <span class="user-name" id="userName"></span>
+        <a href="index.html" class="nav-cta" id="logoutBtn">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="dashboard-page">
+    <div class="welcome-banner" id="welcomeBanner">
+      <h1>Welcome<span id="welcomeName"></span>!</h1>
+      <p id="welcomeMessage">Your profile is set up. You're ready to create your first campaign and grow your reach.</p>
+    </div>
+
+    <div class="dashboard-section">
+      <h2>Your Campaigns</h2>
+      <div id="campaignsContainer">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-state-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <h3>No campaigns yet</h3>
+          <p>Create your first campaign to turn your content into viral clips. Choose platforms, set your budget, and we'll get to work.</p>
+          <a href="new-campaign.html" class="btn-start-campaign">
+            Start a campaign
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div id="campaignList" class="campaign-list" style="display: none;"></div>
+      </div>
+      <div class="quick-actions" id="quickActions" style="display: none;">
+        <a href="new-campaign.html">+ New campaign</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const bypassParam = params.get('bypass') === '1' || params.get('demo') === '1';
+      let token = localStorage.getItem('token');
+      let user = JSON.parse(localStorage.getItem('user') || 'null');
+
+      if (bypassParam && (!token || !user)) {
+        user = { id: 'demo', name: 'Demo User', email: 'demo@litoclips.com', userType: 'creator', firstName: 'Demo' };
+        localStorage.setItem('token', 'demo-bypass-token');
+        localStorage.setItem('user', JSON.stringify(user));
+        token = 'demo-bypass-token';
+      }
+
+      if (!token || !user) {
+        window.location.href = 'onboarding.html';
+        return;
+      }
+
+      const isWelcome = params.get('welcome') === '1';
+      const firstName = user.firstName || user.name?.split(' ')[0] || '';
+      if (document.getElementById('userName')) {
+        document.getElementById('userName').textContent = user.name || user.email;
+      }
+      if (document.getElementById('welcomeName') && firstName) {
+        document.getElementById('welcomeName').textContent = ', ' + firstName;
+      }
+      if (!isWelcome && document.getElementById('welcomeMessage')) {
+        document.getElementById('welcomeMessage').textContent = 'Manage your campaigns, track performance, and grow your reach.';
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'index.html';
+      });
+
+      const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:37373/api' : (window.location.origin + '/api');
+      const bypass = token === 'demo-bypass-token';
+
+      function renderCampaigns(campaigns) {
+        if (campaigns && campaigns.length > 0) {
+          document.getElementById('emptyState').style.display = 'none';
+          document.getElementById('campaignList').style.display = 'flex';
+          document.getElementById('quickActions').style.display = 'flex';
+          campaigns.forEach(c => {
+            const card = document.createElement('a');
+            card.className = 'campaign-card';
+            card.href = 'campaign-track.html?id=' + encodeURIComponent(c.id) + '&name=' + encodeURIComponent(c.title || 'Untitled');
+            card.style.textDecoration = 'none';
+            card.style.color = 'inherit';
+            card.innerHTML = '<div><h4>' + (c.title || 'Untitled') + '</h4><span class="meta">' + (c.platform || '') + ' &middot; $' + (c.budget || 5) + '/wk</span></div><span class="status active">' + (c.status || 'active') + '</span>';
+            document.getElementById('campaignList').appendChild(card);
+          });
+        }
+      }
+
+      if (bypass) {
+        const last = JSON.parse(localStorage.getItem('lastCampaign') || 'null');
+        const demoCampaigns = last
+          ? [{ id: last.id, title: last.title, platform: last.platform, budget: 5, status: 'active' }]
+          : [
+              { id: 'demo-1', title: 'TikTok Launch', platform: 'tiktok', budget: 5, status: 'active' },
+              { id: 'demo-2', title: 'Instagram Growth', platform: 'instagram', budget: 5, status: 'active' }
+            ];
+        renderCampaigns(demoCampaigns);
+      } else {
+        fetch(API_URL + '/campaigns/created', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        }).then(r => r.ok ? r.json() : []).catch(() => []).then(renderCampaigns);
+      }
+    })();
+  </script>
+</body>
+</html>

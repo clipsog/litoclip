@@ -1,0 +1,19 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+data.db
+
+# OS and editor
+.DS_Store
+*.log
+.idea/
+.vscode/

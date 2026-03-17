@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — LitoClips</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="litoclips-theme.css">
+  <style>
+    .admin-wrap { padding-top: 70px; min-height: 100vh; }
+    .alerts-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: rgba(176,101,255,0.12); border: 1px solid var(--teal); border-radius: 10px; margin-bottom: 20px; font-size: 14px; }
+    .admin-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .admin-card h2 { font-family: 'Space Grotesk', sans-serif; font-size: 20px; margin-bottom: 16px; color: var(--teal); }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .admin-table th, .admin-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+    .admin-table th { color: var(--text-muted); font-weight: 600; }
+    .admin-form { display: grid; gap: 12px; max-width: 400px; }
+    .admin-form label { display: block; font-size: 13px; color: var(--text-secondary); }
+    .admin-form input, .admin-form select, .admin-form textarea { padding: 10px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
+    .btn-approve { background: var(--success); color: #000; }
+    .btn-reject { background: var(--danger); color: #fff; }
+    .btn-primary-sm { background: var(--teal); color: #000; }
+    .stat-row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; }
+    .stat-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; min-width: 140px; }
+    .stat-box .num { font-size: 28px; font-weight: 700; color: var(--teal); }
+    .stat-box .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; }
+    .login-prompt { padding: 48px 24px; text-align: center; max-width: 480px; margin: 0 auto; }
+    .login-prompt h1 { font-size: 24px; margin-bottom: 16px; }
+    .login-prompt p { color: var(--text-secondary); margin-bottom: 24px; }
+    .login-prompt a { color: var(--teal); }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge.pending { background: rgba(234,179,8,0.2); color: var(--warning); }
+    .badge.approved { background: rgba(34,197,94,0.2); color: var(--success); }
+    .badge.rejected { background: rgba(239,68,68,0.2); color: var(--danger); }
+    .empty { color: var(--text-muted); padding: 24px; text-align: center; }
+    .admin-content-hidden { display: none !important; }
+    .campaign-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+    .campaign-row.expanded { flex-wrap: wrap; }
+    .campaign-detail { width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .campaign-detail .form-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px; flex-wrap: wrap; }
+    .campaign-detail .form-row input, .campaign-detail .form-row select { flex: 1; min-width: 120px; }
+    .user-card { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+    .user-summary { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--bg-elevated); list-style: none; }
+    .user-summary::-webkit-details-marker { display: none; }
+    .user-summary .user-name { font-weight: 600; flex: 1 1 150px; }
+    .user-summary .user-meta { font-size: 13px; color: var(--text-muted); }
+    .user-detail { padding: 16px; border-top: 1px solid var(--border); background: var(--bg-card); }
+    .user-section { margin-bottom: 16px; }
+    .user-section:last-child { margin-bottom: 0; }
+    .user-section strong { display: block; margin-bottom: 8px; font-size: 13px; }
+    .demo-banner { background: rgba(176,101,255,0.2); border: 1px solid var(--teal); color: var(--teal); padding: 10px 20px; margin: 0 32px 16px; border-radius: 10px; font-size: 14px; text-align: center; }
+    .admin-cal { margin-top: 12px; }
+    .admin-cal .accounts-pills { margin-bottom: 12px; font-size: 13px; }
+    .admin-cal .account-pill { display: inline-block; padding: 4px 10px; background: rgba(176,101,255,0.15); border-radius: 6px; font-size: 12px; margin: 2px; }
+    .admin-cal .campaign-info { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+    .admin-cal .campaign-info-btn { width: 18px; height: 18px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-muted); font-size: 11px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+    .admin-cal .campaign-info-btn:hover { background: var(--bg-card); color: var(--text); }
+    .admin-cal .cal-table { display: grid; gap: 1px; background: var(--border); border-radius: 8px; overflow: hidden; overflow-x: auto; }
+    .admin-cal .cal-header { display: grid; grid-template-columns: 70px repeat(14, minmax(52px, 1fr)); }
+    .admin-cal .cal-header span { padding: 6px 8px; font-size: 10px; font-weight: 600; color: var(--text-muted); background: var(--bg-elevated); text-align: center; }
+    .admin-cal .cal-account-row { display: grid; grid-template-columns: 70px repeat(14, minmax(52px, 1fr)); }
+    .admin-cal .cal-account-label { padding: 6px 8px; font-size: 11px; font-weight: 600; background: var(--bg-elevated); border-right: 1px solid var(--border); }
+    .admin-cal .cal-day { background: var(--bg-card); padding: 6px 8px; min-height: 48px; font-size: 11px; cursor: pointer; }
+    .admin-cal .cal-day:hover { background: var(--bg-elevated); }
+    .admin-cal .cal-day.warmup { background: rgba(234,179,8,0.1); }
+    .admin-cal .cal-day.post { background: rgba(34,197,94,0.08); }
+    .admin-cal .cal-day .day-num { font-weight: 600; color: var(--text-muted); font-size: 10px; margin-bottom: 4px; }
+    .admin-cal .cal-day .day-badge { font-size: 9px; padding: 2px 4px; border-radius: 4px; }
+    .admin-cal .cal-day .day-action { font-size: 10px; margin-top: 4px; color: var(--teal); }
+    .day-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+    .day-modal-overlay.active { display: flex; }
+    .day-modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; max-width: 420px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .day-modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .day-modal-header h3 { font-size: 16px; margin: 0; }
+    .day-modal-close { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .day-modal-body { padding: 20px; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <a href="index.html" class="logo">
+        <div class="logo-icon"><img src="assets/logo.png" alt="LitoClips"></div>
+        <span class="logo-text">LitoClips</span>
+      </a>
+      <span style="color: var(--text-muted); font-size: 14px;">Admin</span>
+    </div>
+    <div class="header-right">
+      <span id="adminEmail" style="color: var(--text-secondary); font-size: 14px;"></span>
+      <a href="index.html" class="header-link">← Back to site</a>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </header>
+
+  <div class="admin-wrap">
+    <div id="loginPrompt" class="login-prompt">
+      <h1>Admin access required</h1>
+      <p>Log in on the main site with an admin account, then return here. Your session will be used to load the admin dashboard.</p>
+      <p><a href="index.html">Go to LitoClips →</a></p>
+      <p id="loginPromptHint" style="font-size: 13px; color: var(--text-muted); margin-top: 24px;">To make a user admin, run in terminal:<br><code>sqlite3 backend/data.db "UPDATE users SET is_admin = 1 WHERE email = 'your@email.com';"</code></p>
+    </div>
+
+    <div id="adminContent" class="admin-content-hidden">
+      <div id="demoBanner" class="demo-banner" style="display: none;">Demo mode — sample data. Use the backend and log in as admin for real data.</div>
+      <div class="admin-panel active" style="padding: 24px 32px; max-width: 900px; margin: 0 auto;">
+        <div id="alertsBanner" class="alerts-banner" style="display:none;">
+          <span id="alertsBannerText"></span>
+          <button type="button" class="btn-sm btn-primary-sm" id="alertsMarkAll">Mark read</button>
+        </div>
+        <div class="admin-card" style="margin-bottom: 24px;">
+          <h2 style="margin-bottom: 4px;">Users</h2>
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Expand a user to manage campaigns (add accounts & daily posts), submissions, payouts.</p>
+          <div id="usersList"></div>
+        </div>
+        <details class="brands-section" style="margin-top: 24px;">
+          <summary style="cursor: pointer; font-weight: 600; padding: 12px 0;">Brand requests <span id="brandsCount"></span></summary>
+          <div id="brandsList" style="padding-top: 16px;"></div>
+        </details>
+      </div>
+      <div class="day-modal-overlay" id="dayModal">
+        <div class="day-modal">
+          <div class="day-modal-header">
+            <h3 id="dayModalTitle">Day 1</h3>
+            <button type="button" class="day-modal-close" id="dayModalClose">&times;</button>
+          </div>
+          <div class="day-modal-body" id="dayModalBody"></div>
+        </div>
+      </div>
+      <div class="day-modal-overlay" id="infoModal">
+        <div class="day-modal">
+          <div class="day-modal-header">
+            <h3 id="infoModalTitle">Campaign info</h3>
+            <button type="button" class="day-modal-close" id="infoModalClose">&times;</button>
+          </div>
+          <div class="day-modal-body" id="infoModalBody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+    const API = isLocal ? 'http://localhost:37373/api' : (window.location.origin + '/api');
+    const params = new URLSearchParams(window.location.search);
+    let isDemoMode = false;
+
+    function headers() {
+      const t = localStorage.getItem('token');
+      return { 'Content-Type': 'application/json', ...(t ? { 'Authorization': 'Bearer ' + t } : {}) };
+    }
+
+    function show(el) { if (el) el.style.display = ''; }
+    function hide(el) { if (el) el.style.display = 'none'; }
+
+    async function init() {
+      const token = localStorage.getItem('token');
+      const loginPrompt = document.getElementById('loginPrompt');
+      const adminContent = document.getElementById('adminContent');
+      const hintEl = document.getElementById('loginPromptHint');
+
+      if (params.get('demo') === '1' || params.get('bypass') === '1') {
+        isDemoMode = true;
+        hide(loginPrompt);
+        adminContent.classList.remove('admin-content-hidden');
+        const banner = document.getElementById('demoBanner');
+        if (banner) banner.style.display = 'block';
+        document.getElementById('adminEmail').textContent = 'demo@litoclips.com (demo)';
+        document.getElementById('logoutBtn').onclick = () => window.location.href = 'index.html';
+        await loadAll();
+        return;
+      }
+
+      if (!token) {
+        show(loginPrompt);
+        return;
+      }
+      let me = null;
+      try {
+        const r = await fetch(API + '/auth/me', { headers: headers() });
+        me = r.ok ? await r.json() : null;
+      } catch (err) {
+        if (hintEl) hintEl.innerHTML = 'Could not reach the backend. Start it with: <code>cd backend && npm start</code><br><br>Or <a href="admin.html?demo=1" style="color: var(--teal);">view admin in demo mode</a> to see the layout.';
+        show(loginPrompt);
+        return;
+      }
+      if (!me || !me.isAdmin) {
+        if (hintEl) hintEl.innerHTML = 'Log in with an admin account on the main site, or <a href="admin.html?demo=1" style="color: var(--teal);">view admin in demo mode</a> to see the layout.';
+        show(loginPrompt);
+        return;
+      }
+      hide(loginPrompt);
+      adminContent.classList.remove('admin-content-hidden');
+      document.getElementById('adminEmail').textContent = me.email;
+
+      document.getElementById('logoutBtn').onclick = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.reload();
+      };
+
+      document.getElementById('alertsMarkAll').onclick = async () => {
+        if (isDemoMode) { document.getElementById('alertsBanner').style.display = 'none'; return; }
+        const list = await fetch(API + '/admin/alerts', { headers: headers() }).then(r => r.json());
+        await Promise.all(list.filter(a => !a.read).map(a => fetch(API + '/admin/alerts/' + a.id + '/read', { method: 'PUT', headers: headers() })));
+        loadAll();
+      };
+
+      await loadAll();
+    }
+
+    async function loadAll() {
+      await loadUsers();
+      loadAlertsBanner();
+      loadBrands();
+    }
+
+    async function loadAlertsBanner() {
+      const banner = document.getElementById('alertsBanner');
+      const textEl = document.getElementById('alertsBannerText');
+      if (isDemoMode) { banner.style.display = 'none'; return; }
+      try {
+        const list = await fetch(API + '/admin/alerts', { headers: headers() }).then(r => r.json());
+        const unread = list.filter(a => !a.read);
+        if (unread.length === 0) { banner.style.display = 'none'; return; }
+        banner.style.display = 'flex';
+        textEl.textContent = unread.length + ' new item' + (unread.length > 1 ? 's' : '') + ' to act on';
+      } catch (e) { banner.style.display = 'none'; }
+    }
+
+    async function loadCampaignAccounts(campaignId) {
+      try {
+        const list = await fetch(API + '/admin/campaigns/' + campaignId + '/accounts', { headers: headers() }).then(r => r.json());
+        list.forEach((a, i) => {
+          const label = document.querySelector('.cal-account-label-' + campaignId + '-' + i);
+          if (label) label.textContent = '@' + a.handle;
+        });
+      } catch (e) {}
+    }
+
+    async function loadBrands() {
+      const el = document.getElementById('brandsList');
+      const countEl = document.getElementById('brandsCount');
+      if (isDemoMode) {
+        if (countEl) countEl.textContent = '(2)';
+        el.innerHTML = '<p class="empty" style="padding:12px 0;">2 brand requests. Full table in demo mode.</p>';
+        return;
+      }
+      try {
+        const list = await fetch(API + '/admin/brand-applications', { headers: headers() }).then(r => r.json());
+        if (countEl) countEl.textContent = list.length ? '(' + list.length + ')' : '';
+        if (list.length === 0) { el.innerHTML = '<p class="empty" style="padding:12px 0;">No brand applications yet.</p>'; return; }
+        el.innerHTML = '<table class="admin-table"><thead><tr><th>Contact</th><th>Company</th><th>Platforms</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+          list.map(b => {
+            const statusClass = b.status === 'contacted' || b.status === 'approved' ? 'approved' : b.status === 'rejected' ? 'rejected' : 'pending';
+            return `<tr data-id="${b.id}">
+              <td><a href="mailto:${b.contact_email}" style="color:var(--teal);">${b.contact_name || b.contact_email}</a></td>
+              <td>${b.company_name || '—'}</td>
+              <td>${(b.platforms || '').replace(/,/g, ', ')}</td>
+              <td><span class="badge ${statusClass}">${b.status}</span></td>
+              <td>
+                <select class="brand-status" data-id="${b.id}"><option value="pending" ${b.status==='pending'?'selected':''}>Pending</option><option value="contacted" ${b.status==='contacted'?'selected':''}>Contacted</option><option value="approved" ${b.status==='approved'?'selected':''}>Approved</option><option value="rejected" ${b.status==='rejected'?'selected':''}>Rejected</option></select>
+                <button type="button" class="btn-sm btn-primary-sm brand-save" data-id="${b.id}">Save</button>
+              </td>
+            </tr>`;
+          }).join('') + '</tbody></table>';
+        el.querySelectorAll('.brand-save').forEach(btn => {
+          btn.onclick = async () => {
+            const id = btn.dataset.id;
+            const statusEl = el.querySelector('.brand-status[data-id="' + id + '"]');
+            const res = await fetch(API + '/admin/brand-applications/' + id, { method: 'PUT', headers: headers(), body: JSON.stringify({ status: statusEl.value }) });
+            if (res.ok) loadBrands(); else alert((await res.json()).error || 'Failed');
+          };
+        });
+      } catch (e) { el.innerHTML = '<p class="empty" style="padding:12px 0;">Could not load.</p>'; }
+    }
+
+    async function loadUsers() {
+      const el = document.getElementById('usersList');
+      if (isDemoMode) {
+        const users = [
+          { id: 'u1', name: 'Alex Rivera', email: 'alex@example.com', isAdmin: false, campaigns: [{ id: 'c1', title: 'Gaming Clips Q1', platform: 'tiktok', status: 'active' }] },
+          { id: 'u2', name: 'Jordan Lee', email: 'jordan@example.com', isAdmin: false, campaigns: [{ id: 'c2', title: 'Fitness Shorts', platform: 'youtube', status: 'active' }] }
+        ];
+        el.innerHTML = users.map(u => renderUserCard(u, [], [])).join('');
+        bindUserCardEvents(el);
+        return;
+      }
+      try {
+        const [users, withCampaigns, submissions, payouts] = await Promise.all([
+          fetch(API + '/admin/users', { headers: headers() }).then(r => r.json()),
+          fetch(API + '/admin/users-with-campaigns', { headers: headers() }).then(r => r.json()),
+          fetch(API + '/admin/submissions', { headers: headers() }).then(r => r.json()),
+          fetch(API + '/admin/payouts', { headers: headers() }).then(r => r.json())
+        ]);
+        const campaignsByUser = {};
+        (withCampaigns || []).forEach(u => { campaignsByUser[u.id] = u.campaigns || []; });
+        const merged = users.map(u => ({ ...u, campaigns: campaignsByUser[u.id] || [] }));
+        el.innerHTML = merged.map(u => {
+          const uSubs = (submissions || []).filter(s => s.userId === u.id);
+          const uPayouts = (payouts || []).filter(p => p.userId === u.id);
+          return renderUserCard(u, uSubs, uPayouts);
+        }).join('');
+        bindUserCardEvents(el);
+      } catch (e) { el.innerHTML = '<p class="empty">Could not load. ' + (e.message || '') + '</p>'; }
+    }
+
+    function formatDateKey(d) {
+      const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }
+
+    function renderUserCard(u, submissions, payouts) {
+      const campaigns = u.campaigns || [];
+      const hasContent = campaigns.length || submissions.length || payouts.length;
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return `
+        <details class="user-card" ${hasContent ? '' : ''}>
+          <summary class="user-summary">
+            <span class="user-name">${u.name || u.email}</span>
+            <span class="user-meta">${u.email} · ${campaigns.length} campaign${campaigns.length !== 1 ? 's' : ''}</span>
+            ${!u.isAdmin ? '<button type="button" class="btn-sm btn-primary-sm make-admin" data-id="' + u.id + '" onclick="event.preventDefault();event.stopPropagation();">Make admin</button>' : '<span class="badge approved">Admin</span>'}
+          </summary>
+          <div class="user-detail">
+            ${campaigns.length ? `
+              <div class="user-section">
+                <strong>Campaigns</strong>
+                ${campaigns.map(c => {
+                  const numAccts = Math.max(c.numAccounts || 1, 1);
+                  const startDate = c.startedAt ? new Date(c.startedAt) : new Date(c.createdAt || Date.now());
+                  const infoParts = [];
+                  if (c.platforms) infoParts.push('Platforms: ' + c.platforms);
+                  if (c.numAccounts) infoParts.push(numAccts + ' account' + (numAccts !== 1 ? 's' : ''));
+                  if (c.contentLink) infoParts.push('Content: ' + c.contentLink);
+                  if (c.goal) infoParts.push('Goal: ' + c.goal);
+                  const infoText = infoParts.join(' · ');
+                  const safeInfo = infoText.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                  const safeTitle = (c.title || 'Campaign').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                  let calHtml = '<div class="admin-cal" id="cal-' + c.id + '">';
+                  calHtml += '<div class="campaign-info"><button type="button" class="campaign-info-btn" data-title="' + safeTitle + '" data-info="' + safeInfo + '">i</button></div>';
+                  calHtml += '<div class="cal-table">';
+                  calHtml += '<div class="cal-header"><span></span>';
+                  for (let i = 0; i < 14; i++) {
+                    const d = new Date(startDate);
+                    d.setDate(d.getDate() + i);
+                    calHtml += '<span>D' + (i + 1) + '</span>';
+                  }
+                  calHtml += '</div>';
+                  for (let row = 0; row < numAccts; row++) {
+                    calHtml += '<div class="cal-account-row" data-campaign-id="' + c.id + '" data-account-index="' + row + '">';
+                    calHtml += '<div class="cal-account-label cal-account-label-' + c.id + '-' + row + '">Acct ' + (row + 1) + '</div>';
+                    for (let i = 0; i < 14; i++) {
+                      const d = new Date(startDate);
+                      d.setDate(d.getDate() + i);
+                      const dayNum = d.getDate();
+                      const dateKey = formatDateKey(d);
+                      const isDay1 = i === 0;
+                      const isWarmup = i === 1;
+                      const isPost = i >= 2;
+                      let cls = 'cal-day';
+                      if (isWarmup) cls += ' warmup';
+                      if (isPost) cls += ' post';
+                      let action = '';
+                      if (isDay1) action = '<span class="day-action">+ Add account</span>';
+                      else if (isWarmup) action = '<span class="day-badge" style="background:rgba(234,179,8,0.3);color:#92400e;">Warmup</span>';
+                      else action = '<span class="day-action">+ Upload</span>';
+                      calHtml += '<div class="' + cls + '" data-campaign-id="' + c.id + '" data-day-index="' + i + '" data-date-key="' + dateKey + '" data-account-index="' + row + '"><div class="day-num">' + dayNum + ' ' + monthNames[d.getMonth()] + '</div>' + action + '</div>';
+                    }
+                    calHtml += '</div>';
+                  }
+                  calHtml += '</div></div>';
+                  return '<div class="campaign-block" style="margin-bottom:20px;"><div class="campaign-row" style="margin-bottom:8px;"><strong>' + c.title + '</strong></div>' + calHtml + '</div>';
+                }).join('')}
+              </div>
+            ` : ''}
+            ${submissions.length ? `<div class="user-section"><strong>Submissions</strong><table class="admin-table" style="font-size:12px;"><tbody>${submissions.map(s => {
+              const sc = s.status === 'approved' ? 'approved' : s.status === 'rejected' ? 'rejected' : 'pending';
+              return `<tr data-id="${s.id}"><td>${s.campaignTitle || s.campaignId}</td><td><a href="${s.postUrl}" target="_blank" rel="noopener" style="color:var(--teal);">Link</a></td><td><input type="number" class="sub-views" data-id="${s.id}" value="${s.views||0}" style="width:60px;padding:4px;font-size:12px;"></td><td>$${(s.earnings||0).toFixed(2)}</td><td><span class="badge ${sc}">${s.status}</span></td><td><button type="button" class="btn-sm sub-set-views" data-id="${s.id}">Set</button><select class="sub-status" data-id="${s.id}"><option value="pending" ${s.status==='pending'?'selected':''}>Pending</option><option value="approved" ${s.status==='approved'?'selected':''}>Approved</option><option value="rejected" ${s.status==='rejected'?'selected':''}>Rejected</option></select><button type="button" class="btn-sm sub-save-status" data-id="${s.id}">Save</button></td></tr>`;
+            }).join('')}</tbody></table></div>` : ''}
+            ${payouts.length ? `<div class="user-section"><strong>Payouts</strong><table class="admin-table" style="font-size:12px;"><tbody>${payouts.map(p => {
+              const pc = p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' : 'pending';
+              return `<tr><td>$${p.amount.toFixed(2)}</td><td>${p.paymentMethod}</td><td><span class="badge ${pc}">${p.status}</span></td><td>${p.status === 'pending' ? `<button type="button" class="btn-sm btn-approve payout-approve" data-id="${p.id}">Approve</button> <button type="button" class="btn-sm btn-reject payout-reject" data-id="${p.id}">Reject</button>` : ''}</td></tr>`;
+            }).join('')}</tbody></table></div>` : ''}
+          </div>
+        </details>
+      `;
+    }
+
+    function bindUserCardEvents(el) {
+      if (!el) return;
+      el.querySelectorAll('.make-admin').forEach(btn => {
+        btn.onclick = async (e) => { e.preventDefault(); e.stopPropagation();
+          const res = await fetch(API + '/admin/users/' + btn.dataset.id + '/admin', { method: 'PUT', headers: headers(), body: JSON.stringify({ isAdmin: true }) });
+          if (res.ok) loadAll(); else alert((await res.json()).error || 'Failed');
+        };
+      });
+      el.querySelectorAll('.campaign-info-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const title = btn.getAttribute('data-title') || 'Campaign info';
+          const info = btn.getAttribute('data-info') || 'No extra info';
+          openInfoModal(title, info);
+        };
+      });
+      el.querySelectorAll('details.user-card').forEach(details => {
+        details.addEventListener('toggle', () => {
+          if (details.open) {
+            details.querySelectorAll('.campaign-block').forEach(block => {
+              const cal = block.querySelector('.admin-cal');
+              if (cal) {
+                const campaignId = cal.id.replace('cal-', '');
+                loadCampaignAccounts(campaignId);
+              }
+            });
+          }
+        });
+      });
+      el.querySelectorAll('.cal-day').forEach(dayEl => {
+        dayEl.onclick = (e) => {
+          e.stopPropagation();
+          openDayModal(dayEl.dataset.campaignId, parseInt(dayEl.dataset.dayIndex, 10), dayEl.dataset.dateKey, parseInt(dayEl.dataset.accountIndex, 10));
+        };
+      });
+      el.querySelectorAll('.sub-set-views').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const input = el.querySelector('.sub-views[data-id="' + id + '"]');
+          const res = await fetch(API + '/admin/submissions/' + id + '/engagement', { method: 'PUT', headers: headers(), body: JSON.stringify({ views: parseInt(input?.value, 10) || 0 }) });
+          if (res.ok) loadAll(); else alert((await res.json()).error || 'Failed');
+        };
+      });
+      el.querySelectorAll('.sub-save-status').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const select = el.querySelector('.sub-status[data-id="' + id + '"]');
+          const res = await fetch(API + '/admin/submissions/' + id + '/status', { method: 'PUT', headers: headers(), body: JSON.stringify({ status: select?.value }) });
+          if (res.ok) loadAll(); else alert((await res.json()).error || 'Failed');
+        };
+      });
+      el.querySelectorAll('.payout-approve').forEach(btn => {
+        btn.onclick = async () => {
+          const res = await fetch(API + '/admin/payouts/' + btn.dataset.id, { method: 'PUT', headers: headers(), body: JSON.stringify({ status: 'approved' }) });
+          if (res.ok) loadAll(); else alert((await res.json()).error || 'Failed');
+        };
+      });
+      el.querySelectorAll('.payout-reject').forEach(btn => {
+        btn.onclick = async () => {
+          const res = await fetch(API + '/admin/payouts/' + btn.dataset.id, { method: 'PUT', headers: headers(), body: JSON.stringify({ status: 'rejected' }) });
+          if (res.ok) loadAll(); else alert((await res.json()).error || 'Failed');
+        };
+      });
+    }
+
+    let currentModalCampaignId = null;
+    let currentModalDateKey = null;
+
+    async function openDayModal(campaignId, dayIndex, dateKey, accountIndex) {
+      currentModalCampaignId = campaignId;
+      currentModalDateKey = dateKey;
+      const modal = document.getElementById('dayModal');
+      const titleEl = document.getElementById('dayModalTitle');
+      const bodyEl = document.getElementById('dayModalBody');
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const d = dateKey ? new Date(dateKey) : new Date();
+      const dayLabel = 'Day ' + (dayIndex + 1) + ' · ' + d.getDate() + ' ' + monthNames[d.getMonth()];
+      titleEl.textContent = dayLabel;
+      if (dayIndex === 0) {
+        bodyEl.innerHTML = '<p style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">Add the account(s) we created for this campaign.</p><div class="form-row" style="display:flex;gap:8px;flex-wrap:wrap;"><input type="text" id="modal-acc-platform" placeholder="Platform (tiktok, instagram)" style="flex:1;min-width:120px;"><input type="text" id="modal-acc-handle" placeholder="Handle (@username)" style="flex:1;min-width:120px;"><button type="button" class="btn-sm btn-primary-sm" id="modal-add-account">Add account</button></div>';
+        bodyEl.querySelector('#modal-add-account').onclick = async () => {
+          const platform = document.getElementById('modal-acc-platform')?.value?.trim();
+          const handle = document.getElementById('modal-acc-handle')?.value?.trim();
+          if (!platform || !handle) { alert('Platform and handle required'); return; }
+          const res = await fetch(API + '/admin/campaigns/' + campaignId + '/accounts', { method: 'POST', headers: headers(), body: JSON.stringify({ platform, handle }) });
+          if (res.ok) { document.getElementById('modal-acc-platform').value = ''; document.getElementById('modal-acc-handle').value = ''; loadCampaignAccounts(campaignId); } else { alert((await res.json()).error || 'Failed'); }
+        };
+      } else if (dayIndex === 1) {
+        bodyEl.innerHTML = '<p style="color:var(--text-secondary);font-size:14px;">Day 2: Warming up — we interact with their niche so when we start posting we have more reach.</p>';
+      } else {
+        let accountsOpts = '<option value="">— Account —</option>';
+        try {
+          const accs = await fetch(API + '/admin/campaigns/' + campaignId + '/accounts', { headers: headers() }).then(r => r.json());
+          accs.forEach((a, i) => {
+            const sel = (accountIndex >= 0 && i === accountIndex) ? ' selected' : '';
+            accountsOpts += '<option value="' + a.id + '"' + sel + '>@' + a.handle + '</option>';
+          });
+        } catch (_) {}
+        bodyEl.innerHTML = '<p style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">Add the post/video link and views for this account.</p><div class="form-row" style="display:flex;flex-direction:column;gap:10px;"><div style="display:flex;gap:8px;flex-wrap:wrap;"><input type="text" id="modal-post-platform" placeholder="Platform" value="tiktok" style="flex:1;min-width:80px;"><input type="url" id="modal-post-url" placeholder="Post URL" style="flex:2;min-width:160px;"><input type="number" id="modal-post-views" placeholder="Views" style="width:80px;"></div><div style="display:flex;gap:8px;align-items:center;"><input type="date" id="modal-post-date" value="' + (dateKey || new Date().toISOString().slice(0,10)) + '" style="flex:1;"><select id="modal-post-account" style="min-width:120px;">' + accountsOpts + '</select><button type="button" class="btn-sm btn-primary-sm" id="modal-add-post">Add post</button></div></div>';
+        bodyEl.querySelector('#modal-add-post').onclick = async () => {
+          const platform = document.getElementById('modal-post-platform')?.value?.trim() || 'tiktok';
+          const url = document.getElementById('modal-post-url')?.value?.trim();
+          const views = parseInt(document.getElementById('modal-post-views')?.value, 10) || 0;
+          const date = document.getElementById('modal-post-date')?.value;
+          const account = document.getElementById('modal-post-account')?.value;
+          if (!url || !date) { alert('Post URL and date required'); return; }
+          const body = { platform, post_url: url, views, post_date: date };
+          if (account) body.campaign_account_id = account;
+          const res = await fetch(API + '/admin/campaigns/' + campaignId + '/posts', { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+          if (res.ok) { modal.classList.remove('active'); loadAll(); } else { alert((await res.json()).error || 'Failed'); }
+        };
+      }
+      modal.classList.add('active');
+    }
+
+    document.getElementById('dayModalClose')?.addEventListener('click', () => document.getElementById('dayModal')?.classList.remove('active'));
+    document.getElementById('dayModal')?.addEventListener('click', (e) => { if (e.target.id === 'dayModal') e.target.classList.remove('active'); });
+
+    function openInfoModal(title, info) {
+      const modal = document.getElementById('infoModal');
+      const titleEl = document.getElementById('infoModalTitle');
+      const bodyEl = document.getElementById('infoModalBody');
+      if (!modal || !titleEl || !bodyEl) return;
+      titleEl.textContent = title;
+      bodyEl.innerHTML = '<p style="font-size:13px;color:var(--text-secondary);white-space:pre-line;">' + info + '</p>';
+      modal.classList.add('active');
+    }
+
+    document.getElementById('infoModalClose')?.addEventListener('click', () => document.getElementById('infoModal')?.classList.remove('active'));
+    document.getElementById('infoModal')?.addEventListener('click', (e) => { if (e.target.id === 'infoModal') e.target.classList.remove('active'); });
+
+    init();
+  </script>
+</body>
+</html>

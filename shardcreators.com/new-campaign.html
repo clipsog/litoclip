@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Campaign — LitoClips</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    body.onboarding-theme { background: #f8fafc; color: #0f172a; }
+    body.onboarding-theme .header { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+    body.onboarding-theme .header .logo-text { color: #0f172a; }
+    body.onboarding-theme .nav-links a { color: #475569; }
+    body.onboarding-theme .nav-links a:hover { color: #2563eb; }
+    body.onboarding-theme .nav-cta { color: #2563eb !important; }
+    body.onboarding-theme .user-name { color: #334155; }
+    body.onboarding-theme .form-group label { color: #334155; }
+    body.onboarding-theme .form-group input,
+    body.onboarding-theme .form-group select,
+    body.onboarding-theme .form-group textarea { background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; }
+    body.onboarding-theme .form-group input::placeholder,
+    body.onboarding-theme .form-group textarea::placeholder { color: #94a3b8; }
+    body.onboarding-theme .form-group input:focus,
+    body.onboarding-theme .form-group select:focus,
+    body.onboarding-theme .form-group textarea:focus { background: #ffffff; border-color: #2563eb; }
+    body.onboarding-theme .form-error { color: #dc2626; }
+    .campaign-page { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+    .campaign-page h1 { font-size: 28px; margin-bottom: 8px; color: #0f172a; }
+    .campaign-page .subtitle { color: #64748b; font-size: 15px; margin-bottom: 32px; }
+    .platform-table-wrap { overflow-x: auto; margin: 24px 0; border-radius: 12px; border: 1px solid #e2e8f0; }
+    .platform-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .platform-table th, .platform-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .platform-table th { background: #f1f5f9; font-weight: 600; color: #0f172a; }
+    .platform-table tr:last-child td { border-bottom: none; }
+    .platform-table tr:hover td { background: #f8fafc; }
+    .platform-table .platform-name { font-weight: 600; color: #0f172a; white-space: nowrap; }
+    .platform-table .best-for { color: #2563eb; font-weight: 500; }
+    .pricing-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 20px; margin: 24px 0; font-size: 14px; color: #0c4a6e; }
+    .pricing-box strong { color: #0369a1; }
+    .pricing-box ul { margin: 12px 0 0 20px; }
+    .pricing-box li { margin: 6px 0; }
+    .form-section { margin-bottom: 32px; }
+    .form-section h2 { font-size: 18px; color: #0f172a; margin-bottom: 16px; font-weight: 600; }
+    .platform-checkboxes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .platform-checkbox { display: flex; align-items: flex-start; gap: 10px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; cursor: pointer; }
+    .platform-checkbox:hover { border-color: #2563eb; background: #f0f9ff; }
+    .platform-checkbox input { margin-top: 2px; accent-color: #2563eb; }
+    .platform-checkbox:has(input:checked) .platform-label { font-weight: 600; color: #2563eb; }
+    .platform-checkbox .platform-label { font-size: 14px; color: #334155; }
+    .platform-checkbox .platform-hint { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .campaign-page .form-actions { display: flex; gap: 16px; margin-top: 24px; align-items: center; }
+    .campaign-page .form-actions .btn-secondary { background: transparent; border: 1px solid #cbd5e1; color: #334155; }
+    .campaign-page .form-actions .btn-secondary:hover { border-color: #94a3b8; color: #0f172a; }
+    body.onboarding-theme .btn-primary { background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; }
+    .platform-row { display: grid; grid-template-columns: 120px 1fr 140px 100px 90px 90px auto; gap: 12px; align-items: end; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; }
+    .platform-row .field { display: flex; flex-direction: column; gap: 6px; }
+    .platform-row .field label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .platform-row .field input, .platform-row .field select { padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; background: #fff; }
+    .platform-row .price-display { font-weight: 600; color: #0f172a; font-size: 15px; padding: 10px 0; }
+    .platform-row .price-display .muted { font-weight: 400; color: #64748b; font-size: 11px; display: block; }
+    .btn-generate { padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; white-space: nowrap; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; cursor: pointer; }
+    .btn-generate:hover { opacity: 0.95; }
+    .btn-add-platform { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: transparent; border: 2px dashed #cbd5e1; border-radius: 12px; color: #64748b; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 24px; }
+    .btn-add-platform:hover { border-color: #2563eb; color: #2563eb; }
+    .btn-remove-row { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; }
+    .btn-remove-row:hover { color: #dc2626; }
+    .btn-platform-guide { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: transparent; border: 1px solid #cbd5e1; border-radius: 50%; color: #64748b; font-size: 14px; font-weight: 600; cursor: pointer; font-style: italic; }
+    .btn-platform-guide:hover { background: #f0f9ff; border-color: #2563eb; color: #2563eb; }
+    .platform-guide-wrap { display: none; margin-top: 16px; }
+    .platform-guide-wrap.visible { display: block; }
+    @media (max-width: 900px) {
+      .platform-row { grid-template-columns: 1fr 1fr auto; }
+      .platform-row .field:nth-child(4), .platform-row .field:nth-child(5) { grid-column: span 1; }
+      .platform-row .price-display { grid-column: 1; }
+    }
+  </style>
+</head>
+<body class="onboarding-theme">
+  <header class="header scrolled">
+    <div class="header-container">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Logo">
+        <span class="logo-text">LitoClips</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html#how-it-works">How It Works</a>
+        <a href="brand-overview.html">Dashboard</a>
+        <span class="user-name" id="userName"></span>
+        <a href="index.html" class="nav-cta" id="logoutBtn">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="campaign-page">
+    <h1>Create Your Campaign</h1>
+    <p class="subtitle">Fully self-served. Choose your platforms, set your goals. We give you value upfront—pay when you're ready from your campaign calendar.</p>
+
+    <form id="campaignForm" class="auth-form">
+      <div class="form-section">
+        <h2>Campaign name</h2>
+        <div class="form-group">
+          <input type="text" id="campaignTitle" name="title" required placeholder="e.g. X">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2 style="display:flex; align-items:center; gap:8px;">Platforms <button type="button" class="btn-platform-guide" id="platformGuideBtn" title="Find out what suits best your campaign goals">i</button></h2>
+        <div class="platform-guide-wrap" id="platformGuideWrap">
+        <div class="platform-table-wrap">
+        <table class="platform-table">
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Best for</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="platform-name">TikTok</td>
+              <td class="best-for">PR &amp; awareness</td>
+              <td>When people like you on TikTok, everyone sees it—you paint a positive narrative. Ideal for new brands or creators building awareness and getting known. Also good for business, podcasts, movies, etc. trying to become everyday usage and mainstream.</td>
+            </tr>
+            <tr>
+              <td class="platform-name">Instagram</td>
+              <td class="best-for">Brand deals &amp; sales</td>
+              <td>Businesses needing organic traffic and sales are on IG. Easy DM outreach, easy links back to your page. Big IG following = more credibility and influence. People show their face—support on IG means more. Brands actively recruit here.</td>
+            </tr>
+            <tr>
+              <td class="platform-name">X (Twitter)</td>
+              <td class="best-for">Narrative &amp; positioning</td>
+              <td>Best after you've hit mainstream. Paint your narrative and navigate vertically through the industry. Position yourself with peers and decision-makers.</td>
+            </tr>
+            <tr>
+              <td class="platform-name">YouTube</td>
+              <td class="best-for">Existing audience</td>
+              <td>Best if you already have content there. Shorts viewers are used to you—when they see your videos in feed or suggestions they're familiar and more likely to click and watch.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+        <p style="color:#64748b; font-size:14px; margin-top:12px;">Each platform serves a different purpose. Pick the ones that match where you are.</p>
+      </div>
+        <div id="platformRows">
+          <div class="platform-row" data-row="0">
+            <div class="field">
+              <label>Platform</label>
+              <select name="platform_0" required>
+                <option value="">Select...</option>
+                <option value="tiktok">TikTok</option>
+                <option value="instagram">Instagram</option>
+                <option value="x">X (Twitter)</option>
+                <option value="youtube">YouTube</option>
+              </select>
+            </div>
+            <div class="field">
+              <label style="display:flex;align-items:center;gap:6px;">Content (add links) <button type="button" class="btn-platform-guide content-guide-btn" data-content-guide title="YouTube, Google Drive, Dropbox, etc.">i</button></label>
+              <input type="url" name="content_0" placeholder="https://..." required>
+              <div class="content-guide-wrap" id="contentGuideWrap" style="display:none;">
+                <p>Add a link to your content. We accept:</p>
+                <ul>
+                  <li><strong>YouTube</strong> – video or playlist link</li>
+                  <li><strong>Google Drive</strong> – shared file or folder</li>
+                  <li><strong>Dropbox</strong> – shared link</li>
+                  <li><strong>Other</strong> – any publicly accessible URL</li>
+                </ul>
+              </div>
+            </div>
+            <div class="field">
+              <label>Goal</label>
+              <select name="goal_0">
+                <option value="">Select...</option>
+                <option value="awareness">Awareness</option>
+                <option value="brand_deals">Brand deals</option>
+                <option value="sales">Sales / traffic</option>
+                <option value="narrative">Narrative</option>
+                <option value="pr">PR</option>
+              </select>
+            </div>
+            <div class="field">
+              <label># accounts</label>
+              <input type="number" name="num_accounts_0" min="1" max="50" value="1" data-price-target>
+            </div>
+            <div class="field">
+              <label title="Month 2+">Posts/day (mo. 2+)</label>
+              <input type="number" name="posts_per_day_0" min="3" max="10" value="3" data-posts-per-day style="width:70px;">
+            </div>
+            <div class="field price-display">
+              <label>&nbsp;</label>
+              <span class="price-value" data-price="0">$0</span>
+              <span class="muted" data-price-note></span>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="btn-generate" data-generate>Generate accounts</button>
+                <button type="button" class="btn-remove-row" data-remove title="Remove row" style="font-size:18px; line-height:1;">&times;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn-add-platform" id="addPlatformBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Add another platform
+        </button>
+        <div class="pricing-box" style="margin-top: 20px;">
+          <strong>Pricing</strong>
+          <p style="margin: 12px 0 4px 0;"><strong>First month: $7.99 per account per week.</strong></p>
+          <p style="margin: 0 0 4px 0;">Days 1–2: we warm up (talk to people in your niche).</p>
+          <p style="margin: 0 0 12px 0;">Day 3+: 1 post per day per account.</p>
+          <p style="margin: 0 0 4px 0;"><strong>Month 2+: $12.99 per account per week.</strong></p>
+          <p style="margin: 0 0 8px 0;">3 posts per day per account.</p>
+          <p style="margin: 0; font-size: 13px;">Upscale: +$2 per extra post per day (e.g. 5 posts/day = $16.99 per account per week).</p>
+        </div>
+      </div>
+
+      <div class="form-error" id="formError"></div>
+      <div class="form-actions">
+        <a href="brand-overview.html" class="btn btn-secondary">Back to dashboard</a>
+      </div>
+    </form>
+  </main>
+
+  <style>
+    .content-guide-wrap { margin-top: 12px; padding: 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; font-size: 13px; color: #0c4a6e; }
+    .content-guide-wrap p { margin: 0 0 8px 0; }
+    .content-guide-wrap ul { margin: 0; padding-left: 20px; }
+    .content-guide-wrap li { margin: 4px 0; }
+  </style>
+
+  <script>
+    (function() {
+      const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:37373/api' : (window.location.origin + '/api');
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+      if (!token || !user) {
+        window.location.href = 'onboarding.html' + (window.location.search || '');
+        return;
+      }
+      const bypass = token === 'demo-bypass-token';
+      if (document.getElementById('userName')) {
+        document.getElementById('userName').textContent = user.name || user.email;
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'index.html';
+      });
+
+      document.getElementById('platformGuideBtn').addEventListener('click', function() {
+        const wrap = document.getElementById('platformGuideWrap');
+        wrap.classList.toggle('visible');
+        document.querySelectorAll('.content-guide-wrap').forEach(function(w) { w.style.display = 'none'; });
+        this.setAttribute('title', wrap.classList.contains('visible') ? 'Hide platform guide' : 'Find out what suits best your campaign goals');
+      });
+
+      document.addEventListener('click', function(e) {
+        const btn = e.target.closest('[data-content-guide]');
+        if (btn) {
+          e.preventDefault();
+          document.getElementById('platformGuideWrap').classList.remove('visible');
+          const wrap = btn.closest('.field').querySelector('.content-guide-wrap');
+          if (wrap) {
+            const isVisible = wrap.style.display === 'block';
+            document.querySelectorAll('.content-guide-wrap').forEach(function(w) { w.style.display = 'none'; });
+            wrap.style.display = isVisible ? 'none' : 'block';
+          }
+        }
+      });
+
+      const FEE_FIRST_MONTH = 7.99;   // per account per week, 1 post/day
+      const FEE_MONTH2_BASE = 12.99;  // per account per week, 3 posts/day
+      const FEE_EXTRA_POST_PER_DAY = 2; // add per post/day above 3
+
+      function calcPriceFirstMonth(numAccounts) {
+        const n = parseInt(numAccounts, 10) || 0;
+        return (n * FEE_FIRST_MONTH).toFixed(2);
+      }
+
+      function calcPriceMonth2Plus(numAccounts, postsPerDay) {
+        const n = parseInt(numAccounts, 10) || 0;
+        const posts = Math.max(3, parseInt(postsPerDay, 10) || 3);
+        const extra = Math.max(0, posts - 3);
+        const perAccount = FEE_MONTH2_BASE + extra * FEE_EXTRA_POST_PER_DAY;
+        return (n * perAccount).toFixed(2);
+      }
+
+      function updateRowPrice(row) {
+        const numInput = row.querySelector('input[data-price-target]');
+        const postsInput = row.querySelector('input[data-posts-per-day]');
+        const priceEl = row.querySelector('.price-value');
+        const noteEl = row.querySelector('[data-price-note]');
+        const num = parseInt(numInput?.value, 10) || 0;
+        const postsPerDay = parseInt(postsInput?.value, 10) || 3;
+        const firstMonth = (num * FEE_FIRST_MONTH).toFixed(2);
+        const month2 = calcPriceMonth2Plus(num, postsPerDay);
+        if (priceEl) priceEl.textContent = '$' + firstMonth + '/wk';
+        if (noteEl) noteEl.textContent = '1st month: $' + firstMonth + ' (1 post/day) · Month 2+: $' + month2 + '/wk' + (postsPerDay > 3 ? ' (' + postsPerDay + ' posts/day)' : ' (3 posts/day)');
+      }
+
+      function createRow(index) {
+        const row = document.createElement('div');
+        row.className = 'platform-row';
+        row.dataset.row = index;
+        row.innerHTML = '<div class="field"><label>Platform</label><select name="platform_' + index + '" required><option value="">Select...</option><option value="tiktok">TikTok</option><option value="instagram">Instagram</option><option value="x">X (Twitter)</option><option value="youtube">YouTube</option></select></div><div class="field"><label style="display:flex;align-items:center;gap:6px;">Content (add links) <button type="button" class="btn-platform-guide content-guide-btn" data-content-guide title="YouTube, Google Drive, Dropbox, etc.">i</button></label><input type="url" name="content_' + index + '" placeholder="https://..." required><div class="content-guide-wrap" style="display:none;"><p>Add a link to your content. We accept: <strong>YouTube</strong>, <strong>Google Drive</strong>, <strong>Dropbox</strong>, or any publicly accessible URL.</p></div></div><div class="field"><label>Goal</label><select name="goal_' + index + '"><option value="">Select...</option><option value="awareness">Awareness</option><option value="brand_deals">Brand deals</option><option value="sales">Sales / traffic</option><option value="narrative">Narrative</option><option value="pr">PR</option></select></div><div class="field"><label># accounts</label><input type="number" name="num_accounts_' + index + '" min="1" max="50" value="1" data-price-target></div><div class="field"><label title="Month 2+">Posts/day (mo. 2+)</label><input type="number" name="posts_per_day_' + index + '" min="3" max="10" value="3" data-posts-per-day style="width:70px;"></div><div class="field price-display"><label>&nbsp;</label><span class="price-value" data-price="' + index + '">$0</span><span class="muted" data-price-note></span></div><div class="field"><label>&nbsp;</label><div style="display:flex;align-items:center;gap:8px;"><button type="button" class="btn-generate" data-generate>Generate accounts</button><button type="button" class="btn-remove-row" data-remove title="Remove row" style="font-size:18px;line-height:1;">&times;</button></div></div>';
+        row.querySelector('input[data-price-target]').addEventListener('input', function() { updateRowPrice(row); });
+        row.querySelector('input[data-posts-per-day]').addEventListener('input', function() { updateRowPrice(row); });
+        row.querySelector('[data-generate]').addEventListener('click', function() { doPay(row); });
+        row.querySelector('[data-remove]').addEventListener('click', function() { if (document.querySelectorAll('.platform-row').length > 1) row.remove(); });
+        updateRowPrice(row);
+        return row;
+      }
+
+      document.getElementById('addPlatformBtn').addEventListener('click', function() {
+        const rows = document.querySelectorAll('.platform-row');
+        const nextIndex = rows.length;
+        const newRow = createRow(nextIndex);
+        document.getElementById('platformRows').appendChild(newRow);
+      });
+
+      document.querySelectorAll('.platform-row').forEach(function(row) {
+        row.querySelector('input[data-price-target]')?.addEventListener('input', function() { updateRowPrice(row); });
+        row.querySelector('input[data-posts-per-day]')?.addEventListener('input', function() { updateRowPrice(row); });
+        row.querySelector('[data-generate]')?.addEventListener('click', function() { doPay(row); });
+        row.querySelector('[data-remove]')?.addEventListener('click', function() {
+          if (document.querySelectorAll('.platform-row').length > 1) row.remove();
+        });
+        updateRowPrice(row);
+      });
+
+      function doPay(row) {
+        const form = document.getElementById('campaignForm');
+        const formError = document.getElementById('formError');
+        formError.textContent = '';
+        const title = document.getElementById('campaignTitle').value.trim();
+        if (!title) {
+          formError.textContent = 'Please enter a campaign name.';
+          return;
+        }
+        const platform = row.querySelector('select[name^="platform_"]')?.value;
+        const content = row.querySelector('input[name^="content_"]')?.value?.trim();
+        const goal = row.querySelector('select[name^="goal_"]')?.value;
+        const numAccounts = parseInt(row.querySelector('input[name^="num_accounts_"]')?.value, 10) || 0;
+        if (!platform || !content) {
+          formError.textContent = 'Please fill in platform and content link for this row.';
+          return;
+        }
+        const postsPerDay = parseInt(row.querySelector('input[name^="posts_per_day_"]')?.value, 10) || 3;
+        const body = {
+          title,
+          platform,
+          content_link: content,
+          goal,
+          num_accounts: numAccounts,
+          posts_per_day: postsPerDay,
+          budget: parseFloat(calcPriceFirstMonth(numAccounts)),
+          platforms: [platform],
+          requirePayment: false
+        };
+        if (bypass) {
+          localStorage.setItem('lastCampaign', JSON.stringify({ id: 'bypass-' + Date.now(), title, platform, goal, num_accounts: numAccounts }));
+          window.location.href = 'campaign-track.html?name=' + encodeURIComponent(title);
+          return;
+        }
+        fetch(API_URL + '/campaigns', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(body)
+        }).then(function(r) { return r.ok ? r.json() : r.json().then(d => { throw new Error(d.error || 'Failed'); }); })
+          .then(function(data) {
+            window.location.href = 'campaign-track.html?id=' + encodeURIComponent(data.id) + '&name=' + encodeURIComponent(title);
+          })
+          .catch(function(err) {
+            formError.textContent = err.message || 'Something went wrong.';
+          });
+      }
+
+    })();
+  </script>
+</body>
+</html>
