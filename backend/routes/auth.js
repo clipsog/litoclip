@@ -71,9 +71,10 @@ router.post('/logout', (req, res) => {
 // GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => {
   const u = req.user;
-  const full = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(u.id);
+  const full = db.prepare('SELECT is_admin, first_name, last_name, position FROM users WHERE id = ?').get(u.id);
   const gam = db.prepare('SELECT level, xp, streak, best_streak FROM gamification WHERE user_id = ?').get(u.id);
   const nextLevelXP = 100 * (gam ? gam.level : 1);
+  const position = full && full.position ? full.position : null;
   res.json({
     id: u.id,
     name: u.name,
@@ -81,6 +82,10 @@ router.get('/me', requireAuth, (req, res) => {
     userType: u.user_type,
     referralCode: u.referral_code,
     isAdmin: !!(full && full.is_admin),
+    firstName: full && full.first_name ? full.first_name : null,
+    lastName: full && full.last_name ? full.last_name : null,
+    position,
+    needsOnboarding: !position || position === '',
     level: gam ? gam.level : 1,
     xp: gam ? gam.xp : 0,
     xpToNextLevel: nextLevelXP,
@@ -89,11 +94,20 @@ router.get('/me', requireAuth, (req, res) => {
   });
 });
 
-// PUT /api/auth/profile (name)
+// PUT /api/auth/profile (name, firstName, lastName, position)
 router.put('/profile', requireAuth, (req, res) => {
-  const { name } = req.body || {};
-  if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
-  db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name.trim(), req.user.id);
+  const { name, firstName, lastName, position } = req.body || {};
+  const updates = [];
+  const vals = [];
+  if (name !== undefined && name !== null && name.trim()) {
+    updates.push('name = ?'); vals.push(name.trim());
+  }
+  if (firstName !== undefined) { updates.push('first_name = ?'); vals.push(firstName && firstName.trim() ? firstName.trim() : null); }
+  if (lastName !== undefined) { updates.push('last_name = ?'); vals.push(lastName && lastName.trim() ? lastName.trim() : null); }
+  if (position !== undefined) { updates.push('position = ?'); vals.push(position && position.trim() ? position.trim() : null); }
+  if (updates.length === 0) return res.status(400).json({ error: 'At least one field required' });
+  vals.push(req.user.id);
+  db.prepare('UPDATE users SET ' + updates.join(', ') + ' WHERE id = ?').run(...vals);
   res.json({ ok: true });
 });
 

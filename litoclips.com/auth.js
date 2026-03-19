@@ -60,31 +60,36 @@ window.addEventListener('DOMContentLoaded', () => {
     return;
   }
   
-  // OAuth callback: if URL has ?token=..., store it and redirect to dashboard
+  // OAuth callback: if URL has ?token=..., store it and fetch /me to check onboarding
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get('token');
   const urlUserType = urlParams.get('userType');
   if (token) {
     localStorage.setItem('token', token);
-    const userType = ['creator', 'brand', 'sponsor'].includes(urlUserType) ? urlUserType : null;
-    if (userType) {
-      localStorage.setItem('userType', userType);
-      localStorage.setItem('user', JSON.stringify({ userType }));
-      window.location.replace(getDashboardHref(userType));
-    } else {
-      fetch(`${API_URL}/me`, { headers: { 'Authorization': `Bearer ${token}` } })
-        .then(r => r.ok ? r.json() : null)
-        .then(user => {
-          if (user) {
-            localStorage.setItem('user', JSON.stringify(user));
-            localStorage.setItem('userType', user.userType || 'creator');
-            window.location.replace(getDashboardHref(user.userType));
+    fetch(`${API_URL}/me`, { headers: { 'Authorization': `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(user => {
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('userType', user.userType || urlUserType || 'creator');
+          if (user.needsOnboarding) {
+            window.location.replace('onboarding.html?from=google');
           } else {
-            window.history.replaceState({}, document.title, window.location.pathname);
+            window.location.replace(getDashboardHref(user.userType));
           }
-        })
-        .catch(() => { window.history.replaceState({}, document.title, window.location.pathname); });
-    }
+        } else {
+          const userType = ['creator', 'brand', 'sponsor'].includes(urlUserType) ? urlUserType : 'creator';
+          localStorage.setItem('userType', userType);
+          localStorage.setItem('user', JSON.stringify({ userType }));
+          window.location.replace('onboarding.html?from=google');
+        }
+      })
+      .catch(() => {
+        const userType = ['creator', 'brand', 'sponsor'].includes(urlUserType) ? urlUserType : 'creator';
+        localStorage.setItem('userType', userType);
+        localStorage.setItem('user', JSON.stringify({ userType }));
+        window.location.replace('onboarding.html?from=google');
+      });
     return;
   }
   

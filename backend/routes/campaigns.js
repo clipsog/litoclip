@@ -197,6 +197,30 @@ router.get('/my-campaigns', requireAuth, requireCreator, (req, res) => {
   res.json(campaigns);
 });
 
+// GET /api/campaigns/my-sponsor-offers – sponsor offers/deals for user's campaigns (dashboard)
+router.get('/my-sponsor-offers', requireAuth, (req, res) => {
+  try {
+    const rows = db.prepare(`
+      SELECT sd.id, sd.offer_id, sd.campaign_id, sd.status, sd.budget_reserved_cents, sd.spent_cents, sd.created_at,
+             so.name as offer_name, so.watermark_text, so.cpm_cents,
+             c.title as campaign_title
+      FROM sponsor_deals sd
+      JOIN sponsor_offers so ON so.id = sd.offer_id
+      JOIN campaigns c ON c.id = sd.campaign_id
+      WHERE c.owner_id = ?
+      ORDER BY sd.created_at DESC
+    `).all(req.user.id);
+    res.json(rows.map(r => ({
+      id: r.id, offerId: r.offer_id, campaignId: r.campaign_id, campaignTitle: r.campaign_title,
+      offerName: r.offer_name, watermarkText: r.watermark_text, cpmCents: r.cpm_cents,
+      status: r.status, budgetReservedCents: r.budget_reserved_cents,
+      spentCents: r.spent_cents || 0, createdAt: r.created_at,
+    })));
+  } catch (e) {
+    res.json([]);
+  }
+});
+
 // GET /api/campaigns/:id/accounts – linked accounts (creator must own campaign)
 router.get('/:id/accounts', requireAuth, (req, res) => {
   const campaignId = req.params.id;

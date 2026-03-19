@@ -83,6 +83,21 @@
         <a href="new-campaign.html">+ New campaign</a>
       </div>
     </div>
+
+    <div class="dashboard-section">
+      <h2>Sponsorship Offers</h2>
+      <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Offers from sponsors for your campaigns will appear here when you receive them.</p>
+      <div id="sponsorOffersContainer">
+        <div class="empty-state" id="sponsorOffersEmpty">
+          <div class="empty-state-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3>No offers yet</h3>
+          <p>When sponsors want to work with your campaigns, their offers will show up here. Opt in to sponsor offers in your campaign settings to get started.</p>
+        </div>
+        <div id="sponsorOffersList" class="campaign-list" style="display: none;"></div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -157,6 +172,32 @@
         fetch(API_URL + '/campaigns/created', {
           headers: { 'Authorization': 'Bearer ' + token }
         }).then(r => r.ok ? r.json() : []).catch(() => []).then(renderCampaigns);
+      }
+
+      function renderSponsorOffers(offers) {
+        const emptyEl = document.getElementById('sponsorOffersEmpty');
+        const listEl = document.getElementById('sponsorOffersList');
+        if (offers && offers.length > 0) {
+          emptyEl.style.display = 'none';
+          listEl.style.display = 'flex';
+          listEl.innerHTML = '';
+          offers.forEach(o => {
+            const card = document.createElement('a');
+            card.className = 'campaign-card';
+            card.href = 'campaign-track.html?id=' + encodeURIComponent(o.campaignId) + '&name=' + encodeURIComponent(o.campaignTitle || 'Campaign');
+            card.style.textDecoration = 'none';
+            card.style.color = 'inherit';
+            const statusClass = o.status === 'active' ? 'active' : '';
+            card.innerHTML = '<div><h4>' + (o.offerName || 'Offer') + '</h4><span class="meta">' + (o.campaignTitle || 'Campaign') + ' &middot; $' + ((o.budgetReservedCents || 0) / 100).toFixed(2) + ' reserved</span></div><span class="status ' + statusClass + '">' + (o.status || 'pending') + '</span>';
+            listEl.appendChild(card);
+          });
+        }
+      }
+
+      if (!bypass) {
+        fetch(API_URL + '/campaigns/my-sponsor-offers', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        }).then(r => r.ok ? r.json() : []).catch(() => []).then(renderSponsorOffers);
       }
     })();
   </script>

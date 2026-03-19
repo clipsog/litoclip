@@ -6,6 +6,7 @@
     { "source": "/brand-overview", "destination": "/brand-overview.html" },
     { "source": "/sponsor-dashboard", "destination": "/sponsor-dashboard.html" },
     { "source": "/login", "destination": "/login.html" },
-    { "source": "/signup", "destination": "/signup.html" }
+    { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/onboarding", "destination": "/onboarding.html" }
   ]
 }

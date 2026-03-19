@@ -4,20 +4,18 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="assets/logo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Your Profile — LitoClips</title>
+  <title>Complete Your Profile — LitoClips</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
-    /* White theme for onboarding */
     body.onboarding-theme { background: #f8fafc; color: #0f172a; }
     body.onboarding-theme .header { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
     body.onboarding-theme .header .logo-text { color: #0f172a; }
     body.onboarding-theme .nav-links a { color: #475569; }
     body.onboarding-theme .nav-links a:hover { color: #2563eb; }
     body.onboarding-theme .nav-cta { color: #2563eb !important; }
-    body.onboarding-theme .nav-cta:hover { color: #1d4ed8 !important; }
     .onboarding-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
     .onboarding-card { width: 100%; max-width: 480px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
     .onboarding-card h1 { font-size: 24px; margin-bottom: 8px; color: #0f172a; }
@@ -25,10 +23,8 @@
     body.onboarding-theme .form-group label { color: #334155; }
     body.onboarding-theme .form-group input,
     body.onboarding-theme .form-group select { background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; }
-    body.onboarding-theme .form-group input::placeholder { color: #94a3b8; }
     body.onboarding-theme .form-group input:focus,
     body.onboarding-theme .form-group select:focus { background: #ffffff; border-color: #2563eb; }
-    body.onboarding-theme .form-group small { color: #64748b; }
     body.onboarding-theme .form-error { color: #dc2626; }
     .position-other-wrap { display: none; margin-top: 12px; }
     .position-other-wrap.visible { display: block; }
@@ -36,6 +32,7 @@
     .onboarding-footer a { color: #2563eb; text-decoration: none; font-size: 14px; }
     .onboarding-footer a:hover { color: #1d4ed8; text-decoration: underline; }
     body.onboarding-theme .btn-primary { background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; }
+    .google-only .form-group:not(.position-group) { display: none; }
   </style>
 </head>
 <body class="onboarding-theme">
@@ -56,61 +53,61 @@
   </header>
 
   <main class="onboarding-page">
-    <div class="onboarding-card">
-      <h1>Create Your Profile</h1>
-      <p class="subtitle">Tell us who you are—we'll tailor your experience.</p>
+    <div class="onboarding-card" id="onboardingCard">
+      <h1 id="onboardingTitle">Complete Your Profile</h1>
+      <p class="subtitle" id="onboardingSubtitle">Tell us what you are—we'll tailor your experience.</p>
 
       <form id="onboardingForm" class="auth-form">
         <div class="form-row">
           <div class="form-group">
             <label for="firstName">First Name *</label>
-            <input type="text" id="firstName" name="firstName" required placeholder="Jane">
+            <input type="text" id="firstName" name="firstName" placeholder="Jane">
           </div>
           <div class="form-group">
             <label for="lastName">Last Name *</label>
-            <input type="text" id="lastName" name="lastName" required placeholder="Doe">
+            <input type="text" id="lastName" name="lastName" placeholder="Doe">
           </div>
         </div>
         <div class="form-group">
           <label for="email">Email *</label>
-          <input type="email" id="email" name="email" required placeholder="you@example.com">
+          <input type="email" id="email" name="email" placeholder="you@example.com">
         </div>
-        <div class="form-group">
-          <label for="position">Position *</label>
+        <div class="form-group position-group">
+          <label for="position">What are you? *</label>
           <select id="position" name="position" required>
-            <option value="">Select your role...</option>
+            <option value="">Select...</option>
             <option value="artist">Artist</option>
-            <option value="tv">TV Show</option>
+            <option value="content_creator">Content Creator</option>
             <option value="podcast">Podcast</option>
+            <option value="app">App</option>
+            <option value="streamer">Streamer</option>
+            <option value="influencer">Influencer</option>
+            <option value="tv">TV Show</option>
             <option value="manager">Manager</option>
             <option value="ceo">CEO</option>
-            <option value="streamer">Streamer</option>
             <option value="athlete">Athlete</option>
             <option value="label">Label</option>
-            <option value="influencer">Influencer</option>
-            <option value="content_creator">Content Creator</option>
             <option value="agency">Agency</option>
             <option value="publisher">Publisher</option>
             <option value="producer">Producer</option>
             <option value="other">Other</option>
           </select>
           <div id="positionOtherWrap" class="position-other-wrap">
-            <label for="positionOther">Specify your role</label>
+            <label for="positionOther">Specify</label>
             <input type="text" id="positionOther" name="positionOther" placeholder="e.g. Coach, Designer...">
           </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" id="passwordGroup">
           <label for="password">Password *</label>
-          <input type="password" id="password" name="password" required minlength="6" placeholder="At least 6 characters">
-          <small>Must be at least 6 characters</small>
+          <input type="password" id="password" name="password" minlength="6" placeholder="At least 6 characters">
         </div>
         <div class="form-error" id="formError"></div>
-        <button type="submit" class="btn btn-primary btn-full">Create Profile</button>
+        <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Continue</button>
       </form>
 
       <div class="onboarding-footer">
         <p>Already have an account? <a href="login.html" id="toLogin">Sign in</a></p>
-        <p style="margin-top: 12px;"><a href="signup.html">Use simple signup instead</a></p>
+        <p style="margin-top: 12px;"><a href="signup.html" id="toSignup">Use signup instead</a></p>
       </div>
     </div>
   </main>
@@ -118,6 +115,7 @@
   <script>
     (function() {
       const params = new URLSearchParams(window.location.search);
+      const fromGoogle = params.get('from') === 'google';
       const bypass = params.get('bypass') === '1' || params.get('demo') === '1';
       const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:37373/api/auth' : (window.location.origin + '/api/auth');
@@ -127,24 +125,38 @@
       const positionSelect = document.getElementById('position');
       const positionOtherWrap = document.getElementById('positionOtherWrap');
       const positionOtherInput = document.getElementById('positionOther');
+      const passwordGroup = document.getElementById('passwordGroup');
 
-      function applyBypass(firstName, lastName, email, position) {
-        const name = [firstName, lastName].filter(Boolean).join(' ') || 'Demo User';
-        const user = { id: 'bypass-' + Date.now(), name, email: email || 'demo@litoclips.com', userType: 'creator', firstName, lastName, position };
-        localStorage.setItem('token', 'demo-bypass-token');
-        localStorage.setItem('user', JSON.stringify(user));
-        window.location.href = 'brand-overview.html?welcome=1';
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      if (fromGoogle && token && user) {
+        document.getElementById('onboardingCard').classList.add('google-only');
+        document.getElementById('onboardingTitle').textContent = 'One more step';
+        document.getElementById('onboardingSubtitle').textContent = 'Hi ' + (user.name || user.firstName || 'there') + '! What best describes you?';
+        document.getElementById('firstName').value = user.firstName || (user.name ? user.name.split(' ')[0] : '') || '';
+        document.getElementById('lastName').value = user.lastName || (user.name ? user.name.split(' ').slice(1).join(' ') : '') || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('firstName').required = false;
+        document.getElementById('lastName').required = false;
+        document.getElementById('email').required = false;
+        document.getElementById('password').required = false;
+        passwordGroup.style.display = 'none';
       }
 
       if (bypass) {
-        applyBypass('Demo', 'User', 'demo@litoclips.com', 'creator');
+        const user = { id: 'bypass-' + Date.now(), name: 'Demo User', email: 'demo@litoclips.com', userType: 'creator', position: 'content_creator' };
+        localStorage.setItem('token', 'demo-bypass-token');
+        localStorage.setItem('user', JSON.stringify(user));
+        window.location.href = 'brand-overview.html?welcome=1';
         return;
       }
 
-      document.getElementById('bypassLink').addEventListener('click', function(e) {
-        e.preventDefault();
-        applyBypass('Demo', 'User', 'demo@litoclips.com', 'creator');
-      });
+      if (fromGoogle && (!token || !user)) {
+        window.location.href = 'signup.html';
+        return;
+      }
 
       positionSelect.addEventListener('change', function() {
         if (this.value === 'other') {
@@ -160,23 +172,53 @@
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
         formError.textContent = '';
-        const firstName = document.getElementById('firstName').value.trim();
-        const lastName = document.getElementById('lastName').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
         let position = positionSelect.value;
         if (position === 'other') {
           const custom = positionOtherInput.value.trim();
           if (!custom) {
-            formError.textContent = 'Please specify your role.';
+            formError.textContent = 'Please specify.';
             return;
           }
           position = 'other:' + custom;
         }
-        const name = [firstName, lastName].filter(Boolean).join(' ');
 
-        if (bypass) {
-          applyBypass(firstName, lastName, email, position);
+        if (fromGoogle && token) {
+          try {
+            const res = await fetch(API_URL + '/profile', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ position })
+            });
+            if (res.ok) {
+              const u = user || {};
+              u.position = position;
+              localStorage.setItem('user', JSON.stringify(u));
+              const ut = u.userType || localStorage.getItem('userType') || 'creator';
+              const dest = ut === 'sponsor' ? 'sponsor-dashboard.html' : 'brand-overview.html';
+              window.location.href = dest + '?welcome=1';
+            } else {
+              const data = await res.json().catch(() => ({}));
+              formError.textContent = data.error || 'Something went wrong.';
+            }
+          } catch (err) {
+            formError.textContent = 'Connection error. Please try again.';
+          }
+          return;
+        }
+
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        if (!firstName || !lastName || !email || !password) {
+          formError.textContent = 'Please fill in all required fields.';
+          return;
+        }
+        if (password.length < 6) {
+          formError.textContent = 'Password must be at least 6 characters.';
           return;
         }
 
@@ -184,20 +226,24 @@
           const res = await fetch(API_URL + '/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ firstName, lastName, name, email, password, userType: 'creator', position })
+            body: JSON.stringify({
+              firstName, lastName,
+              name: [firstName, lastName].filter(Boolean).join(' '),
+              email, password, userType: 'creator', position
+            })
           });
-          const data = await res.json().catch(function() { return {}; });
+          const data = await res.json().catch(() => ({}));
           if (res.ok) {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
-            const ut = data.user.userType || 'creator';
+            const ut = (data.user && data.user.userType) || 'creator';
             const dest = ut === 'sponsor' ? 'sponsor-dashboard.html' : 'brand-overview.html';
             window.location.href = dest + '?welcome=1';
           } else {
-            formError.textContent = data.error || 'Something went wrong. Please try again.';
+            formError.textContent = data.error || 'Something went wrong.';
           }
         } catch (err) {
-          applyBypass(firstName, lastName, email, position);
+          formError.textContent = 'Connection error. Please try again.';
         }
       });
 
@@ -208,6 +254,10 @@
       document.getElementById('toLogin').addEventListener('click', function(e) {
         e.preventDefault();
         window.location.href = 'login.html';
+      });
+      document.getElementById('toSignup').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = 'signup.html';
       });
     })();
   </script>
