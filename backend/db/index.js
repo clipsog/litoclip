@@ -169,6 +169,76 @@ function migrate() {
     CREATE INDEX IF NOT EXISTS idx_campaign_posts_campaign ON campaign_posts(campaign_id);
     CREATE INDEX IF NOT EXISTS idx_campaign_posts_date ON campaign_posts(post_date);
   `);
+  // Sponsor system
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS sponsor_wallets (
+      user_id TEXT PRIMARY KEY,
+      balance_cents INTEGER DEFAULT 0,
+      total_deposited_cents INTEGER DEFAULT 0,
+      total_spent_cents INTEGER DEFAULT 0,
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+    CREATE TABLE IF NOT EXISTS sponsor_deposits (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      amount_cents INTEGER NOT NULL,
+      status TEXT DEFAULT 'pending',
+      stripe_payment_id TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+    CREATE TABLE IF NOT EXISTS sponsor_offers (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      watermark_text TEXT NOT NULL,
+      cpm_cents INTEGER NOT NULL,
+      budget_cents INTEGER NOT NULL,
+      status TEXT DEFAULT 'active',
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+    CREATE TABLE IF NOT EXISTS sponsor_deals (
+      id TEXT PRIMARY KEY,
+      offer_id TEXT NOT NULL,
+      campaign_id TEXT NOT NULL,
+      status TEXT DEFAULT 'active',
+      budget_reserved_cents INTEGER NOT NULL,
+      spent_cents INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (offer_id) REFERENCES sponsor_offers(id),
+      FOREIGN KEY (campaign_id) REFERENCES campaigns(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_sponsor_deals_campaign ON sponsor_deals(campaign_id);
+    CREATE INDEX IF NOT EXISTS idx_sponsor_deals_offer ON sponsor_deals(offer_id);
+  `);
+  // Campaign sponsor settings
+  try {
+    db.prepare('ALTER TABLE campaigns ADD COLUMN accept_sponsor_offers INTEGER DEFAULT 0').run();
+  } catch (e) {
+    if (!e.message.includes('duplicate column')) throw e;
+  }
+  try {
+    db.prepare('ALTER TABLE campaigns ADD COLUMN allow_watermark INTEGER DEFAULT 0').run();
+  } catch (e) {
+    if (!e.message.includes('duplicate column')) throw e;
+  }
+  try {
+    db.prepare('ALTER TABLE campaigns ADD COLUMN watermark_coupon_percent REAL DEFAULT 0').run();
+  } catch (e) {
+    if (!e.message.includes('duplicate column')) throw e;
+  }
+  try {
+    db.prepare('ALTER TABLE campaign_posts ADD COLUMN sponsor_deal_id TEXT REFERENCES sponsor_deals(id)').run();
+  } catch (e) {
+    if (!e.message.includes('duplicate column')) throw e;
+  }
+  try {
+    db.prepare('ALTER TABLE campaign_posts ADD COLUMN views_sponsor_credited INTEGER DEFAULT 0').run();
+  } catch (e) {
+    if (!e.message.includes('duplicate column')) throw e;
+  }
 }
 
 function ensureSchema() {

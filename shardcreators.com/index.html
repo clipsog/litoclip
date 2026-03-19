@@ -42,8 +42,8 @@
         <span class="logo-text">LitoClips</span>
       </a>
       <nav class="nav-links">
-        <a href="#how-it-works">How It Works</a>
-        <a href="#who-its-for">Who It's For</a>
+        <a href="#who-its-for">How It Works</a>
+        <a href="#sponsors">Sponsors</a>
         <div class="auth-buttons" id="authButtons">
           <a href="#" class="nav-cta" id="signupBtn">Sign Up</a>
           <a href="#" class="nav-cta" id="loginBtn">Login</a>
@@ -100,13 +100,12 @@
       <!-- CTA Buttons -->
       <div class="cta-buttons">
         <a href="#" class="btn btn-primary" id="heroSignupBrand">
-          <span>Start a Campaign</span>
+          <span>Get Started</span>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </a>
-        <a href="#who-its-for" class="btn btn-secondary">Find My Section</a>
-        <a href="brand-overview.html?bypass=1" class="btn btn-secondary" style="opacity: 0.9;">View demo dashboard</a>
+        <a href="signup.html?type=sponsor" class="btn btn-secondary" id="heroSponsorBtn">Become a Sponsor</a>
       </div>
     </div>
 
@@ -120,7 +119,7 @@
       <div class="section-header">
         <span class="section-tag">Who It's For</span>
         <h2 class="section-title">Creators. <em>See Yourself.</em></h2>
-        <p class="section-subtitle">Whatever you make—find your section. See what you'll get. Know who you'll become.</p>
+        <p class="section-subtitle">Upload your content. We turn it into clips and post for you. You can also earn from sponsors directly on our platform.</p>
       </div>
 
       <div class="creator-table-wrap">
@@ -144,28 +143,28 @@
 
       <!-- Self-Serve -->
       <div class="selfserve-section">
-        <h3 class="selfserve-title">Fully Self-Served</h3>
-        <p class="selfserve-subtitle">You're in control. Choose what you need.</p>
+        <h3 class="selfserve-title">How It Works</h3>
+        <p class="selfserve-subtitle">Upload content. Pick platforms and how many accounts. Add the angle or narrative you want. We create the accounts and post for you.</p>
         <div class="selfserve-grid">
           <div class="selfserve-item">
             <span class="selfserve-icon"></span>
-            <h4>Choose Your Platforms</h4>
-            <p>Pick where you want to post—TikTok, YouTube, Instagram, X. We help you choose: each platform has its own usage and audience.</p>
+            <h4>Upload</h4>
+            <p>Add a link to your content (YouTube, drive, etc).</p>
           </div>
           <div class="selfserve-item">
             <span class="selfserve-icon"></span>
-            <h4>Choose Account Count</h4>
-            <p>Decide how many accounts you want to create. Scale up or keep it lean—you control it.</p>
+            <h4>Choose Platforms</h4>
+            <p>TikTok, YouTube, Instagram, X. Pick where you want to post.</p>
           </div>
           <div class="selfserve-item">
             <span class="selfserve-icon"></span>
-            <h4>Set Goals & Angles</h4>
-            <p>Define your current angles and goals. We align our clips to what you're building toward right now.</p>
+            <h4>Set Your Angle</h4>
+            <p>Write the narrative or angle you want for the clips.</p>
           </div>
         </div>
         <div class="selfserve-what-happens">
-          <h4>What happens once you're done</h4>
-          <p>We create the accounts, produce clips from your content, and start posting. You get a live calendar to track every post and view. After week 1, keep it going with one click—or let us auto-charge and run. You stay in control.</p>
+          <h4>What happens next</h4>
+          <p>We create branded accounts and post clips for you. Track every post and view in your calendar. After week 1, pay to keep going or turn on auto-charge.</p>
           <div class="dashboard-preview">
             <p class="dashboard-preview-label">Example of what you'll see</p>
             <div class="dashboard-preview-inner">
@@ -188,13 +187,37 @@
         </div>
       </div>
 
-      <div class="audience-cta" style="margin-top: 48px;">
+      <!-- Sponsors -->
+      <div class="selfserve-section" id="sponsors" style="margin-top: 44px;">
+        <h3 class="selfserve-title">Earn From Sponsors</h3>
+        <p class="selfserve-subtitle">Creators can earn from sponsors directly on our platform. Opt in to get sponsor offers. Allow watermarks and get a discount.</p>
+        <div class="selfserve-grid">
+          <div class="selfserve-item">
+            <span class="selfserve-icon"></span>
+            <h4>For Creators</h4>
+            <p>Opt in to receive sponsor offers. Get paid per view when your posts are sponsored. Allow watermarks and get a coupon off your campaign.</p>
+          </div>
+          <div class="selfserve-item">
+            <span class="selfserve-icon"></span>
+            <h4>For Sponsors</h4>
+            <p>Deposit a budget. Pick campaigns to sponsor. Pay per view. When your budget runs out, sponsorship stops.</p>
+          </div>
+          <div class="selfserve-item" style="display:none;">
+            <span class="selfserve-icon"></span>
+            <h4>Watermarks</h4>
+            <p>Sponsored posts include a sponsor watermark (example: “Clips powered by Gatorade”).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="audience-cta" style="margin-top: 48px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
         <a href="#" class="btn btn-primary" id="brandSignupBtn">
-          <span>Start Your Campaign</span>
+          <span>Get Started</span>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </a>
+        <a href="signup.html?type=sponsor" class="btn btn-secondary">Become a Sponsor</a>
       </div>
     </div>
   </section>
@@ -505,10 +528,17 @@
         if (el) {
           el.addEventListener('click', function(e) {
             e.preventDefault();
-            window.location.href = 'onboarding.html';
+            window.location.href = 'signup.html';
           });
         }
       });
+      const heroSponsorBtn = document.getElementById('heroSponsorBtn');
+      if (heroSponsorBtn) {
+        heroSponsorBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = 'signup.html?type=sponsor';
+        });
+      }
       if (closeBrandModal) closeBrandModal.addEventListener('click', closeBrandModalFn);
       if (brandModal) {
         brandModal.addEventListener('click', function(e) {

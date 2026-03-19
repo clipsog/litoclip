@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sponsor Dashboard — LitoClips</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .sponsor-page { min-height: 100vh; padding: 48px 24px; text-align: center; }
+    .sponsor-page h1 { font-size: 28px; margin-bottom: 16px; }
+    .sponsor-page p { color: rgba(255,255,255,0.7); margin-bottom: 24px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .sponsor-page .btn { margin: 8px; }
+  </style>
+</head>
+<body class="gradient-section-bg">
+  <main class="sponsor-page">
+    <h1>Sponsor Dashboard</h1>
+    <p>Deposit funds, create offers, and sponsor creator campaigns. Full sponsor tools coming soon.</p>
+    <a href="index.html#sponsors" class="btn btn-secondary">Learn about sponsoring</a>
+    <a href="#" class="btn btn-primary" id="logoutBtn">Logout</a>
+  </main>
+  <script>
+    (function() {
+      const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:37373/api/auth' : (window.location.origin + '/api/auth');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'login.html?redirect=sponsor-dashboard.html';
+        return;
+      }
+      document.getElementById('logoutBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userType');
+        window.location.href = 'index.html';
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -239,7 +239,7 @@
       const user = JSON.parse(localStorage.getItem('user') || 'null');
 
       if (!token || !user) {
-        window.location.href = 'onboarding.html' + (window.location.search || '');
+        window.location.href = 'signup.html' + (window.location.search || '');
         return;
       }
       const bypass = token === 'demo-bypass-token';

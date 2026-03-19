@@ -33,6 +33,13 @@ function requireCreator(req, res, next) {
   next();
 }
 
+function requireSponsor(req, res, next) {
+  if (!req.user || req.user.user_type !== 'sponsor') {
+    return res.status(403).json({ error: 'Sponsor access required' });
+  }
+  next();
+}
+
 function requireAdmin(req, res, next) {
   if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
   const withAdmin = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(req.user.id);
@@ -42,4 +49,4 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { optionalAuth, requireAuth, requireCreator, requireAdmin };
+module.exports = { optionalAuth, requireAuth, requireCreator, requireSponsor, requireAdmin };

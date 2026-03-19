@@ -375,7 +375,7 @@ router.post('/campaigns/:id/accounts', (req, res) => {
 router.get('/campaigns/:id/posts', (req, res) => {
   try {
     const rows = db.prepare(`
-      SELECT p.id, p.platform, p.post_url, p.views, p.post_date, p.created_at, a.handle as account_handle
+      SELECT p.id, p.platform, p.post_url, p.views, p.post_date, p.created_at, p.sponsor_deal_id, p.views_sponsor_credited, a.handle as account_handle
       FROM campaign_posts p
       LEFT JOIN campaign_accounts a ON a.id = p.campaign_account_id
       WHERE p.campaign_id = ?
@@ -383,7 +383,8 @@ router.get('/campaigns/:id/posts', (req, res) => {
     `).all(req.params.id);
     res.json(rows.map(r => ({
       id: r.id, platform: r.platform, postUrl: r.post_url, views: r.views || 0,
-      postDate: r.post_date, createdAt: r.created_at, accountHandle: r.account_handle
+      postDate: r.post_date, createdAt: r.created_at, accountHandle: r.account_handle,
+      sponsorDealId: r.sponsor_deal_id || null, viewsSponsorCredited: r.views_sponsor_credited || 0
     })));
   } catch (e) {
     res.json([]);
@@ -392,7 +393,7 @@ router.get('/campaigns/:id/posts', (req, res) => {
 
 // POST /api/admin/campaigns/:id/posts
 router.post('/campaigns/:id/posts', (req, res) => {
-  const { platform, post_url, views, post_date, campaign_account_id } = req.body || {};
+  const { platform, post_url, views, post_date, campaign_account_id, sponsor_deal_id } = req.body || {};
   if (!platform || !post_url || !post_url.trim() || !post_date) {
     return res.status(400).json({ error: 'platform, post_url, and post_date required' });
   }
@@ -400,14 +401,78 @@ router.post('/campaigns/:id/posts', (req, res) => {
   const campaign = db.prepare('SELECT id FROM campaigns WHERE id = ?').get(campaignId);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   const id = uuid();
-  db.prepare(`
-    INSERT INTO campaign_posts (id, campaign_id, campaign_account_id, platform, post_url, views, post_date)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(id, campaignId, campaign_account_id || null, platform.trim().toLowerCase(), post_url.trim(), views || 0, post_date);
+  try {
+    db.prepare(`
+      INSERT INTO campaign_posts (id, campaign_id, campaign_account_id, platform, post_url, views, post_date, sponsor_deal_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(id, campaignId, campaign_account_id || null, platform.trim().toLowerCase(), post_url.trim(), views || 0, post_date, sponsor_deal_id || null);
+  } catch (e) {
+    if (e.message && e.message.includes('sponsor_deal_id')) {
+      db.prepare(`
+        INSERT INTO campaign_posts (id, campaign_id, campaign_account_id, platform, post_url, views, post_date)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(id, campaignId, campaign_account_id || null, platform.trim().toLowerCase(), post_url.trim(), views || 0, post_date);
+    } else throw e;
+  }
   const row = db.prepare('SELECT * FROM campaign_posts WHERE id = ?').get(id);
   res.status(201).json({
     id: row.id, platform: row.platform, postUrl: row.post_url, views: row.views,
-    postDate: row.post_date, accountHandle: row.campaign_account_id ? db.prepare('SELECT handle FROM campaign_accounts WHERE id = ?').get(row.campaign_account_id)?.handle : null
+    postDate: row.post_date, sponsorDealId: row.sponsor_deal_id || null,
+    accountHandle: row.campaign_account_id ? db.prepare('SELECT handle FROM campaign_accounts WHERE id = ?').get(row.campaign_account_id)?.handle : null
+  });
+});
+
+// PATCH /api/admin/campaigns/:cid/posts/:pid – update views (and optionally sponsor_deal_id); runs sponsor CPM payout
+router.patch('/campaigns/:cid/posts/:pid', (req, res) => {
+  const { views, sponsor_deal_id } = req.body || {};
+  const post = db.prepare(`
+    SELECT p.id, p.campaign_id, p.views, p.views_sponsor_credited, p.sponsor_deal_id
+    FROM campaign_posts p WHERE p.id = ? AND p.campaign_id = ?
+  `).get(req.params.pid, req.params.cid);
+  if (!post) return res.status(404).json({ error: 'Post not found' });
+  const dealId = sponsor_deal_id !== undefined ? (sponsor_deal_id || null) : post.sponsor_deal_id;
+  if (sponsor_deal_id !== undefined) {
+    try { db.prepare('UPDATE campaign_posts SET sponsor_deal_id = ? WHERE id = ?').run(dealId, post.id); } catch (_) {}
+  }
+  if (typeof views === 'number' || (typeof views === 'string' && views !== '')) {
+    const newViews = Math.max(0, parseInt(views, 10) || 0);
+    db.prepare('UPDATE campaign_posts SET views = ? WHERE id = ?').run(newViews, post.id);
+    // Sponsor CPM payout when post has a deal
+    if (dealId) {
+      const deal = db.prepare('SELECT sd.*, so.cpm_cents FROM sponsor_deals sd JOIN sponsor_offers so ON so.id = sd.offer_id WHERE sd.id = ?').get(dealId);
+      if (deal && deal.status === 'active' && deal.cpm_cents > 0) {
+        const prevCredited = post.views_sponsor_credited || 0;
+        const deltaViews = Math.max(0, newViews - prevCredited);
+        const remainingBudget = Math.max(0, (deal.budget_reserved_cents || 0) - (deal.spent_cents || 0));
+        const payoutCents = Math.min(Math.floor((deltaViews / 1000) * deal.cpm_cents), remainingBudget);
+        if (payoutCents > 0) {
+          const campaign = db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(post.campaign_id);
+          const creatorId = campaign?.owner_id;
+          const payoutDollars = payoutCents / 100;
+          const newCredited = prevCredited + Math.floor((payoutCents / deal.cpm_cents) * 1000);
+          db.prepare('UPDATE sponsor_deals SET spent_cents = spent_cents + ? WHERE id = ?').run(payoutCents, dealId);
+          db.prepare('UPDATE campaign_posts SET views_sponsor_credited = ? WHERE id = ?').run(newCredited, post.id);
+          db.prepare('UPDATE sponsor_wallets SET total_spent_cents = total_spent_cents + ? WHERE user_id = (SELECT user_id FROM sponsor_offers WHERE id = ?)').run(payoutCents, deal.offer_id);
+          if (creatorId) {
+            const w = db.prepare('SELECT * FROM wallet_balances WHERE user_id = ?').get(creatorId);
+            if (w) {
+              db.prepare('UPDATE wallet_balances SET available_balance = available_balance + ?, total_earnings = total_earnings + ?, updated_at = datetime("now") WHERE user_id = ?').run(payoutDollars, payoutDollars, creatorId);
+            } else {
+              db.prepare('INSERT INTO wallet_balances (user_id, available_balance, total_earnings) VALUES (?, ?, ?)').run(creatorId, payoutDollars, payoutDollars);
+            }
+          }
+          const spent = (deal.spent_cents || 0) + payoutCents;
+          if (spent >= (deal.budget_reserved_cents || 0)) {
+            db.prepare("UPDATE sponsor_deals SET status = 'exhausted' WHERE id = ?").run(dealId);
+          }
+        }
+      }
+    }
+  }
+  const updated = db.prepare('SELECT * FROM campaign_posts WHERE id = ?').get(post.id);
+  res.json({
+    id: updated.id, views: updated.views, postDate: updated.post_date,
+    sponsorDealId: updated.sponsor_deal_id || null, viewsSponsorCredited: updated.views_sponsor_credited || 0
   });
 });
 

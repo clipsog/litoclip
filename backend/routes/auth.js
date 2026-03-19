@@ -24,25 +24,29 @@ router.post('/signup', (req, res) => {
   const id = uuid();
   const referralCode = generateReferralCode();
   const passwordHash = bcrypt.hashSync(password, 10);
+  const ut = ['creator', 'brand', 'sponsor'].includes(userType) ? userType : 'creator';
   const stmt = db.prepare(`
     INSERT INTO users (id, email, password_hash, name, user_type, referral_code, first_name, last_name, position)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   try {
-    stmt.run(id, email, passwordHash, displayName, userType || 'creator', referralCode, firstName || null, lastName || null, position || null);
+    stmt.run(id, email, passwordHash, displayName, ut, referralCode, firstName || null, lastName || null, position || null);
   } catch (e) {
     if (e.message && e.message.includes('no such column')) {
       db.prepare(`
         INSERT INTO users (id, email, password_hash, name, user_type, referral_code)
         VALUES (?, ?, ?, ?, ?, ?)
-      `).run(id, email, passwordHash, displayName, userType || 'creator', referralCode);
+      `).run(id, email, passwordHash, displayName, ut, referralCode);
     } else throw e;
   }
   db.prepare('INSERT OR IGNORE INTO wallet_balances (user_id) VALUES (?)').run(id);
   db.prepare('INSERT OR IGNORE INTO gamification (user_id) VALUES (?)').run(id);
   db.prepare('INSERT OR IGNORE INTO notification_prefs (user_id) VALUES (?)').run(id);
+  if (ut === 'sponsor') {
+    try { db.prepare('INSERT OR IGNORE INTO sponsor_wallets (user_id) VALUES (?)').run(id); } catch (_) {}
+  }
   const token = jwt.sign({ userId: id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-  const user = { id, name: displayName, email, userType: userType || 'creator', referralCode, firstName: firstName || null, lastName: lastName || null, position: position || null };
+  const user = { id, name: displayName, email, userType: ut, referralCode, firstName: firstName || null, lastName: lastName || null, position: position || null };
   res.json({ token, user });
 });
 

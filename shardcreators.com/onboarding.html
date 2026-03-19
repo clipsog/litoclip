@@ -49,8 +49,8 @@
         <a href="index.html#how-it-works">How It Works</a>
         <a href="index.html#who-its-for">Who It's For</a>
         <a href="index.html">Home</a>
-        <a href="onboarding.html" class="nav-cta">Sign Up</a>
-        <a href="#" class="nav-cta" id="loginLink">Login</a>
+        <a href="signup.html" class="nav-cta">Sign Up</a>
+        <a href="login.html" class="nav-cta" id="loginLink">Login</a>
       </nav>
     </div>
   </header>
@@ -109,8 +109,8 @@
       </form>
 
       <div class="onboarding-footer">
-        <p>Already have an account? <a href="index.html" id="toLogin">Sign in</a></p>
-        <p style="margin-top: 12px;"><a href="#" id="bypassLink">Skip to campaign (demo)</a></p>
+        <p>Already have an account? <a href="login.html" id="toLogin">Sign in</a></p>
+        <p style="margin-top: 12px;"><a href="signup.html">Use simple signup instead</a></p>
       </div>
     </div>
   </main>
@@ -190,7 +190,9 @@
           if (res.ok) {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
-            window.location.href = 'brand-overview.html?welcome=1';
+            const ut = data.user.userType || 'creator';
+            const dest = ut === 'brand' ? 'brand-overview.html' : (ut === 'sponsor' ? 'sponsor-dashboard.html' : 'dashboard-creator.html');
+            window.location.href = dest + '?welcome=1';
           } else {
             formError.textContent = data.error || 'Something went wrong. Please try again.';
           }
@@ -201,11 +203,11 @@
 
       document.getElementById('loginLink').addEventListener('click', function(e) {
         e.preventDefault();
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
       });
       document.getElementById('toLogin').addEventListener('click', function(e) {
         e.preventDefault();
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
       });
     })();
   </script>

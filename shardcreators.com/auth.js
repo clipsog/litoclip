@@ -38,10 +38,9 @@ function applyLoginBypass() {
 function getDashboardHref(userType) {
   var u = typeof userType === 'string' ? userType : (JSON.parse(localStorage.getItem('user') || '{}').userType || 'creator');
   var isLocal = window.location.protocol === 'file:' || /localhost|127\.0\.0\.1/.test(window.location.hostname);
-  if (isLocal || isBypassMode()) {
-    return u === 'brand' ? 'brand-overview.html' : 'dashboard-creator.html';
-  }
-  return u === 'brand' ? '/brand-overview' : '/dashboard-creator';
+  if (u === 'brand') return isLocal ? 'brand-overview.html' : '/brand-overview';
+  if (u === 'sponsor') return isLocal ? 'sponsor-dashboard.html' : '/sponsor-dashboard';
+  return isLocal ? 'dashboard-creator.html' : '/dashboard-creator';
 }
 
 // Check if user is logged in on page load
@@ -49,6 +48,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // Skip ALL auth.js functionality on dashboard pages - dashboard.js handles it
   const isDashboardPage = window.location.pathname.includes('dashboard') ||
     window.location.pathname.includes('brand-') ||
+    window.location.pathname.includes('sponsor-dashboard') ||
     window.location.pathname.includes('my-campaigns') ||
     window.location.pathname.includes('browse-campaigns') ||
     window.location.pathname.includes('submissions') ||
@@ -143,14 +143,14 @@ function initAuthHandlers() {
   if (loginBtn) {
     loginBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      openModal(loginModal);
+      window.location.href = 'login.html';
     });
   }
 
   if (signupBtn) {
     signupBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = 'onboarding.html';
+      window.location.href = 'signup.html';
     });
   }
 
@@ -170,7 +170,7 @@ function initAuthHandlers() {
     switchToSignup.addEventListener('click', (e) => {
       e.preventDefault();
       closeModal(loginModal);
-      window.location.href = 'onboarding.html';
+      window.location.href = 'signup.html';
     });
   }
 
@@ -227,7 +227,7 @@ function initAuthHandlers() {
     if (btn) {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        window.location.href = 'onboarding.html';
+        window.location.href = 'signup.html';
       });
     }
   });

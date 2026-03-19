@@ -235,6 +235,58 @@ router.get('/:id/posts', requireAuth, (req, res) => {
   }
 });
 
+// GET /api/campaigns/:id/sponsor-settings – sponsor opt-in (creator, own campaign)
+router.get('/:id/sponsor-settings', requireAuth, (req, res) => {
+  const campaign = db.prepare('SELECT owner_id, accept_sponsor_offers, allow_watermark, watermark_coupon_percent FROM campaigns WHERE id = ?').get(req.params.id);
+  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+  if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+  res.json({
+    acceptSponsorOffers: !!campaign.accept_sponsor_offers,
+    allowWatermark: !!campaign.allow_watermark,
+    watermarkCouponPercent: campaign.watermark_coupon_percent || 0,
+  });
+});
+
+// PUT /api/campaigns/:id/sponsor-settings – update (creator, own campaign)
+router.put('/:id/sponsor-settings', requireAuth, (req, res) => {
+  const { acceptSponsorOffers, allowWatermark, watermarkCouponPercent } = req.body || {};
+  const campaign = db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(req.params.id);
+  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+  if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+  const accept = acceptSponsorOffers === true || acceptSponsorOffers === 1;
+  const allow = allowWatermark === true || allowWatermark === 1;
+  const coupon = Math.min(100, Math.max(0, parseFloat(watermarkCouponPercent) || 0));
+  db.prepare(`
+    UPDATE campaigns SET accept_sponsor_offers = ?, allow_watermark = ?, watermark_coupon_percent = ?
+    WHERE id = ?
+  `).run(accept ? 1 : 0, allow ? 1 : 0, coupon, req.params.id);
+  res.json({ acceptSponsorOffers: accept, allowWatermark: allow, watermarkCouponPercent: coupon });
+});
+
+// GET /api/campaigns/:id/sponsor-deals – list sponsor deals for this campaign (owner only)
+router.get('/:id/sponsor-deals', requireAuth, (req, res) => {
+  const campaign = db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(req.params.id);
+  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+  if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+  try {
+    const rows = db.prepare(`
+      SELECT sd.id, sd.offer_id, sd.status, sd.budget_reserved_cents, sd.spent_cents, sd.created_at,
+             so.name as offer_name, so.watermark_text, so.cpm_cents
+      FROM sponsor_deals sd
+      JOIN sponsor_offers so ON so.id = sd.offer_id
+      WHERE sd.campaign_id = ?
+      ORDER BY sd.created_at DESC
+    `).all(req.params.id);
+    res.json(rows.map(r => ({
+      id: r.id, offerId: r.offer_id, offerName: r.offer_name, watermarkText: r.watermark_text,
+      cpmCents: r.cpm_cents, status: r.status, budgetReservedCents: r.budget_reserved_cents,
+      spentCents: r.spent_cents || 0, createdAt: r.created_at,
+    })));
+  } catch (e) {
+    res.json([]);
+  }
+});
+
 // POST /api/campaigns/:id/join
 router.post('/:id/join', requireAuth, requireCreator, (req, res) => {
   const campaignId = req.params.id;

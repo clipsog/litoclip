@@ -57,11 +57,20 @@ In your Render service, open **Environment** (left sidebar or tab) and add these
 | `STRIPE_PUBLISHABLE_KEY` | Your Stripe publishable key (e.g. `pk_live_...`) | If using Stripe |
 | `STRIPE_WEBHOOK_SECRET` | From Stripe Dashboard → Webhooks → your endpoint → Signing secret | If using Stripe |
 
+**Google sign-in** (add these for "Sign in with Google"):
+
+| Key | Value |
+|-----|-------|
+| `GOOGLE_CLIENT_ID` | From [Google Cloud Console](https://console.cloud.google.com/) → APIs & Credentials → Create OAuth 2.0 Client ID (Web application) |
+| `GOOGLE_CLIENT_SECRET` | From the same OAuth client |
+| `GOOGLE_CALLBACK_URL` | `https://YOUR_DOMAIN/auth/google/callback` — must match the domain where your API is served (e.g. `https://litoclips.com/auth/google/callback` if API is at litoclips.com) |
+
+In Google Cloud Console → APIs & Credentials → your OAuth client → **Authorized redirect URIs**, add the same URL as `GOOGLE_CALLBACK_URL`.
+
 Optional (add when you use them):
 
 - `DATABASE_PATH` — see **Step 4** (SQLite / persistent disk).
 - Discord: `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_CALLBACK_URL` (e.g. `https://YOUR_RENDER_URL/auth/discord/callback`).
-- Google: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`.
 - PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE=live`.
 
 Click **Save Changes** after adding variables.
