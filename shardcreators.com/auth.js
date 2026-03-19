@@ -37,10 +37,9 @@ function applyLoginBypass() {
 }
 function getDashboardHref(userType) {
   var u = typeof userType === 'string' ? userType : (JSON.parse(localStorage.getItem('user') || '{}').userType || 'creator');
-  var isLocal = window.location.protocol === 'file:' || /localhost|127\.0\.0\.1/.test(window.location.hostname);
-  if (u === 'brand') return isLocal ? 'brand-overview.html' : '/brand-overview';
-  if (u === 'sponsor') return isLocal ? 'sponsor-dashboard.html' : '/sponsor-dashboard';
-  return isLocal ? 'dashboard-creator.html' : '/dashboard-creator';
+  if (u === 'brand') return 'brand-overview.html';
+  if (u === 'sponsor') return 'sponsor-dashboard.html';
+  return 'dashboard-creator.html';
 }
 
 // Check if user is logged in on page load
