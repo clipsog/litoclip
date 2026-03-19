@@ -37,9 +37,9 @@ function applyLoginBypass() {
 }
 function getDashboardHref(userType) {
   var u = typeof userType === 'string' ? userType : (JSON.parse(localStorage.getItem('user') || '{}').userType || 'creator');
-  if (u === 'brand') return 'brand-overview.html';
   if (u === 'sponsor') return 'sponsor-dashboard.html';
-  return 'dashboard-creator.html';
+  // Creator and brand both get the dashboard with calendar (brand-overview → campaign-track)
+  return 'brand-overview.html';
 }
 
 // Check if user is logged in on page load

@@ -63,9 +63,8 @@
       if (googleBtn) googleBtn.href = AUTH_BASE + '/auth/google';
 
       function getDashboardHref(userType) {
-        if (userType === 'brand') return 'brand-overview.html';
         if (userType === 'sponsor') return 'sponsor-dashboard.html';
-        return 'dashboard-creator.html';
+        return 'brand-overview.html';
       }
 
       form.addEventListener('submit', async function(e) {

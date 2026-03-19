@@ -191,7 +191,7 @@
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             const ut = data.user.userType || 'creator';
-            const dest = ut === 'brand' ? 'brand-overview.html' : (ut === 'sponsor' ? 'sponsor-dashboard.html' : 'dashboard-creator.html');
+            const dest = ut === 'sponsor' ? 'sponsor-dashboard.html' : 'brand-overview.html';
             window.location.href = dest + '?welcome=1';
           } else {
             formError.textContent = data.error || 'Something went wrong. Please try again.';
