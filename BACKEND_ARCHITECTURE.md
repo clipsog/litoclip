@@ -1,10 +1,10 @@
-# Backend Architecture: Shard Creators (Reference) & Our Implementation
+# Backend Architecture: LitoClips Reference & Our Implementation
 
-This document describes **how Shard Creators structured their backend** (inferred from the frontend) and how **our own backend** is built to replace it.
+This document describes **how the original platform structured its backend** (inferred from the frontend) and how **our backend** is built to support LitoClips.
 
 ---
 
-## 1. How Shard Did It (Inferred Structure)
+## 1. Original Structure (Inferred)
 
 ### 1.1 API Base URL
 - **Landing / auth:** `{origin}/api/auth` (login, signup, logout, me)
@@ -15,8 +15,8 @@ This document describes **how Shard Creators structured their backend** (inferre
 - **Email/password:** POST `/api/auth/login`, POST `/api/auth/signup`, POST `/api/auth/logout`
 - **Session:** JWT in `Authorization: Bearer <token>`; user stored in `localStorage` (user, token, userType)
 - **OAuth:**
-  - **Discord:** Redirect to `https://discord.com/api/oauth2/authorize?client_id=...&redirect_uri=https://shardcreators.com/auth/discord/callback&response_type=code&scope=identify+email`
-  - **Google:** Redirect to `https://accounts.google.com/o/oauth2/v2/auth?client_id=...&redirect_uri=https://shardcreators.com/auth/google/callback&...`
+  - **Discord:** Redirect to `https://discord.com/api/oauth2/authorize?client_id=...&redirect_uri=https://www.litoclips.com/auth/discord/callback&response_type=code&scope=identify+email`
+  - **Google:** Redirect to `https://accounts.google.com/o/oauth2/v2/auth?client_id=...&redirect_uri=https://www.litoclips.com/auth/google/callback&...`
   - Callbacks live on the **server** (`/auth/discord/callback`, `/auth/google/callback`); server exchanges `code` for tokens, creates/updates user, issues JWT.
 - **Profile:** PUT `/api/auth/profile` (name), PUT `/api/auth/email`, PUT `/api/auth/password`, DELETE `/api/auth/account`
 - **Notifications:** GET/PUT `/api/auth/notifications` (preferences)
@@ -73,14 +73,14 @@ This document describes **how Shard Creators structured their backend** (inferre
 ### 1.11 Blog (Optional)
 - GET `/api/articles` (blog page)
 
-### 1.12 External Integrations (What Shard Uses)
+### 1.12 External Integrations
 - **Discord OAuth** – app in Discord Developer Portal; client_id, client_secret, redirect_uri
 - **Google OAuth** – Google Cloud Console; client_id, client_secret, redirect_uri
 - **Payments** – likely PayPal, Wise, bank, crypto (provider APIs or manual processing)
 - **Database** – unknown (Postgres, MySQL, etc.)
-- **Hosting** – app + API on same origin (e.g. shardcreators.com)
+- **Hosting** – app + API on same origin (e.g. litoclips.com)
 
-### 1.13 How Shard Likely Did Admin (Inferred – We Didn’t Clone Admin UI)
+### 1.13 How Admin Was Likely Handled (Inferred – We Didn’t Clone Admin UI)
 We only cloned the **creator** side and landing. Admin/brand tooling was not in the mirror, so this is educated guesswork:
 
 - **Monitoring views**
@@ -93,7 +93,7 @@ We only cloned the **creator** side and landing. Admin/brand tooling was not in 
 
 - **Monitoring brand applications**
   - The landing “I’m a Brand” CTA goes to a **Google Form** (external link), not in-app signup.
-  - So “brand applying” = fill form → someone at Shard reviews → then either manual onboarding (create brand account, create campaign for them) or they get access to a brand dashboard. No in-app brand application flow is visible in the clone.
+  - So “brand applying” = fill form → someone reviews → then either manual onboarding (create brand account, create campaign for them) or they get access to a brand dashboard. No in-app brand application flow is visible in the clone.
 
 - **Other admin tasks**
   - Approve/reject submissions (so submissions have `status`).
@@ -106,7 +106,7 @@ We only cloned the **creator** side and landing. Admin/brand tooling was not in 
 
 ## 2. Our Backend: What We Build
 
-We implement **our own** versions of the above so the rebranded frontend works without Shard’s servers.
+We implement **our own** versions of the above so the LitoClips frontend works.
 
 ### 2.1 Stack
 - **Runtime:** Node.js
@@ -157,10 +157,10 @@ backend/
 - **notifications** – id, userId, type, read, createdAt
 - **affiliate_commissions** – id, referrerId, referredId, amount, status, createdAt
 
-### 2.4 What We Replace vs Shard
-| Piece           | Shard (inferred)     | Ours                          |
+### 2.4 What We Replace
+| Piece           | Original (inferred)  | Ours                          |
 |----------------|----------------------|-------------------------------|
-| API host       | shardcreators.com     | localhost:37373 or your domain |
+| API host       | litoclips.com        | localhost:37373 or your domain |
 | Auth           | Their JWT + OAuth     | Our JWT + our Discord/Google apps |
 | Database       | Unknown               | SQLite (file)                 |
 | Discord/Google | Their client IDs      | Your apps + .env              |
@@ -170,7 +170,7 @@ backend/
 ### 2.5 Frontend Changes for “Our” Backend
 - Frontend already uses `http://localhost:37373/api` when on localhost.
 - OAuth redirect URIs must be set to **your** URLs (e.g. `http://localhost:37373/auth/discord/callback` for dev).
-- Replace any hardcoded `shardcreators.com` OAuth links in the frontend with `/auth/discord` and `/auth/google` (or configurable base URL) so the browser hits your backend, which then redirects to Discord/Google.
+- Replace any hardcoded OAuth links in the frontend with `/auth/discord` and `/auth/google` (or configurable base URL) so the browser hits your backend, which then redirects to Discord/Google.
 
 ---
 
@@ -188,7 +188,7 @@ By implementing the routes and schema above, we replicate this structure with ou
 
 ---
 
-## 4. Our Admin API (Your Backend Only – Nothing from Shard)
+## 4. Our Admin API
 
 Admins are **your** users with `is_admin = 1` in the DB. All admin routes require a valid JWT for a user who is an admin.
 

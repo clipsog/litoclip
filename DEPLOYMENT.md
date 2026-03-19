@@ -32,7 +32,7 @@ The frontend uses `window.location.origin + '/api'` when not on localhost, so it
 
 ### Option A – Backend serves frontend (single process)
 
-1. Set `FRONTEND_PATH` to the path of the frontend folder (e.g. `../shardcreators.com` or absolute path).
+1. Set `FRONTEND_PATH` to the path of the frontend folder (e.g. `../litoclips.com` or absolute path).
 2. Set `FRONTEND_ORIGIN` to your public URL (e.g. `https://litoclips.com`).
 3. Put a reverse proxy (e.g. nginx, Caddy) in front that terminates HTTPS and proxies to Node. Node listens on `PORT` (e.g. 37373); the proxy forwards `https://litoclips.com` and `https://litoclips.com/api` to that port.
 
@@ -40,7 +40,7 @@ Result: one Node process serves both static HTML/JS and the API; same origin, no
 
 ### Option B – Separate static host + API subdomain
 
-1. Serve the `shardcreators.com` folder from your CDN or static host at `https://litoclips.com`.
+1. Serve the `litoclips.com` folder from your CDN or static host at `https://litoclips.com`.
 2. Expose the API at e.g. `https://api.litoclips.com`.
 3. Set `FRONTEND_ORIGIN=https://litoclips.com`.
 4. **Frontend change:** the current code uses `window.location.origin + '/api'`, which would point to `https://litoclips.com/api` (wrong). You’d need to point the frontend to `https://api.litoclips.com/api` (e.g. via a single config value or build-time env like `VITE_API_URL` or a small `config.js` loaded from the static site). Option A avoids this.
@@ -89,8 +89,8 @@ JWT_SECRET=<generate with: openssl rand -base64 32>
 FRONTEND_ORIGIN=https://litoclips.com
 DATABASE_PATH=/var/data/litoclips/data.db
 
-# Optional: serve frontend from backend (use path to shardcreators.com)
-FRONTEND_PATH=../shardcreators.com
+# Optional: serve frontend from backend (use path to litoclips.com)
+FRONTEND_PATH=../litoclips.com
 
 # OAuth – use production callback URLs
 DISCORD_CALLBACK_URL=https://litoclips.com/auth/discord/callback

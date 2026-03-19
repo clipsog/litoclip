@@ -34,7 +34,7 @@ This is the **best fit** for your current setup.
 
 1. Go to [vercel.com](https://vercel.com) → **Add New** → **Project**
 2. Import your repo (`clipsog/litoclip`)
-3. **Root Directory:** set to `shardcreators.com`
+3. **Root Directory:** set to `litoclips.com`
 4. **Framework Preset:** Other (static)
 5. **Build Command:** leave empty (static site)
 6. **Output Directory:** leave empty or `.`
@@ -46,7 +46,7 @@ This is the **best fit** for your current setup.
 - Point your DNS to Vercel (they’ll show the CNAME)
 
 ### API proxy
-Add to `shardcreators.com/vercel.json` (already done):
+Add to `litoclips.com/vercel.json` (already done):
 
 ```json
 {
@@ -62,7 +62,7 @@ Add to `shardcreators.com/vercel.json` (already done):
 }
 ```
 
-**Important:** The proxy uses `litoclip.onrender.com` (from the Render service name). If your service has a different URL, update it in both `vercel.json` and `shardcreators.com/vercel.json`.
+**Important:** The proxy uses `litoclip.onrender.com` (from the Render service name). If your service has a different URL, update it in both `vercel.json` and `litoclips.com/vercel.json`.
 
 ---
 
@@ -91,7 +91,7 @@ If you want a single service:
 1. Change Render **Root Directory** to `.` (project root)
 2. **Build Command:** `cd backend && npm install`
 3. **Start Command:** `cd backend && npm start`
-4. Add env: `FRONTEND_PATH=../shardcreators.com`
+4. Add env: `FRONTEND_PATH=../litoclips.com`
 5. Backend will serve static files and API from the same origin
 
 **Downside:** Frontend goes through Node; no CDN for static assets.

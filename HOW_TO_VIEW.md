@@ -4,8 +4,8 @@ You can see the full site and dashboard without setting up Discord or Google OAu
 
 ## 1. View the marketing site
 
-- Open **`shardcreators.com/index.html`** in your browser (double-click or use “Open with”).
-- Or serve the folder (e.g. VS Code Live Server on `shardcreators.com`) and open the root URL.
+- Open **`litoclips.com/index.html`** in your browser (double-click or use “Open with”).
+- Or serve the folder (e.g. VS Code Live Server on `litoclips.com`) and open the root URL.
 
 ## 2. Preview as a logged-in creator (no backend)
 
@@ -41,6 +41,6 @@ You can see the full site and dashboard without setting up Discord or Google OAu
 
 | What you want              | What to do                                              |
 |---------------------------|---------------------------------------------------------|
-| See the marketing pages   | Open `index.html` or serve `shardcreators.com`.         |
+| See the marketing pages   | Open `index.html` or serve `litoclips.com`.         |
 | See dashboard (no API)    | Use “Preview without login” or `index.html?bypass=1`.    |
 | Real login + data + admin | Run backend, sign up, optionally set admin, use `admin.html`. |

@@ -12,7 +12,7 @@ module.exports = {
   port: parseInt(process.env.PORT || '37373', 10),
   nodeEnv,
   frontendOrigin: process.env.FRONTEND_ORIGIN || 'http://localhost:5500',
-  /** When set (e.g. path to shardcreators.com), backend serves frontend so API and site are same-origin */
+  /** When set (e.g. path to litoclips.com), backend serves frontend so API and site are same-origin */
   frontendPath: process.env.FRONTEND_PATH || null,
   jwt: {
     secret: jwtSecret,

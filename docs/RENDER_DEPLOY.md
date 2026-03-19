@@ -8,11 +8,11 @@ Step-by-step guide to get your backend running on [Render](https://render.com) f
 
 Render deploys from Git. If you haven’t already:
 
-1. Create a new repo on GitHub (e.g. `litoclips` or `shardcreators-clone`).
+1. Create a new repo on GitHub (e.g. `litoclips` or `litoclips`).
 2. From your project folder:
 
    ```bash
-   cd /path/to/shardcreators-clone
+   cd /path/to/litoclips
    git init
    git add .
    git commit -m "Initial commit"
@@ -113,7 +113,7 @@ Your frontend at **litoclips.com** must call the API. You can either put the API
 
 1. **Host the frontend and proxy to Render:**  
    Use a host that can serve static files and reverse-proxy (e.g. **Vercel**, **Netlify**, or a VPS with nginx):
-   - **Static site** at `https://litoclips.com` from the `shardcreators.com` folder.
+   - **Static site** at `https://litoclips.com` from the `litoclips.com` folder.
    - **Proxy** `https://litoclips.com/api` (and `/auth`) to `https://litoclips-backend.onrender.com`.
 2. In Render, add a **custom domain**: `litoclips.com` (or e.g. `api.litoclips.com` — see Option B).
 3. On your DNS/host, point the chosen hostname to Render (CNAME or A record as Render instructs).

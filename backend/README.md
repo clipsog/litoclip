@@ -20,7 +20,7 @@ Server runs at **http://localhost:37373**. The frontend is already configured to
 ## Serving the frontend
 
 1. **Option A – VS Code Live Server / similar**  
-   Serve the `shardcreators.com` folder (or parent) at e.g. `http://localhost:5500`.  
+   Serve the `litoclips.com` folder (or parent) at e.g. `http://localhost:5500`.  
    Set in `.env`: `FRONTEND_ORIGIN=http://localhost:5500`.
 
 2. **Option B – Same origin**  
@@ -35,8 +35,8 @@ After OAuth login, the backend redirects to `FRONTEND_ORIGIN?token=...`. Your fr
 
 Update the **frontend** login/signup links so they point to your backend in dev, e.g.:
 
-- `http://localhost:37373/auth/discord` instead of `https://discord.com/...&redirect_uri=...shardcreators.com...`
-- `http://localhost:37373/auth/google` instead of `https://accounts.google.com/...&redirect_uri=...shardcreators.com...`
+- `http://localhost:37373/auth/discord` instead of `https://discord.com/...&redirect_uri=...litoclips.com...`
+- `http://localhost:37373/auth/google` instead of `https://accounts.google.com/...&redirect_uri=...litoclips.com...`
 
 So when the user clicks “Continue with Discord/Google”, they go to your backend, which redirects to Discord/Google and then back to your callback, which issues a JWT and redirects to the frontend with `?token=...`.
 
