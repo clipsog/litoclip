@@ -80,7 +80,11 @@
       const AUTH_BASE = isLocal ? 'http://localhost:37373' : window.location.origin;
       const form = document.getElementById('signupForm');
       const googleBtn = document.getElementById('googleSignupBtn');
-      if (googleBtn) googleBtn.href = AUTH_BASE + '/auth/google';
+      function updateGoogleHref() {
+        const role = (form.querySelector('input[name="userType"]:checked') || {}).value || 'creator';
+        if (googleBtn) googleBtn.href = AUTH_BASE + '/auth/google?state=' + encodeURIComponent(role);
+      }
+      updateGoogleHref();
       const formError = document.getElementById('formError');
       const params = new URLSearchParams(window.location.search);
       if (params.get('error')) {
@@ -95,6 +99,7 @@
           tabs.forEach(function(t) { t.classList.remove('selected'); });
           tab.classList.add('selected');
           tab.querySelector('input').checked = true;
+          updateGoogleHref();
         });
       });
 
@@ -111,6 +116,7 @@
           t.classList.toggle('selected', t.dataset.value === typeParam);
           t.querySelector('input').checked = (t.dataset.value === typeParam);
         });
+        updateGoogleHref();
       }
 
       form.addEventListener('submit', async function(e) {

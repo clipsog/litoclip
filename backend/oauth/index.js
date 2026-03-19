@@ -94,13 +94,16 @@ router.get('/discord/callback', (req, res, next) => {
       return res.redirect(`${config.frontendOrigin}?error=${msg}`);
     }
     const token = jwt.sign({ userId: user.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-    res.redirect(`${config.frontendOrigin}?token=${token}&name=${encodeURIComponent(user.name)}`);
+    const userType = user.userType || 'creator';
+    const base = (config.frontendOrigin || '').replace(/\/$/, '');
+    res.redirect(`${base}/index.html?token=${token}&userType=${userType}`);
   })(req, res, next);
 });
 
 router.get('/google', (req, res, next) => {
   if (!config.google.clientID) return res.redirect(`${config.frontendOrigin}?error=google_not_configured`);
-  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  const state = ['creator', 'brand', 'sponsor'].includes(req.query.state) ? req.query.state : 'creator';
+  passport.authenticate('google', { scope: ['profile', 'email'], state })(req, res, next);
 });
 
 router.get('/google/callback', (req, res, next) => {
@@ -111,8 +114,21 @@ router.get('/google/callback', (req, res, next) => {
       const msg = (info && info.message) || 'google_failed';
       return res.redirect(`${config.frontendOrigin}?error=${msg}`);
     }
+    const state = ['creator', 'brand', 'sponsor'].includes(req.query.state) ? req.query.state : null;
+    if (state) {
+      const row = db.prepare('SELECT password_hash, user_type FROM users WHERE id = ?').get(user.id);
+      if (row && (!row.password_hash || row.password_hash === '') && row.user_type === 'creator') {
+        db.prepare('UPDATE users SET user_type = ? WHERE id = ?').run(state, user.id);
+        user.userType = state;
+        if (state === 'sponsor') {
+          try { db.prepare('INSERT OR IGNORE INTO sponsor_wallets (user_id) VALUES (?)').run(user.id); } catch (_) {}
+        }
+      }
+    }
     const token = jwt.sign({ userId: user.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-    res.redirect(`${config.frontendOrigin}?token=${token}&name=${encodeURIComponent(user.name)}`);
+    const userType = user.userType || 'creator';
+    const base = (config.frontendOrigin || '').replace(/\/$/, '');
+    res.redirect(`${base}/index.html?token=${token}&userType=${userType}`);
   })(req, res, next);
 });
 

@@ -64,20 +64,28 @@ window.addEventListener('DOMContentLoaded', () => {
   // OAuth callback: if URL has ?token=..., store it and redirect to dashboard
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get('token');
+  const urlUserType = urlParams.get('userType');
   if (token) {
     localStorage.setItem('token', token);
-    fetch(`${API_URL}/me`, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(r => r.ok ? r.json() : null)
-      .then(user => {
-        if (user) {
-          localStorage.setItem('user', JSON.stringify(user));
-          localStorage.setItem('userType', user.userType || 'creator');
-          window.location.replace(user.userType === 'brand' ? getDashboardHref('brand') : getDashboardHref('creator'));
-        } else {
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      })
-      .catch(() => { window.history.replaceState({}, document.title, window.location.pathname); });
+    const userType = ['creator', 'brand', 'sponsor'].includes(urlUserType) ? urlUserType : null;
+    if (userType) {
+      localStorage.setItem('userType', userType);
+      localStorage.setItem('user', JSON.stringify({ userType }));
+      window.location.replace(getDashboardHref(userType));
+    } else {
+      fetch(`${API_URL}/me`, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.ok ? r.json() : null)
+        .then(user => {
+          if (user) {
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('userType', user.userType || 'creator');
+            window.location.replace(getDashboardHref(user.userType));
+          } else {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        })
+        .catch(() => { window.history.replaceState({}, document.title, window.location.pathname); });
+    }
     return;
   }
   
