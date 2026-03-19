@@ -35,6 +35,10 @@ if (config.frontendPath) {
   const frontendDir = path.isAbsolute(config.frontendPath)
     ? config.frontendPath
     : path.join(__dirname, config.frontendPath);
+  // Redirect clean URLs to .html (fixes Cannot GET /dashboard-creator etc)
+  ['/dashboard-creator', '/brand-overview', '/sponsor-dashboard', '/login', '/signup'].forEach(route => {
+    app.get(route, (req, res) => res.redirect(302, route + '.html'));
+  });
   app.use(express.static(frontendDir));
 }
 

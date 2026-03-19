@@ -132,7 +132,7 @@
         if (window.history.length > 1) {
           window.history.back();
         } else {
-          const dashboardUrl = lastUrl.split('#')[0] || '/dashboard-creator';
+          const dashboardUrl = lastUrl.split('#')[0] || 'dashboard-creator.html';
           window.location.replace(dashboardUrl);
         }
       } catch (e) {
