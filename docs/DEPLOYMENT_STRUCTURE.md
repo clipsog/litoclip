@@ -13,7 +13,7 @@ This is the **best fit** for your current setup.
          │  /api/*  and  /auth/*  → proxied to Render
          ▼
 ┌─────────────────────────────────────────────────────────┐
-│  Render (litoclips-backend)                             │
+│  Render (litoclip)                                      │
 │  Node/Express: API, OAuth, database                     │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -62,7 +62,7 @@ Add to `shardcreators.com/vercel.json` (already done):
 }
 ```
 
-**Important:** Update the Render URL in `vercel.json` if your service has a different URL. Find it in **Render Dashboard** → your service → the URL shown (e.g. `https://litoclips-backend-xyz.onrender.com`). Replace `litoclips-backend.onrender.com` in both `vercel.json` (project root) and `shardcreators.com/vercel.json` with your actual URL.
+**Important:** The proxy uses `litoclip.onrender.com` (from the Render service name). If your service has a different URL, update it in both `vercel.json` and `shardcreators.com/vercel.json`.
 
 ---
 
