@@ -4,9 +4,12 @@ const jwt = require('jsonwebtoken');
 const { v4: uuid } = require('uuid');
 const config = require('../config');
 const { db } = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { optionalAuth, requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Parse JWT and set req.user for protected routes
+router.use(optionalAuth);
 
 function generateReferralCode() {
   return 'REF' + Math.random().toString(36).slice(2, 10).toUpperCase();

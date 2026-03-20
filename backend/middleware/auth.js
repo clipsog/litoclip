@@ -4,7 +4,9 @@ const { db } = require('../db');
 
 function optionalAuth(req, res, next) {
   const auth = req.headers.authorization;
-  const token = auth && auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  const xToken = req.headers['x-auth-token'];
+  let token = auth && auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token && xToken) token = xToken;
   if (!token) {
     req.user = null;
     return next();

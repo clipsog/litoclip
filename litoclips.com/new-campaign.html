@@ -156,9 +156,11 @@
                 <option value="youtube">YouTube</option>
               </select>
             </div>
-            <div class="field">
+            <div class="field content-field">
               <label style="display:flex;align-items:center;gap:6px;">Content (add links) <button type="button" class="btn-platform-guide content-guide-btn" data-content-guide title="YouTube, Google Drive, Dropbox, etc.">i</button></label>
               <input type="url" name="content_0" placeholder="https://..." required>
+              <label class="narrative-label">Narrative / angle</label>
+              <input type="text" name="narrative_0" placeholder="e.g. The angle or story for your clips..." class="narrative-input">
               <div class="content-guide-wrap" id="contentGuideWrap" style="display:none;">
                 <p>Add a link to your content. We accept:</p>
                 <ul>
@@ -229,6 +231,8 @@
     .content-guide-wrap p { margin: 0 0 8px 0; }
     .content-guide-wrap ul { margin: 0; padding-left: 20px; }
     .content-guide-wrap li { margin: 4px 0; }
+    .content-field .narrative-label { display: block; margin-top: 10px; font-size: 13px; color: #64748b; }
+    .content-field .narrative-input { margin-top: 4px; width: 100%; min-width: 160px; }
   </style>
 
   <script>
@@ -309,7 +313,7 @@
         const row = document.createElement('div');
         row.className = 'platform-row';
         row.dataset.row = index;
-        row.innerHTML = '<div class="field"><label>Platform</label><select name="platform_' + index + '" required><option value="">Select...</option><option value="tiktok">TikTok</option><option value="instagram">Instagram</option><option value="x">X (Twitter)</option><option value="youtube">YouTube</option></select></div><div class="field"><label style="display:flex;align-items:center;gap:6px;">Content (add links) <button type="button" class="btn-platform-guide content-guide-btn" data-content-guide title="YouTube, Google Drive, Dropbox, etc.">i</button></label><input type="url" name="content_' + index + '" placeholder="https://..." required><div class="content-guide-wrap" style="display:none;"><p>Add a link to your content. We accept: <strong>YouTube</strong>, <strong>Google Drive</strong>, <strong>Dropbox</strong>, or any publicly accessible URL.</p></div></div><div class="field"><label>Goal</label><select name="goal_' + index + '"><option value="">Select...</option><option value="awareness">Awareness</option><option value="brand_deals">Brand deals</option><option value="sales">Sales / traffic</option><option value="narrative">Narrative</option><option value="pr">PR</option></select></div><div class="field"><label># accounts</label><input type="number" name="num_accounts_' + index + '" min="1" max="50" value="1" data-price-target></div><div class="field"><label title="Month 2+">Posts/day (mo. 2+)</label><input type="number" name="posts_per_day_' + index + '" min="3" max="10" value="3" data-posts-per-day style="width:70px;"></div><div class="field price-display"><label>&nbsp;</label><span class="price-value" data-price="' + index + '">$0</span><span class="muted" data-price-note></span></div><div class="field"><label>&nbsp;</label><div style="display:flex;align-items:center;gap:8px;"><button type="button" class="btn-generate" data-generate>Generate accounts</button><button type="button" class="btn-remove-row" data-remove title="Remove row" style="font-size:18px;line-height:1;">&times;</button></div></div>';
+        row.innerHTML = '<div class="field"><label>Platform</label><select name="platform_' + index + '" required><option value="">Select...</option><option value="tiktok">TikTok</option><option value="instagram">Instagram</option><option value="x">X (Twitter)</option><option value="youtube">YouTube</option></select></div><div class="field content-field"><label style="display:flex;align-items:center;gap:6px;">Content (add links) <button type="button" class="btn-platform-guide content-guide-btn" data-content-guide title="YouTube, Google Drive, Dropbox, etc.">i</button></label><input type="url" name="content_' + index + '" placeholder="https://..." required><label class="narrative-label">Narrative / angle</label><input type="text" name="narrative_' + index + '" placeholder="e.g. The angle or story for your clips..." class="narrative-input"><div class="content-guide-wrap" style="display:none;"><p>Add a link to your content. We accept: <strong>YouTube</strong>, <strong>Google Drive</strong>, <strong>Dropbox</strong>, or any publicly accessible URL.</p></div></div><div class="field"><label>Goal</label><select name="goal_' + index + '"><option value="">Select...</option><option value="awareness">Awareness</option><option value="brand_deals">Brand deals</option><option value="sales">Sales / traffic</option><option value="narrative">Narrative</option><option value="pr">PR</option></select></div><div class="field"><label># accounts</label><input type="number" name="num_accounts_' + index + '" min="1" max="50" value="1" data-price-target></div><div class="field"><label title="Month 2+">Posts/day (mo. 2+)</label><input type="number" name="posts_per_day_' + index + '" min="3" max="10" value="3" data-posts-per-day style="width:70px;"></div><div class="field price-display"><label>&nbsp;</label><span class="price-value" data-price="' + index + '">$0</span><span class="muted" data-price-note></span></div><div class="field"><label>&nbsp;</label><div style="display:flex;align-items:center;gap:8px;"><button type="button" class="btn-generate" data-generate>Generate accounts</button><button type="button" class="btn-remove-row" data-remove title="Remove row" style="font-size:18px;line-height:1;">&times;</button></div></div>';
         row.querySelector('input[data-price-target]').addEventListener('input', function() { updateRowPrice(row); });
         row.querySelector('input[data-posts-per-day]').addEventListener('input', function() { updateRowPrice(row); });
         row.querySelector('[data-generate]').addEventListener('click', function() { doPay(row); });
@@ -346,6 +350,7 @@
         }
         const platform = row.querySelector('select[name^="platform_"]')?.value;
         const content = row.querySelector('input[name^="content_"]')?.value?.trim();
+        const narrative = row.querySelector('input[name^="narrative_"]')?.value?.trim();
         const goal = row.querySelector('select[name^="goal_"]')?.value;
         const numAccounts = parseInt(row.querySelector('input[name^="num_accounts_"]')?.value, 10) || 0;
         if (!platform || !content) {
@@ -357,6 +362,7 @@
           title,
           platform,
           content_link: content,
+          description: narrative || undefined,
           goal,
           num_accounts: numAccounts,
           posts_per_day: postsPerDay,
