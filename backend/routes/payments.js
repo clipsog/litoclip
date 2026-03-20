@@ -66,12 +66,12 @@ router.post('/create', requireAuth, async (req, res) => {
   const amount = parseInt(amountCents, 10);
   const curr = (currency || 'usd').toLowerCase();
 
-  const campaign = db.prepare('SELECT id, title, owner_id FROM campaigns WHERE id = ?').get(campaignId);
+  const campaign = await db.prepare('SELECT id, title, owner_id FROM campaigns WHERE id = ?').get(campaignId);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
 
   const paymentId = uuid();
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO payments (id, campaign_id, user_id, amount_cents, currency, payment_method, status)
     VALUES (?, ?, ?, ?, ?, ?, 'pending')
   `).run(paymentId, campaignId, req.user.id, amount, curr, method);
@@ -97,7 +97,7 @@ router.post('/create', requireAuth, async (req, res) => {
         client_reference_id: paymentId,
         metadata: { campaign_id: campaignId, payment_id: paymentId },
       });
-      db.prepare('UPDATE payments SET stripe_checkout_session_id = ? WHERE id = ?').run(session.id, paymentId);
+      await db.prepare('UPDATE payments SET stripe_checkout_session_id = ? WHERE id = ?').run(session.id, paymentId);
       return res.json({
         paymentId,
         method: 'stripe',
@@ -108,7 +108,7 @@ router.post('/create', requireAuth, async (req, res) => {
 
     if (method === 'paypal' && config.paypal.clientId) {
       const order = await createPayPalOrder(amount, curr, campaign.title, paymentId);
-      db.prepare('UPDATE payments SET paypal_order_id = ? WHERE id = ?').run(order.id, paymentId);
+      await db.prepare('UPDATE payments SET paypal_order_id = ? WHERE id = ?').run(order.id, paymentId);
       const approveLink = order.links?.find(l => l.rel === 'approve')?.href;
       return res.json({
         paymentId,
@@ -127,7 +127,7 @@ router.post('/create', requireAuth, async (req, res) => {
         return res.status(400).json({ error: 'Crypto payment not configured' });
       }
       const amountUsd = (amount / 100).toFixed(2);
-      db.prepare(`
+      await db.prepare(`
         UPDATE payments SET
           crypto_address = ?,
           crypto_amount = ?,
@@ -150,7 +150,7 @@ router.post('/create', requireAuth, async (req, res) => {
 
     return res.status(400).json({ error: 'Invalid payment method or not configured' });
   } catch (err) {
-    db.prepare('UPDATE payments SET status = ? WHERE id = ?').run('failed', paymentId);
+    await db.prepare('UPDATE payments SET status = ? WHERE id = ?').run('failed', paymentId);
     throw err;
   }
 });
@@ -159,7 +159,7 @@ router.post('/create', requireAuth, async (req, res) => {
 router.post('/paypal-capture', requireAuth, async (req, res) => {
   const { orderId, paymentId } = req.body || {};
   if (!orderId || !paymentId) return res.status(400).json({ error: 'orderId and paymentId required' });
-  const payment = db.prepare('SELECT * FROM payments WHERE id = ? AND user_id = ?').get(paymentId, req.user.id);
+  const payment = await db.prepare('SELECT * FROM payments WHERE id = ? AND user_id = ?').get(paymentId, req.user.id);
   if (!payment) return res.status(404).json({ error: 'Payment not found' });
   if (payment.status === 'paid') return res.json({ ok: true, alreadyPaid: true });
 
@@ -173,18 +173,18 @@ router.post('/paypal-capture', requireAuth, async (req, res) => {
   if (!captureRes.ok) return res.status(400).json({ error: data.message || 'PayPal capture failed' });
 
   const captureId = data.purchase_units?.[0]?.payments?.captures?.[0]?.id;
-  db.prepare(`
+  await db.prepare(`
     UPDATE payments SET status = ?, paid_at = datetime("now"), paypal_capture_id = ?
     WHERE id = ?
   `).run('paid', captureId || null, paymentId);
-  db.prepare('UPDATE campaigns SET status = ?, payment_status = ? WHERE id = ?').run('active', 'paid', payment.campaign_id);
+  await db.prepare('UPDATE campaigns SET status = ?, payment_status = ? WHERE id = ?').run('active', 'paid', payment.campaign_id);
   try {
-    db.prepare('UPDATE campaigns SET started_at = datetime("now") WHERE id = ? AND (started_at IS NULL OR started_at = "")').run(payment.campaign_id);
+    await db.prepare('UPDATE campaigns SET started_at = datetime("now") WHERE id = ? AND (started_at IS NULL OR started_at = "")').run(payment.campaign_id);
   } catch (_) {}
-  const campaign = db.prepare('SELECT title FROM campaigns WHERE id = ?').get(payment.campaign_id);
-  const owner = db.prepare('SELECT name, email FROM users WHERE id = ?').get(payment.user_id);
+  const campaign = await db.prepare('SELECT title FROM campaigns WHERE id = ?').get(payment.campaign_id);
+  const owner = await db.prepare('SELECT name, email FROM users WHERE id = ?').get(payment.user_id);
   try {
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO admin_alerts (id, type, entity_type, entity_id, title, message, read)
       VALUES (?, 'campaign_paid', 'campaign', ?, ?, ?, 0)
     `).run(
@@ -209,8 +209,8 @@ router.get('/config', (req, res) => {
 });
 
 // GET /api/payments/:id – get payment status
-router.get('/:id', requireAuth, (req, res) => {
-  const row = db.prepare('SELECT * FROM payments WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
+router.get('/:id', requireAuth, async (req, res) => {
+  const row = await db.prepare('SELECT * FROM payments WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
   if (!row) return res.status(404).json({ error: 'Not found' });
   res.json({
     id: row.id,

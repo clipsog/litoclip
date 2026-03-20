@@ -8,56 +8,52 @@ const { optionalAuth, requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Parse JWT and set req.user for protected routes
 router.use(optionalAuth);
 
 function generateReferralCode() {
   return 'REF' + Math.random().toString(36).slice(2, 10).toUpperCase();
 }
 
-// POST /api/auth/signup
-router.post('/signup', (req, res) => {
+router.post('/signup', async (req, res) => {
   const { name, email, password, userType, firstName, lastName, position } = req.body || {};
   const displayName = [firstName, lastName].filter(Boolean).join(' ') || name || '';
   if (!displayName || !email || !password) {
     return res.status(400).json({ error: 'Name, email and password required' });
   }
-  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+  const existing = await db.prepare('SELECT id FROM users WHERE email = ?').get(email);
   if (existing) return res.status(400).json({ error: 'Email already registered' });
   const id = uuid();
   const referralCode = generateReferralCode();
   const passwordHash = bcrypt.hashSync(password, 10);
   const ut = ['creator', 'brand', 'sponsor'].includes(userType) ? userType : 'creator';
-  const stmt = db.prepare(`
-    INSERT INTO users (id, email, password_hash, name, user_type, referral_code, first_name, last_name, position)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
   try {
-    stmt.run(id, email, passwordHash, displayName, ut, referralCode, firstName || null, lastName || null, position || null);
+    await db.prepare(`
+    INSERT INTO users (id, email, password_hash, name, user_type, referral_code, first_name, last_name, user_position)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(id, email, passwordHash, displayName, ut, referralCode, firstName || null, lastName || null, position || null);
   } catch (e) {
     if (e.message && e.message.includes('no such column')) {
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO users (id, email, password_hash, name, user_type, referral_code)
         VALUES (?, ?, ?, ?, ?, ?)
       `).run(id, email, passwordHash, displayName, ut, referralCode);
     } else throw e;
   }
-  db.prepare('INSERT OR IGNORE INTO wallet_balances (user_id) VALUES (?)').run(id);
-  db.prepare('INSERT OR IGNORE INTO gamification (user_id) VALUES (?)').run(id);
-  db.prepare('INSERT OR IGNORE INTO notification_prefs (user_id) VALUES (?)').run(id);
+  await db.prepare('INSERT OR IGNORE INTO wallet_balances (user_id) VALUES (?)').run(id);
+  await db.prepare('INSERT OR IGNORE INTO gamification (user_id) VALUES (?)').run(id);
+  await db.prepare('INSERT OR IGNORE INTO notification_prefs (user_id) VALUES (?)').run(id);
   if (ut === 'sponsor') {
-    try { db.prepare('INSERT OR IGNORE INTO sponsor_wallets (user_id) VALUES (?)').run(id); } catch (_) {}
+    try { await db.prepare('INSERT OR IGNORE INTO sponsor_wallets (user_id) VALUES (?)').run(id); } catch (_) {}
   }
   const token = jwt.sign({ userId: id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
   const user = { id, name: displayName, email, userType: ut, referralCode, firstName: firstName || null, lastName: lastName || null, position: position || null };
   res.json({ token, user });
 });
 
-// POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-  const row = db.prepare('SELECT id, password_hash, name, email, user_type, referral_code FROM users WHERE email = ?').get(email);
+  const row = await db.prepare('SELECT id, password_hash, name, email, user_type, referral_code FROM users WHERE email = ?').get(email);
   if (!row || !bcrypt.compareSync(password, row.password_hash || '')) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
@@ -66,18 +62,16 @@ router.post('/login', (req, res) => {
   res.json({ token, user });
 });
 
-// POST /api/auth/logout (optional: blacklist token; we don't)
 router.post('/logout', (req, res) => {
   res.json({ ok: true });
 });
 
-// GET /api/auth/me
-router.get('/me', requireAuth, (req, res) => {
+router.get('/me', requireAuth, async (req, res) => {
   const u = req.user;
-  const full = db.prepare('SELECT is_admin, first_name, last_name, position FROM users WHERE id = ?').get(u.id);
-  const gam = db.prepare('SELECT level, xp, streak, best_streak FROM gamification WHERE user_id = ?').get(u.id);
+  const full = await db.prepare('SELECT is_admin, first_name, last_name, user_position FROM users WHERE id = ?').get(u.id);
+  const gam = await db.prepare('SELECT level, xp, streak, best_streak FROM gamification WHERE user_id = ?').get(u.id);
   const nextLevelXP = 100 * (gam ? gam.level : 1);
-  const position = full && full.position ? full.position : null;
+  const position = full && full.user_position ? full.user_position : null;
   res.json({
     id: u.id,
     name: u.name,
@@ -97,76 +91,77 @@ router.get('/me', requireAuth, (req, res) => {
   });
 });
 
-// PUT /api/auth/profile (name, firstName, lastName, position)
-router.put('/profile', requireAuth, (req, res) => {
-  const { name, firstName, lastName, position } = req.body || {};
-  const updates = [];
-  const vals = [];
-  if (name !== undefined && name !== null && name.trim()) {
-    updates.push('name = ?'); vals.push(name.trim());
+router.put('/profile', requireAuth, async (req, res) => {
+  try {
+    const body = req.body || {};
+    const { name, firstName, lastName, position } = body;
+    const updates = [];
+    const vals = [];
+    const safeStr = (v) => (v != null && typeof v === 'string' && v.trim()) ? v.trim() : null;
+    if (name !== undefined && name !== null && typeof name === 'string' && name.trim()) {
+      updates.push('name = ?'); vals.push(name.trim());
+    }
+    if (firstName !== undefined) { updates.push('first_name = ?'); vals.push(safeStr(firstName)); }
+    if (lastName !== undefined) { updates.push('last_name = ?'); vals.push(safeStr(lastName)); }
+    if (position !== undefined) { updates.push('user_position = ?'); vals.push(safeStr(position)); }
+    if (updates.length === 0) return res.status(400).json({ error: 'At least one field required' });
+    vals.push(req.user.id);
+    await db.prepare('UPDATE users SET ' + updates.join(', ') + ' WHERE id = ?').run(...vals);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('PUT /profile error:', err);
+    res.status(500).json({ error: err.message || 'Profile update failed' });
   }
-  if (firstName !== undefined) { updates.push('first_name = ?'); vals.push(firstName && firstName.trim() ? firstName.trim() : null); }
-  if (lastName !== undefined) { updates.push('last_name = ?'); vals.push(lastName && lastName.trim() ? lastName.trim() : null); }
-  if (position !== undefined) { updates.push('position = ?'); vals.push(position && position.trim() ? position.trim() : null); }
-  if (updates.length === 0) return res.status(400).json({ error: 'At least one field required' });
-  vals.push(req.user.id);
-  db.prepare('UPDATE users SET ' + updates.join(', ') + ' WHERE id = ?').run(...vals);
-  res.json({ ok: true });
 });
 
-// PUT /api/auth/email
-router.put('/email', requireAuth, (req, res) => {
+router.put('/email', requireAuth, async (req, res) => {
   const { email } = req.body || {};
   if (!email || !email.trim()) return res.status(400).json({ error: 'Email required' });
-  const existing = db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(email.trim(), req.user.id);
+  const existing = await db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(email.trim(), req.user.id);
   if (existing) return res.status(400).json({ error: 'Email already in use' });
-  db.prepare('UPDATE users SET email = ? WHERE id = ?').run(email.trim(), req.user.id);
+  await db.prepare('UPDATE users SET email = ? WHERE id = ?').run(email.trim(), req.user.id);
   res.json({ ok: true });
 });
 
-// PUT /api/auth/password
-router.put('/password', requireAuth, (req, res) => {
+router.put('/password', requireAuth, async (req, res) => {
   const { currentPassword, newPassword } = req.body || {};
   if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
-  const row = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
+  const row = await db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
   if (!row || !bcrypt.compareSync(currentPassword || '', row.password_hash || '')) {
     return res.status(401).json({ error: 'Current password is incorrect' });
   }
   const hash = bcrypt.hashSync(newPassword, 10);
-  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.user.id);
+  await db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.user.id);
   res.json({ ok: true });
 });
 
-// DELETE /api/auth/account
-router.delete('/account', requireAuth, (req, res) => {
+router.delete('/account', requireAuth, async (req, res) => {
   const { password } = req.body || {};
-  const row = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
+  const row = await db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
   if (!row || !bcrypt.compareSync(password || '', row.password_hash || '')) {
     return res.status(401).json({ error: 'Password required to delete account' });
   }
-  db.prepare('DELETE FROM submissions WHERE user_id = ?').run(req.user.id);
-  db.prepare('DELETE FROM campaign_joins WHERE user_id = ?').run(req.user.id);
-  db.prepare('DELETE FROM wallet_balances WHERE user_id = ?').run(req.user.id);
-  db.prepare('DELETE FROM payout_requests WHERE user_id = ?').run(req.user.id);
-  db.prepare('DELETE FROM social_accounts WHERE user_id = ?').run(req.user.id);
-  db.prepare('DELETE FROM gamification WHERE user_id = ?').run(req.user.id);
-  db.prepare('DELETE FROM achievements WHERE user_id = ?').run(req.user.id);
-  db.prepare('DELETE FROM notifications WHERE user_id = ?').run(req.user.id);
-  db.prepare('DELETE FROM notification_prefs WHERE user_id = ?').run(req.user.id);
-  db.prepare('DELETE FROM users WHERE id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM submissions WHERE user_id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM campaign_joins WHERE user_id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM wallet_balances WHERE user_id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM payout_requests WHERE user_id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM social_accounts WHERE user_id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM gamification WHERE user_id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM achievements WHERE user_id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM notifications WHERE user_id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM notification_prefs WHERE user_id = ?').run(req.user.id);
+  await db.prepare('DELETE FROM users WHERE id = ?').run(req.user.id);
   res.json({ ok: true });
 });
 
-// GET /api/auth/notifications (preferences)
-router.get('/notifications', requireAuth, (req, res) => {
-  const row = db.prepare('SELECT email_notifications, push_notifications FROM notification_prefs WHERE user_id = ?').get(req.user.id);
+router.get('/notifications', requireAuth, async (req, res) => {
+  const row = await db.prepare('SELECT email_notifications, push_notifications FROM notification_prefs WHERE user_id = ?').get(req.user.id);
   res.json(row || { email_notifications: 1, push_notifications: 1 });
 });
 
-// PUT /api/auth/notifications
-router.put('/notifications', requireAuth, (req, res) => {
+router.put('/notifications', requireAuth, async (req, res) => {
   const { emailNotifications, pushNotifications } = req.body || {};
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO notification_prefs (user_id, email_notifications, push_notifications)
     VALUES (?, ?, ?)
     ON CONFLICT(user_id) DO UPDATE SET

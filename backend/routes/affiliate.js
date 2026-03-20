@@ -6,11 +6,11 @@ const { requireAuth, requireCreator } = require('../middleware/auth');
 const router = express.Router();
 
 // GET /api/affiliate/dashboard
-router.get('/dashboard', requireAuth, requireCreator, (req, res) => {
-  const u = db.prepare('SELECT referral_code FROM users WHERE id = ?').get(req.user.id);
+router.get('/dashboard', requireAuth, requireCreator, async (req, res) => {
+  const u = await db.prepare('SELECT referral_code FROM users WHERE id = ?').get(req.user.id);
   const code = u?.referral_code || '';
-  const referred = db.prepare('SELECT COUNT(*) as c FROM users WHERE referred_by = ?').get(req.user.id).c;
-  const commissions = db.prepare(`
+  const referred = (await db.prepare('SELECT COUNT(*) as c FROM users WHERE referred_by = ?').get(req.user.id)).c;
+  const commissions = await db.prepare(`
     SELECT SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) as paid,
            SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) as pending
     FROM affiliate_commissions WHERE referrer_id = ?

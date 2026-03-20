@@ -5,7 +5,7 @@ const { db } = require('../db');
 const router = express.Router();
 
 // POST /api/brand-applications (public; no auth – form submission from homepage)
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const {
     company_name,
     contact_email,
@@ -22,7 +22,7 @@ router.post('/', (req, res) => {
   }
 
   const id = uuid();
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO brand_applications (
       id, company_name, contact_email, contact_name,
       brand_type, platforms, budget, rpm, other_specifications, notes, status
@@ -40,7 +40,7 @@ router.post('/', (req, res) => {
     (other_specifications || '').trim()
   );
 
-  const row = db.prepare('SELECT * FROM brand_applications WHERE id = ?').get(id);
+  const row = await db.prepare('SELECT * FROM brand_applications WHERE id = ?').get(id);
   res.status(201).json({ success: true, id: row.id });
 });
 

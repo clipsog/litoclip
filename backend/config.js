@@ -19,6 +19,7 @@ module.exports = {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
   databasePath: process.env.DATABASE_PATH || './data.db',
+  databaseUrl: process.env.DATABASE_URL || null,
   discord: {
     clientID: process.env.DISCORD_CLIENT_ID || '',
     clientSecret: process.env.DISCORD_CLIENT_SECRET || '',

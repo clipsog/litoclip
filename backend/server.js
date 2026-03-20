@@ -19,8 +19,6 @@ const adminRoutes = require('./routes/admin');
 const brandApplicationsRoutes = require('./routes/brandApplications');
 const paymentsRoutes = require('./routes/payments');
 
-ensureSchema();
-
 const app = express();
 app.use(cors({ origin: config.frontendOrigin, credentials: true }));
 
@@ -59,18 +57,18 @@ if (config.stripe.secretKey && config.stripe.webhookSecret) {
       const session = event.data.object;
       const paymentId = session.client_reference_id || session.metadata?.payment_id;
       const campaignId = session.metadata?.campaign_id;
-      if (paymentId) {
-        db.prepare('UPDATE payments SET status = ?, paid_at = datetime("now") WHERE id = ?').run('paid', paymentId);
-      }
-      if (campaignId) {
-        try {
-          db.prepare('UPDATE campaigns SET status = ?, payment_status = ? WHERE id = ?').run('active', 'paid', campaignId);
+      try {
+        if (paymentId) {
+          await db.prepare('UPDATE payments SET status = ?, paid_at = datetime("now") WHERE id = ?').run('paid', paymentId);
+        }
+        if (campaignId) {
+          await db.prepare('UPDATE campaigns SET status = ?, payment_status = ? WHERE id = ?').run('active', 'paid', campaignId);
           try {
-            db.prepare('UPDATE campaigns SET started_at = datetime("now") WHERE id = ? AND (started_at IS NULL OR started_at = "")').run(campaignId);
+            await db.prepare('UPDATE campaigns SET started_at = datetime("now") WHERE id = ? AND (started_at IS NULL OR started_at = "")').run(campaignId);
           } catch (_) {}
-          const campaign = db.prepare('SELECT title, owner_id FROM campaigns WHERE id = ?').get(campaignId);
-          const owner = campaign?.owner_id ? db.prepare('SELECT name, email FROM users WHERE id = ?').get(campaign.owner_id) : null;
-          db.prepare(`
+          const campaign = await db.prepare('SELECT title, owner_id FROM campaigns WHERE id = ?').get(campaignId);
+          const owner = campaign?.owner_id ? await db.prepare('SELECT name, email FROM users WHERE id = ?').get(campaign.owner_id) : null;
+          await db.prepare(`
             INSERT INTO admin_alerts (id, type, entity_type, entity_id, title, message, read)
             VALUES (?, 'campaign_paid', 'campaign', ?, ?, ?, 0)
           `).run(
@@ -79,8 +77,8 @@ if (config.stripe.secretKey && config.stripe.webhookSecret) {
             'Campaign paid to start',
             (owner ? owner.name + ' (' + owner.email + ')' : 'User') + ' paid to start "' + (campaign?.title || 'Campaign') + '"'
           );
-        } catch (_) {}
-      }
+        }
+      } catch (_) {}
     }
     res.json({ received: true });
   });
@@ -117,8 +115,13 @@ app.get('/api/articles', (req, res) => {
   res.json([]);
 });
 
-app.listen(config.port, () => {
-  console.log(`Backend running at http://localhost:${config.port}`);
-  console.log(`  API: http://localhost:${config.port}/api`);
-  console.log(`  Auth: http://localhost:${config.port}/api/auth`);
+ensureSchema().then(() => {
+  app.listen(config.port, () => {
+    console.log(`Backend running at http://localhost:${config.port}`);
+    console.log(`  API: http://localhost:${config.port}/api`);
+    console.log(`  Auth: http://localhost:${config.port}/api/auth`);
+  });
+}).catch(err => {
+  console.error('Database init failed:', err);
+  process.exit(1);
 });

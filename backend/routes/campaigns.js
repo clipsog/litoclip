@@ -6,7 +6,7 @@ const { optionalAuth, requireAuth, requireCreator } = require('../middleware/aut
 const router = express.Router();
 
 // POST /api/campaigns – create a new campaign (authenticated)
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const { title, description, niche, platform, budget, rpm, content_link, platforms, num_accounts, goal, payment_schedule, requirePayment, posts_per_day } = req.body || {};
   if (!title || !title.trim()) {
     return res.status(400).json({ error: 'Campaign title is required' });
@@ -21,7 +21,7 @@ router.post('/', requireAuth, (req, res) => {
   try {
     const postsPerDayVal = posts_per_day != null ? Math.min(10, Math.max(1, parseInt(posts_per_day, 10))) : null;
     try {
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO campaigns (id, title, description, niche, platform, budget, rpm, status, owner_id, content_link, platforms, num_accounts, goal, payment_schedule, payment_status, posts_per_day)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
@@ -43,7 +43,7 @@ router.post('/', requireAuth, (req, res) => {
       );
     } catch (colErr) {
       if (colErr.message && colErr.message.includes('posts_per_day')) {
-        db.prepare(`
+        await db.prepare(`
           INSERT INTO campaigns (id, title, description, niche, platform, budget, rpm, status, owner_id, content_link, platforms, num_accounts, goal, payment_schedule, payment_status)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
@@ -69,7 +69,7 @@ router.post('/', requireAuth, (req, res) => {
   } catch (e) {
     if (e.message && e.message.includes('no such column')) {
       try {
-        db.prepare(`
+        await db.prepare(`
           INSERT INTO campaigns (id, title, description, niche, platform, budget, rpm, status, owner_id, content_link, platforms, num_accounts, goal, payment_schedule)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
@@ -89,7 +89,7 @@ router.post('/', requireAuth, (req, res) => {
           status
         );
       } catch (e2) {
-        db.prepare(`
+        await db.prepare(`
           INSERT INTO campaigns (id, title, description, niche, platform, budget, rpm, status, owner_id)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
@@ -108,9 +108,9 @@ router.post('/', requireAuth, (req, res) => {
   }
   // Notify admins when a user starts a campaign
   try {
-    const owner = db.prepare('SELECT name, email FROM users WHERE id = ?').get(ownerId);
+    const owner = await db.prepare('SELECT name, email FROM users WHERE id = ?').get(ownerId);
     const alertId = uuid();
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO admin_alerts (id, type, entity_type, entity_id, title, message, read)
       VALUES (?, 'campaign_created', 'campaign', ?, ?, ?, 0)
     `).run(
@@ -126,8 +126,8 @@ router.post('/', requireAuth, (req, res) => {
 });
 
 // GET /api/campaigns – list all (optional auth for joined flag)
-router.get('/', optionalAuth, (req, res) => {
-  const rows = db.prepare(`
+router.get('/', optionalAuth, async (req, res) => {
+  const rows = await db.prepare(`
     SELECT id, title, description, niche, platform, budget, rpm, status, cover_image, created_at
     FROM campaigns WHERE status = 'active' ORDER BY created_at DESC
   `).all();
@@ -149,9 +149,9 @@ router.get('/', optionalAuth, (req, res) => {
 });
 
 // GET /api/campaigns/created – campaigns the user created (as owner)
-router.get('/created', requireAuth, (req, res) => {
+router.get('/created', requireAuth, async (req, res) => {
   try {
-    const rows = db.prepare(`
+    const rows = await db.prepare(`
       SELECT id, title, description, niche, platform, budget, rpm, status, created_at
       FROM campaigns WHERE owner_id = ? ORDER BY created_at DESC
     `).all(req.user.id);
@@ -173,8 +173,8 @@ router.get('/created', requireAuth, (req, res) => {
 });
 
 // GET /api/campaigns/my-campaigns
-router.get('/my-campaigns', requireAuth, requireCreator, (req, res) => {
-  const rows = db.prepare(`
+router.get('/my-campaigns', requireAuth, requireCreator, async (req, res) => {
+  const rows = await db.prepare(`
     SELECT c.id, c.title, c.description, c.niche, c.platform, c.budget, c.rpm, c.cover_image, c.created_at, cj.joined_at
     FROM campaign_joins cj
     JOIN campaigns c ON c.id = cj.campaign_id
@@ -198,9 +198,9 @@ router.get('/my-campaigns', requireAuth, requireCreator, (req, res) => {
 });
 
 // GET /api/campaigns/my-sponsor-offers – sponsor offers/deals for user's campaigns (dashboard)
-router.get('/my-sponsor-offers', requireAuth, (req, res) => {
+router.get('/my-sponsor-offers', requireAuth, async (req, res) => {
   try {
-    const rows = db.prepare(`
+    const rows = await db.prepare(`
       SELECT sd.id, sd.offer_id, sd.campaign_id, sd.status, sd.budget_reserved_cents, sd.spent_cents, sd.created_at,
              so.name as offer_name, so.watermark_text, so.cpm_cents,
              c.title as campaign_title
@@ -222,13 +222,13 @@ router.get('/my-sponsor-offers', requireAuth, (req, res) => {
 });
 
 // GET /api/campaigns/:id/accounts – linked accounts (creator must own campaign)
-router.get('/:id/accounts', requireAuth, (req, res) => {
+router.get('/:id/accounts', requireAuth, async (req, res) => {
   const campaignId = req.params.id;
-  const campaign = db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(campaignId);
+  const campaign = await db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(campaignId);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
   try {
-    const rows = db.prepare('SELECT id, platform, handle, created_at FROM campaign_accounts WHERE campaign_id = ? ORDER BY created_at')
+    const rows = await db.prepare('SELECT id, platform, handle, created_at FROM campaign_accounts WHERE campaign_id = ? ORDER BY created_at')
       .all(campaignId);
     res.json(rows.map(r => ({ id: r.id, platform: r.platform, handle: r.handle, createdAt: r.created_at })));
   } catch (e) {
@@ -237,13 +237,13 @@ router.get('/:id/accounts', requireAuth, (req, res) => {
 });
 
 // GET /api/campaigns/:id/posts – daily posts (creator must own campaign)
-router.get('/:id/posts', requireAuth, (req, res) => {
+router.get('/:id/posts', requireAuth, async (req, res) => {
   const campaignId = req.params.id;
-  const campaign = db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(campaignId);
+  const campaign = await db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(campaignId);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
   try {
-    const rows = db.prepare(`
+    const rows = await db.prepare(`
       SELECT p.id, p.platform, p.post_url, p.views, p.post_date, p.created_at, a.handle as account_handle
       FROM campaign_posts p
       LEFT JOIN campaign_accounts a ON a.id = p.campaign_account_id
@@ -260,8 +260,8 @@ router.get('/:id/posts', requireAuth, (req, res) => {
 });
 
 // GET /api/campaigns/:id/sponsor-settings – sponsor opt-in (creator, own campaign)
-router.get('/:id/sponsor-settings', requireAuth, (req, res) => {
-  const campaign = db.prepare('SELECT owner_id, accept_sponsor_offers, allow_watermark, watermark_coupon_percent FROM campaigns WHERE id = ?').get(req.params.id);
+router.get('/:id/sponsor-settings', requireAuth, async (req, res) => {
+  const campaign = await db.prepare('SELECT owner_id, accept_sponsor_offers, allow_watermark, watermark_coupon_percent FROM campaigns WHERE id = ?').get(req.params.id);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
   res.json({
@@ -272,15 +272,15 @@ router.get('/:id/sponsor-settings', requireAuth, (req, res) => {
 });
 
 // PUT /api/campaigns/:id/sponsor-settings – update (creator, own campaign)
-router.put('/:id/sponsor-settings', requireAuth, (req, res) => {
+router.put('/:id/sponsor-settings', requireAuth, async (req, res) => {
   const { acceptSponsorOffers, allowWatermark, watermarkCouponPercent } = req.body || {};
-  const campaign = db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(req.params.id);
+  const campaign = await db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(req.params.id);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
   const accept = acceptSponsorOffers === true || acceptSponsorOffers === 1;
   const allow = allowWatermark === true || allowWatermark === 1;
   const coupon = Math.min(100, Math.max(0, parseFloat(watermarkCouponPercent) || 0));
-  db.prepare(`
+  await db.prepare(`
     UPDATE campaigns SET accept_sponsor_offers = ?, allow_watermark = ?, watermark_coupon_percent = ?
     WHERE id = ?
   `).run(accept ? 1 : 0, allow ? 1 : 0, coupon, req.params.id);
@@ -288,12 +288,12 @@ router.put('/:id/sponsor-settings', requireAuth, (req, res) => {
 });
 
 // GET /api/campaigns/:id/sponsor-deals – list sponsor deals for this campaign (owner only)
-router.get('/:id/sponsor-deals', requireAuth, (req, res) => {
-  const campaign = db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(req.params.id);
+router.get('/:id/sponsor-deals', requireAuth, async (req, res) => {
+  const campaign = await db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(req.params.id);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
   try {
-    const rows = db.prepare(`
+    const rows = await db.prepare(`
       SELECT sd.id, sd.offer_id, sd.status, sd.budget_reserved_cents, sd.spent_cents, sd.created_at,
              so.name as offer_name, so.watermark_text, so.cpm_cents
       FROM sponsor_deals sd
@@ -312,12 +312,12 @@ router.get('/:id/sponsor-deals', requireAuth, (req, res) => {
 });
 
 // POST /api/campaigns/:id/join
-router.post('/:id/join', requireAuth, requireCreator, (req, res) => {
+router.post('/:id/join', requireAuth, requireCreator, async (req, res) => {
   const campaignId = req.params.id;
-  const campaign = db.prepare('SELECT id FROM campaigns WHERE id = ? AND status = ?').get(campaignId, 'active');
+  const campaign = await db.prepare('SELECT id FROM campaigns WHERE id = ? AND status = ?').get(campaignId, 'active');
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   try {
-    db.prepare('INSERT INTO campaign_joins (user_id, campaign_id) VALUES (?, ?)').run(req.user.id, campaignId);
+    await db.prepare('INSERT INTO campaign_joins (user_id, campaign_id) VALUES (?, ?)').run(req.user.id, campaignId);
   } catch (e) {
     if (e.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') return res.status(400).json({ error: 'Already joined' });
     throw e;

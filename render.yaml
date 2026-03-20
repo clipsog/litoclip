@@ -12,6 +12,7 @@ services:
     startCommand: npm start
 
     # Render sets PORT automatically; app uses process.env.PORT
-    # Add in Dashboard: NODE_ENV, JWT_SECRET, FRONTEND_ORIGIN, DATABASE_PATH,
+    # Add in Dashboard: NODE_ENV, JWT_SECRET, FRONTEND_ORIGIN,
+    # DATABASE_URL (Supabase PostgreSQL) or DATABASE_PATH (SQLite + persistent disk),
     # GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL (e.g. https://YOUR_DOMAIN/auth/google/callback),
     # Stripe keys, etc. See docs/RENDER_DEPLOY.md for the full list.

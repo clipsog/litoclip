@@ -69,7 +69,7 @@ In Google Cloud Console → APIs & Credentials → your OAuth client → **Autho
 
 Optional (add when you use them):
 
-- `DATABASE_PATH` — see **Step 4** (SQLite / persistent disk).
+- `DATABASE_URL` (Supabase PostgreSQL) or `DATABASE_PATH` — see **Step 4**.
 - Discord: `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_CALLBACK_URL` (e.g. `https://YOUR_RENDER_URL/auth/discord/callback`).
 - PayPal: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE=live`.
 
@@ -85,7 +85,9 @@ The app uses **SQLite** and stores the DB in a file. On Render’s **free** tier
 - Don’t set `DATABASE_PATH`; the app will use `./data.db` inside the container.  
 - Data is lost on redeploy. Use only for testing.
 
-**Option B – Persistent disk (paid plan)**  
+**Option B – PostgreSQL / Supabase (recommended):** Set `DATABASE_URL` to your Supabase connection string. Schema is applied on first run.
+
+**Option C – Persistent disk (paid plan)**  
 1. In your Render service, go to **Disks** (or **Storage**).
 2. **Add Disk**: name e.g. `data`, mount path **`/data`**, size as needed (e.g. 1 GB).
 3. In **Environment**, add:
@@ -159,7 +161,7 @@ I can provide a one-off **admin bootstrap** endpoint (e.g. guarded by a secret o
 - [ ] **Build:** `npm install` — **Start:** `npm start`  
 - [ ] Env: `NODE_ENV=production`, `JWT_SECRET`, `FRONTEND_ORIGIN=https://litoclips.com`  
 - [ ] Stripe keys and `STRIPE_WEBHOOK_SECRET` set; webhook URL points to your live API  
-- [ ] Optional: Persistent disk at `/data` and `DATABASE_PATH=/data/data.db`  
+- [ ] Optional: `DATABASE_URL` (Supabase) or persistent disk + `DATABASE_PATH=/data/data.db`  
 - [ ] Custom domain (litoclips.com or api.litoclips.com) and DNS set  
 - [ ] `/api/health` returns `{"ok":true,"env":"production"}`  
 

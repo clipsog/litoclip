@@ -12,20 +12,20 @@ function generateReferralCode() {
   return 'REF' + Math.random().toString(36).slice(2, 10).toUpperCase();
 }
 
-function findOrCreateUser(profile) {
+async function findOrCreateUser(profile) {
   const { id: providerId, email, name } = profile;
   if (!email) return { error: 'no_email' };
-  let user = db.prepare('SELECT id, name, email, user_type, referral_code FROM users WHERE email = ?').get(email);
+  let user = await db.prepare('SELECT id, name, email, user_type, referral_code FROM users WHERE email = ?').get(email);
   if (user) return { user };
   const userId = uuid();
   const referralCode = generateReferralCode();
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO users (id, email, password_hash, name, user_type, referral_code)
     VALUES (?, ?, ?, ?, 'creator', ?)
   `).run(userId, email, '', name || email.split('@')[0], referralCode);
-  db.prepare('INSERT OR IGNORE INTO wallet_balances (user_id) VALUES (?)').run(userId);
-  db.prepare('INSERT OR IGNORE INTO gamification (user_id) VALUES (?)').run(userId);
-  db.prepare('INSERT OR IGNORE INTO notification_prefs (user_id) VALUES (?)').run(userId);
+  await db.prepare('INSERT OR IGNORE INTO wallet_balances (user_id) VALUES (?)').run(userId);
+  await db.prepare('INSERT OR IGNORE INTO gamification (user_id) VALUES (?)').run(userId);
+  await db.prepare('INSERT OR IGNORE INTO notification_prefs (user_id) VALUES (?)').run(userId);
   user = { id: userId, name: name || email.split('@')[0], email, userType: 'creator', referralCode };
   return { user };
 }
@@ -39,16 +39,20 @@ if (config.discord.clientID && config.discord.clientSecret) {
       callbackURL: config.discord.callbackURL,
       scope: ['identify', 'email'],
     },
-    (accessToken, refreshToken, profile, done) => {
-      const email = profile.email;
-      if (!email) return done(null, null, { message: 'discord_no_email' });
-      const result = findOrCreateUser({
-        id: profile.id,
-        email,
-        name: profile.username || profile.global_name,
-      });
-      if (result.error) return done(null, null, { message: result.error });
-      done(null, result.user);
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.email;
+        if (!email) return done(null, null, { message: 'discord_no_email' });
+        const result = await findOrCreateUser({
+          id: profile.id,
+          email,
+          name: profile.username || profile.global_name,
+        });
+        if (result.error) return done(null, null, { message: result.error });
+        done(null, result.user);
+      } catch (e) {
+        done(e);
+      }
     }
   ));
 }
@@ -61,16 +65,20 @@ if (config.google.clientID && config.google.clientSecret) {
       clientSecret: config.google.clientSecret,
       callbackURL: config.google.callbackURL,
     },
-    (accessToken, refreshToken, profile, done) => {
-      const email = profile.emails?.[0]?.value;
-      if (!email) return done(null, null, { message: 'google_no_email' });
-      const result = findOrCreateUser({
-        id: profile.id,
-        email,
-        name: profile.displayName || profile.name?.givenName,
-      });
-      if (result.error) return done(null, null, { message: result.error });
-      done(null, result.user);
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails?.[0]?.value;
+        if (!email) return done(null, null, { message: 'google_no_email' });
+        const result = await findOrCreateUser({
+          id: profile.id,
+          email,
+          name: profile.displayName || profile.name?.givenName,
+        });
+        if (result.error) return done(null, null, { message: result.error });
+        done(null, result.user);
+      } catch (e) {
+        done(e);
+      }
     }
   ));
 }
@@ -108,7 +116,7 @@ router.get('/google', (req, res, next) => {
 
 router.get('/google/callback', (req, res, next) => {
   if (!config.google.clientID) return res.redirect(`${config.frontendOrigin}?error=google_not_configured`);
-  passport.authenticate('google', (err, user, info) => {
+  passport.authenticate('google', async (err, user, info) => {
     if (err) return res.redirect(`${config.frontendOrigin}?error=google_failed`);
     if (!user) {
       const msg = (info && info.message) || 'google_failed';
@@ -116,14 +124,16 @@ router.get('/google/callback', (req, res, next) => {
     }
     const state = ['creator', 'brand', 'sponsor'].includes(req.query.state) ? req.query.state : null;
     if (state) {
-      const row = db.prepare('SELECT password_hash, user_type FROM users WHERE id = ?').get(user.id);
-      if (row && (!row.password_hash || row.password_hash === '') && row.user_type === 'creator') {
-        db.prepare('UPDATE users SET user_type = ? WHERE id = ?').run(state, user.id);
-        user.userType = state;
-        if (state === 'sponsor') {
-          try { db.prepare('INSERT OR IGNORE INTO sponsor_wallets (user_id) VALUES (?)').run(user.id); } catch (_) {}
+      try {
+        const row = await db.prepare('SELECT password_hash, user_type FROM users WHERE id = ?').get(user.id);
+        if (row && (!row.password_hash || row.password_hash === '') && row.user_type === 'creator') {
+          await db.prepare('UPDATE users SET user_type = ? WHERE id = ?').run(state, user.id);
+          user.userType = state;
+          if (state === 'sponsor') {
+            try { await db.prepare('INSERT OR IGNORE INTO sponsor_wallets (user_id) VALUES (?)').run(user.id); } catch (_) {}
+          }
         }
-      }
+      } catch (_) {}
     }
     const token = jwt.sign({ userId: user.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
     const userType = user.userType || 'creator';

@@ -208,7 +208,7 @@
               setTimeout(() => { window.location.href = 'signup.html'; }, 1500);
             } else {
               const data = await res.json().catch(() => ({}));
-              formError.textContent = data.error || 'Something went wrong.';
+              formError.textContent = data.error || 'Something went wrong. Please try again.';
             }
           } catch (err) {
             formError.textContent = 'Connection error. Please try again.';
