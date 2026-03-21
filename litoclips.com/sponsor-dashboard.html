@@ -201,12 +201,20 @@
       let offers = [];
       let selectedCampaignId = null;
 
+      const MOCK_CAMPAIGNS = [
+        { id: 'mock-gaming-1', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], allowWatermark: true },
+        { id: 'mock-podcast-1', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], allowWatermark: false },
+        { id: 'mock-lifestyle-1', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], allowWatermark: true },
+        { id: 'mock-tech-1', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], allowWatermark: true },
+        { id: 'mock-music-1', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], allowWatermark: false },
+      ];
+
       function loadCampaigns() {
         fetch(API_URL + '/sponsors/campaigns', { headers: { 'Authorization': 'Bearer ' + token } })
           .then(r => r.ok ? r.json() : [])
           .catch(() => [])
           .then(data => {
-            campaigns = data || [];
+            campaigns = (data && data.length > 0) ? data : MOCK_CAMPAIGNS;
             renderCampaigns();
           });
       }
