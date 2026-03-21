@@ -1,6 +1,15 @@
-# Netlify redirects - clean URLs to .html
-/dashboard-creator    /dashboard-creator.html   302
+# Netlify redirects - clean URLs and old dashboard → new
+/dashboard-creator    /brand-overview.html      302
+/dashboard-creator.html /brand-overview.html    302
+/browse-campaigns     /brand-overview.html      302
+/browse-campaigns.html /brand-overview.html     302
+/my-campaigns         /brand-overview.html      302
+/my-campaigns.html    /brand-overview.html      302
+/submissions          /brand-overview.html      302
+/submissions.html     /brand-overview.html      302
 /brand-overview       /brand-overview.html      302
 /sponsor-dashboard    /sponsor-dashboard.html   302
 /login                /login.html               302
 /signup               /signup.html              302
+/settings             /settings.html            302
+/wallet               /wallet.html              302

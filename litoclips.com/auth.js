@@ -1,6 +1,6 @@
 // Authentication JavaScript
 
-// Use window.AUTH_API_URL to avoid conflicts with dashboard.js
+// Use window.AUTH_API_URL for API base
 if (typeof window.AUTH_API_URL === 'undefined') {
   // Auto-detect production vs localhost
   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -44,13 +44,10 @@ function getDashboardHref(userType) {
 
 // Check if user is logged in on page load
 window.addEventListener('DOMContentLoaded', () => {
-  // Skip ALL auth.js functionality on dashboard pages - dashboard.js handles it
+  // Skip auth redirect logic on dashboard/auth pages
   const isDashboardPage = window.location.pathname.includes('dashboard') ||
     window.location.pathname.includes('brand-') ||
     window.location.pathname.includes('sponsor-dashboard') ||
-    window.location.pathname.includes('my-campaigns') ||
-    window.location.pathname.includes('browse-campaigns') ||
-    window.location.pathname.includes('submissions') ||
     window.location.pathname.includes('wallet') ||
     window.location.pathname.includes('settings');
   
@@ -356,9 +353,6 @@ function initLogoutHandler() {
       // This prevents unwanted redirects when auth.js runs
       const isDashboardPage = window.location.pathname.includes('dashboard') ||
         window.location.pathname.includes('brand-') ||
-        window.location.pathname.includes('my-campaigns') ||
-        window.location.pathname.includes('browse-campaigns') ||
-        window.location.pathname.includes('submissions') ||
         window.location.pathname.includes('wallet') ||
         window.location.pathname.includes('settings');
       

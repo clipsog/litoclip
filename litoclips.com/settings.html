@@ -1,847 +1,321 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
   <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="assets/logo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Settings - LitoClips</title>
+  <title>Settings — LitoClips</title>
+  <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="litoclips-theme.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
-    .toggle-switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 28px;
-    }
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: var(--bg-elevated);
-      transition: 0.3s;
-      border-radius: 28px;
-    }
-    .toggle-slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: 0.3s;
-      border-radius: 50%;
-    }
-    .toggle-switch input:checked + .toggle-slider {
-      background-color: var(--teal);
-    }
-    .toggle-switch input:checked + .toggle-slider:before {
-      transform: translateX(22px);
-    }
-    .settings-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      margin-bottom: 24px;
-      overflow: hidden;
-    }
-    .settings-section-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--border);
-    }
-    .settings-section-title {
-      font-size: 18px;
-      font-weight: 600;
-    }
-    .settings-section-body {
-      padding: 24px;
-    }
-    .settings-item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .settings-item:last-child {
-      border-bottom: none;
-    }
-    .settings-item-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: rgba(37, 99, 235, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-    .settings-item-content {
-      flex: 1;
-    }
-    .settings-item-label {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .settings-item-value {
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s;
-    }
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-    .modal {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      width: 100%;
-      max-width: 480px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    @media (max-width: 768px) {
-      .settings-section {
-        margin-bottom: 16px;
-        border-radius: 12px;
-      }
-
-      .settings-section-header {
-        padding: 16px 20px;
-      }
-
-      .settings-section-title {
-        font-size: 16px;
-      }
-
-      .settings-section-body {
-        padding: 20px 16px;
-      }
-
-      .settings-item {
-        padding: 12px 0;
-        flex-wrap: wrap;
-      }
-
-      .settings-item-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
-      }
-
-      .modal {
-        max-width: 95%;
-        margin: 20px auto;
-        max-height: 90vh;
-      }
-
-      .form-group {
-        margin-bottom: 16px;
-      }
-
-      .btn {
-        padding: 10px 16px;
-        font-size: 14px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .settings-section-body {
-        padding: 16px 12px;
-      }
-
-      .settings-item {
-        gap: 12px;
-      }
-
-      .modal {
-        width: 100%;
-        margin: 0;
-        border-radius: 0;
-        max-height: 100vh;
-      }
-      padding: 32px;
-    }
-    .modal-header {
-      margin-bottom: 24px;
-    }
-    .modal-header h2 {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-    .modal-header p {
-      color: var(--text-muted);
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 8px;
-      color: var(--text-secondary);
-    }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 14px 16px;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 15px;
-      transition: border-color 0.2s;
-    }
-    .form-group input:focus, .form-group select:focus {
-      outline: none;
-      border-color: var(--teal);
-    }
-    .btn-full {
-      width: 100%;
-    }
-    .social-account-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px;
-      background: var(--bg-elevated);
-      border-radius: 12px;
-      margin-bottom: 12px;
-    }
-    .platform-icon {
-      width: 50px;
-      height: 50px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-    }
-    .notification-toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      padding: 16px 24px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      z-index: 2000;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.3s;
-    }
-    .notification-toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-    .notification-toast.success {
-      border-color: var(--success);
-    }
-    .notification-toast.error {
-      border-color: var(--danger);
-    }
+    body.dashboard-theme.gradient-section-bg { min-height: 100vh; }
+    .settings-page { max-width: 700px; margin: 0 auto; padding: 120px 24px 80px; position: relative; z-index: 1; }
+    .settings-page h1 { font-size: 24px; color: white; margin-bottom: 8px; }
+    .settings-page .subtitle { color: rgba(255,255,255,0.7); font-size: 15px; margin-bottom: 32px; }
+    .settings-section { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .settings-section h3 { font-size: 16px; color: white; margin-bottom: 20px; }
+    .settings-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.08); gap: 16px; flex-wrap: wrap; }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-item-content { flex: 1; min-width: 0; }
+    .settings-item-label { font-size: 15px; font-weight: 600; color: white; margin-bottom: 4px; }
+    .settings-item-value { font-size: 14px; color: rgba(255,255,255,0.7); }
+    .btn-settings { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-settings-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; }
+    .btn-settings-secondary:hover { background: rgba(255,255,255,0.15); }
+    .btn-settings-danger { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; }
+    .btn-settings-danger:hover { background: rgba(239, 68, 68, 0.3); }
+    .toggle-wrap { display: flex; align-items: center; gap: 12px; }
+    .toggle-switch { position: relative; width: 44px; height: 24px; background: rgba(255,255,255,0.2); border-radius: 12px; cursor: pointer; }
+    .toggle-switch::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; }
+    .toggle-switch input { display: none; }
+    .toggle-switch input:checked + .toggle-slider::after { transform: translateX(20px); }
+    .toggle-switch .toggle-slider { position: absolute; inset: 0; border-radius: 12px; }
+    .toggle-switch .toggle-slider::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; }
+    .toggle-switch input:checked ~ .toggle-slider { background: #2563eb; }
+    .toggle-switch input:checked ~ .toggle-slider::after { transform: translateX(20px); }
+    label.toggle-switch { display: inline-flex; align-items: center; }
+    .toggle-switch input:checked + span { background: #2563eb; }
+    .toggle-slider { position: absolute; inset: 0; background: rgba(255,255,255,0.2); border-radius: 12px; transition: background 0.2s; }
+    .toggle-slider::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; }
+    .toggle-switch:has(input:checked) .toggle-slider { background: #2563eb; }
+    .toggle-switch:has(input:checked) .toggle-slider::after { transform: translateX(20px); }
+    .nav-avatar-wrap { position: relative; }
+    .nav-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; font-family: inherit; }
+    .nav-avatar-dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; min-width: 160px; background: rgba(30, 41, 59, 0.98); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 8px 0; box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 200; }
+    .nav-avatar-dropdown.open { display: block; }
+    .nav-avatar-dropdown a { display: block; padding: 10px 16px; color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px; }
+    .nav-avatar-dropdown a:hover { background: rgba(255,255,255,0.08); color: white; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 440px; width: 100%; padding: 24px; }
+    .modal h2 { font-size: 18px; color: white; margin-bottom: 8px; }
+    .modal p { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.9); margin-bottom: 6px; }
+    .form-group input { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .modal-actions button { flex: 1; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; }
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; background: #1e293b; border: 1px solid rgba(34, 197, 94, 0.5); border-radius: 10px; color: #86efac; z-index: 2000; opacity: 0; transform: translateY(10px); transition: all 0.3s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { border-color: rgba(239, 68, 68, 0.5); color: #fca5a5; }
+    .danger-section { border-color: rgba(239, 68, 68, 0.3); }
+    .danger-section h3 { color: #fca5a5; }
   </style>
 </head>
-<body>
-  <header class="header">
-    <div style="display: flex; align-items: center; gap: 16px;">
-      <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+<body class="dashboard-theme gradient-section-bg">
+  <header class="header scrolled">
+    <div class="header-container">
       <a href="index.html" class="logo">
-      <div class="logo-icon"><img src="assets/logo.png" alt="Logo"></div>
-      <span class="logo-text">LitoClips</span>
-    </a>
-    <div class="header-right">
-      <a href="index.html" class="header-link">Home</a>
-      <div class="level-pill">
-        <div class="level-circle" id="headerLevel">1</div>
-        <div class="level-info">
-          <span class="level-label">Level</span>
-          <span class="level-xp">0 / 100 XP</span>
+        <img src="assets/logo.png" alt="Logo">
+        <span class="logo-text">LitoClips</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html#how-it-works">How It Works</a>
+        <a href="index.html#who-its-for">Who It's For</a>
+        <a href="#" id="navDashboard">Dashboard</a>
+        <a href="wallet.html" class="nav-balance-pill" id="navBalance" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>
+          <span id="balanceAmount">$0.00</span>
+        </a>
+        <div class="nav-avatar-wrap">
+          <button type="button" class="nav-avatar" id="userAvatar" aria-haspopup="true" aria-expanded="false">U</button>
+          <div class="nav-avatar-dropdown" id="userAvatarDropdown">
+            <a href="settings.html#profile">Edit profile</a>
+            <a href="settings.html">Settings</a>
+          </div>
         </div>
-      </div>
-      <button class="user-btn">
-        <div class="user-avatar"></div>
-        <span id="userName">User</span>
-      </button>
-      <button class="logout-btn" id="logoutBtn">Logout</button>
+        <a href="index.html" class="nav-cta" id="logoutBtn">Logout</a>
+      </nav>
     </div>
   </header>
 
-  <div class="layout">
-    <aside class="sidebar">
-      <a href="dashboard-creator.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-        </svg>
-        Overview
-      </a>
-      <a href="browse-campaigns.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-        </svg>
-        Browse Campaigns
-      </a>
-      <a href="my-campaigns.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-        </svg>
-        My Campaigns
-      </a>
-      <a href="submissions.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
-        </svg>
-        Submissions
-      </a>
-      <a href="wallet.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-        Wallet
-      </a>
-      <a href="settings.html" class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-        Settings
-      </a>
-    </aside>
+  <main class="settings-page">
+    <h1>Settings</h1>
+    <p class="subtitle">Manage your profile and preferences</p>
 
-    <main class="main">
-      <div class="page-header">
-        <h1>Account <span>Settings</span></h1>
-        <p>Manage your profile, connected accounts, and preferences</p>
+    <div class="settings-section" id="profile">
+      <h3>Account Information</h3>
+      <div class="settings-item">
+        <div class="settings-item-content">
+          <div class="settings-item-label">Email</div>
+          <div class="settings-item-value" id="userEmail">Loading...</div>
+        </div>
+        <button type="button" class="btn-settings btn-settings-secondary" onclick="openEditEmailModal()">Change</button>
       </div>
-
-      <!-- Account Settings -->
-      <div class="settings-section" id="profile">
-        <div class="settings-section-header">
-          <h3 class="settings-section-title">Account Information</h3>
+      <div class="settings-item">
+        <div class="settings-item-content">
+          <div class="settings-item-label">Display Name</div>
+          <div class="settings-item-value" id="displayName">Loading...</div>
         </div>
-        <div class="settings-section-body">
-          <div class="settings-item">
-            <div class="settings-item-icon">📧</div>
-            <div class="settings-item-content">
-              <div class="settings-item-label">Email Address</div>
-              <div class="settings-item-value" id="userEmail">Loading...</div>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="openEditEmailModal()">Change</button>
-          </div>
-          <div class="settings-item">
-            <div class="settings-item-icon"></div>
-            <div class="settings-item-content">
-              <div class="settings-item-label">Display Name</div>
-              <div class="settings-item-value" id="displayName">Loading...</div>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="openEditNameModal()">Edit</button>
-          </div>
-          <div class="settings-item">
-            <div class="settings-item-icon">🔒</div>
-            <div class="settings-item-content">
-              <div class="settings-item-label">Password</div>
-              <div class="settings-item-value">••••••••••</div>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="openChangePasswordModal()">Change</button>
-          </div>
-        </div>
+        <button type="button" class="btn-settings btn-settings-secondary" onclick="openEditNameModal()">Edit</button>
       </div>
-
-      <!-- Affiliate Dashboard -->
-      <div class="settings-section">
-        <div class="settings-section-header">
-          <h3 class="settings-section-title">Affiliate Program</h3>
+      <div class="settings-item">
+        <div class="settings-item-content">
+          <div class="settings-item-label">Password</div>
+          <div class="settings-item-value">••••••••</div>
         </div>
-        <div class="settings-section-body">
-          <p style="color: var(--text-muted); margin-bottom: 20px;">
-            Invite creators and earn a <strong id="affRateDisplay" style="color: var(--teal);">0%</strong> commission on everything they earn. Share your link and start building passive income.
-          </p>
-          
-          <!-- Link + Code -->
-          <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; margin-bottom: 20px;">
-            <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
-              <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Invite Link</div>
-              <div style="display: flex; gap: 8px;">
-                <input type="text" id="referralLink" readonly style="flex: 1; padding: 10px 14px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px;" value="Loading...">
-                <button style="background: var(--teal); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap;" onclick="copyReferralLink()">Copy</button>
-              </div>
-            </div>
-            <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; min-width: 120px;">
-              <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Code</div>
-              <code id="referralCode" style="font-size: 20px; font-weight: 700; color: var(--teal); letter-spacing: 2px; cursor: pointer;" onclick="copyReferralCode()">---</code>
-            </div>
-          </div>
-          
-          <!-- Stats -->
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
-            <div style="background: var(--bg-elevated); padding: 16px; border-radius: 12px; text-align: center;">
-              <div style="font-size: 22px; font-weight: 700; color: var(--teal);" id="affMyReferred">0</div>
-              <div style="font-size: 11px; color: var(--text-muted);">Referred</div>
-            </div>
-            <div style="background: var(--bg-elevated); padding: 16px; border-radius: 12px; text-align: center;">
-              <div style="font-size: 22px; font-weight: 700; color: var(--teal);" id="affMyTotal">$0</div>
-              <div style="font-size: 11px; color: var(--text-muted);">Total Earned</div>
-            </div>
-            <div style="background: var(--bg-elevated); padding: 16px; border-radius: 12px; text-align: center;">
-              <div style="font-size: 22px; font-weight: 700; color: #eab308;" id="affMyPending">$0</div>
-              <div style="font-size: 11px; color: var(--text-muted);">Pending</div>
-            </div>
-            <div style="background: var(--bg-elevated); padding: 16px; border-radius: 12px; text-align: center;">
-              <div style="font-size: 22px; font-weight: 700; color: #22c55e;" id="affMyPaid">$0</div>
-              <div style="font-size: 11px; color: var(--text-muted);">Paid Out</div>
-            </div>
-          </div>
-          
-          <!-- Referred Users List -->
-          <div style="font-weight: 600; margin-bottom: 12px;">Your Referrals</div>
-          <div id="affReferredList" style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 14px;">Loading affiliate data...</div>
-          </div>
-          
-          <!-- Recent Commissions -->
-          <div style="font-weight: 600; margin: 24px 0 12px;">Recent Commissions</div>
-          <div id="affCommissionLog" style="display: flex; flex-direction: column; gap: 6px;">
-            <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 14px;">No commissions yet</div>
-          </div>
-        </div>
+        <button type="button" class="btn-settings btn-settings-secondary" onclick="openChangePasswordModal()">Change</button>
       </div>
+    </div>
 
-      <!-- Social Accounts -->
-      <div class="settings-section">
-        <div class="settings-section-header">
-          <h3 class="settings-section-title">Connected Social Accounts</h3>
+    <div class="settings-section">
+      <h3>Notifications</h3>
+      <div class="settings-item">
+        <div class="settings-item-content">
+          <div class="settings-item-label">Email Notifications</div>
+          <div class="settings-item-value">Updates about campaigns and earnings</div>
         </div>
-        <div class="settings-section-body">
-          <p style="color: var(--text-muted); margin-bottom: 20px;">Link your social media accounts to verify ownership and track your submissions.</p>
-          
-          <div id="socialAccountsList">
-            <p style="color: var(--text-muted); text-align: center; padding: 20px;">Loading accounts...</p>
-          </div>
-
-          <button class="btn btn-primary" onclick="openAddAccountModal()" style="margin-top: 16px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Add Account
-          </button>
-
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
-            <div style="text-align: center;">
-              <div style="font-size: 28px; font-weight: 700; color: var(--text);" id="totalAccounts">0</div>
-              <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Total</div>
-            </div>
-            <div style="text-align: center;">
-              <div style="font-size: 28px; font-weight: 700; color: var(--success);" id="verifiedAccounts">0</div>
-              <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Linked</div>
-            </div>
-            <div style="text-align: center;">
-              <div style="font-size: 28px; font-weight: 700; color: var(--warning);" id="pendingAccounts">0</div>
-              <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Pending</div>
-            </div>
-            <div style="text-align: center;">
-              <div style="font-size: 28px; font-weight: 700; color: var(--teal);" id="platformsCount">0</div>
-              <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Platforms</div>
-            </div>
-          </div>
-        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="emailNotifications" onchange="saveNotificationPrefs()">
+          <span class="toggle-slider"></span>
+        </label>
       </div>
-
-      <!-- Notifications -->
-      <div class="settings-section">
-        <div class="settings-section-header">
-          <h3 class="settings-section-title">Notifications</h3>
+      <div class="settings-item">
+        <div class="settings-item-content">
+          <div class="settings-item-label">Push Notifications</div>
+          <div class="settings-item-value">Alerts for approvals and payments</div>
         </div>
-        <div class="settings-section-body">
-          <div class="settings-item">
-            <div class="settings-item-icon">📧</div>
-            <div class="settings-item-content">
-              <div class="settings-item-label">Email Notifications</div>
-              <div class="settings-item-value">Receive updates about campaigns and earnings</div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="emailNotifications" onchange="saveNotificationPrefs()">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="settings-item">
-            <div class="settings-item-icon">🔔</div>
-            <div class="settings-item-content">
-              <div class="settings-item-label">Push Notifications</div>
-              <div class="settings-item-value">Get instant alerts for approvals and payments</div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="pushNotifications" onchange="saveNotificationPrefs()">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="pushNotifications" onchange="saveNotificationPrefs()">
+          <span class="toggle-slider"></span>
+        </label>
       </div>
+    </div>
 
-      <!-- Danger Zone -->
-      <div class="settings-section" style="border-color: rgba(239, 68, 68, 0.3);">
-        <div class="settings-section-header">
-          <h3 class="settings-section-title" style="color: var(--danger);">Danger Zone</h3>
+    <div class="settings-section danger-section">
+      <h3>Danger Zone</h3>
+      <div class="settings-item">
+        <div class="settings-item-content">
+          <div class="settings-item-label">Delete Account</div>
+          <div class="settings-item-value">Permanently delete your account and all data</div>
         </div>
-        <div class="settings-section-body">
-          <div class="settings-item">
-            <div class="settings-item-icon" style="background: rgba(239, 68, 68, 0.15);">🗑️</div>
-            <div class="settings-item-content">
-              <div class="settings-item-label">Delete Account</div>
-              <div class="settings-item-value">Permanently delete your account and all data</div>
-            </div>
-            <button class="btn btn-danger btn-sm" onclick="openDeleteAccountModal()">Delete</button>
-          </div>
-        </div>
+        <button type="button" class="btn-settings btn-settings-danger" onclick="openDeleteAccountModal()">Delete</button>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 
-  <!-- Edit Name Modal -->
   <div class="modal-overlay" id="editNameModal">
     <div class="modal">
-      <div class="modal-header">
-        <h2>Edit Display Name</h2>
-        <p>Change your display name</p>
-      </div>
+      <h2>Edit Display Name</h2>
+      <p>Change your display name</p>
       <form id="editNameForm">
         <div class="form-group">
           <label>Display Name</label>
-          <input type="text" id="newName" placeholder="Enter your name" required minlength="2">
+          <input type="text" id="newName" placeholder="Your name" required minlength="2">
         </div>
-        <div style="display: flex; gap: 12px;">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('editNameModal')" style="flex: 1;">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+        <div class="modal-actions">
+          <button type="button" class="btn-settings btn-settings-secondary" onclick="closeModal('editNameModal')">Cancel</button>
+          <button type="submit" class="btn-settings" style="background:linear-gradient(180deg,#2563eb,#1d4ed8);color:white;border:none;">Save</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Edit Email Modal -->
   <div class="modal-overlay" id="editEmailModal">
     <div class="modal">
-      <div class="modal-header">
-        <h2>Change Email Address</h2>
-        <p>Update your email address</p>
-      </div>
+      <h2>Change Email</h2>
+      <p>Update your email address</p>
       <form id="editEmailForm">
         <div class="form-group">
-          <label>New Email Address</label>
-          <input type="email" id="newEmail" placeholder="Enter new email" required>
+          <label>New Email</label>
+          <input type="email" id="newEmail" placeholder="New email" required>
         </div>
-        <div style="display: flex; gap: 12px;">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('editEmailModal')" style="flex: 1;">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+        <div class="modal-actions">
+          <button type="button" class="btn-settings btn-settings-secondary" onclick="closeModal('editEmailModal')">Cancel</button>
+          <button type="submit" class="btn-settings" style="background:linear-gradient(180deg,#2563eb,#1d4ed8);color:white;border:none;">Save</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Change Password Modal -->
   <div class="modal-overlay" id="changePasswordModal">
     <div class="modal">
-      <div class="modal-header">
-        <h2>Change Password</h2>
-        <p>Update your account password</p>
-      </div>
+      <h2>Change Password</h2>
+      <p>Update your account password</p>
       <form id="changePasswordForm">
         <div class="form-group">
           <label>Current Password</label>
-          <input type="password" id="currentPassword" placeholder="Enter current password" required>
+          <input type="password" id="currentPassword" placeholder="Current password" required>
         </div>
         <div class="form-group">
           <label>New Password</label>
-          <input type="password" id="newPassword" placeholder="Enter new password (min 6 chars)" required minlength="6">
+          <input type="password" id="newPassword" placeholder="New password (min 6 chars)" required minlength="6">
         </div>
         <div class="form-group">
           <label>Confirm New Password</label>
-          <input type="password" id="confirmPassword" placeholder="Confirm new password" required minlength="6">
+          <input type="password" id="confirmPassword" placeholder="Confirm" required minlength="6">
         </div>
-        <div style="display: flex; gap: 12px;">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('changePasswordModal')" style="flex: 1;">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="flex: 1;">Change Password</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Add Account Modal -->
-  <div class="modal-overlay" id="addAccountModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Add Social Account</h2>
-        <p>Connect a new social media account</p>
-      </div>
-      <form id="addAccountForm">
-        <div class="form-group">
-          <label>Platform</label>
-          <select id="accountPlatform" required>
-            <option value="">Select platform</option>
-            <option value="tiktok">TikTok</option>
-            <option value="youtube">YouTube</option>
-            <option value="instagram">Instagram</option>
-            <option value="x">X / Twitter</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Username / Handle</label>
-          <input type="text" id="accountUsername" placeholder="@username" required>
-        </div>
-        <div style="display: flex; gap: 12px;">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('addAccountModal')" style="flex: 1;">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="flex: 1;">Add Account</button>
+        <div class="modal-actions">
+          <button type="button" class="btn-settings btn-settings-secondary" onclick="closeModal('changePasswordModal')">Cancel</button>
+          <button type="submit" class="btn-settings" style="background:linear-gradient(180deg,#2563eb,#1d4ed8);color:white;border:none;">Change Password</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Verify Account Modal -->
-  <div class="modal-overlay" id="verifyAccountModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Verify Your Account</h2>
-        <p>Add this code to your bio, then click verify</p>
-      </div>
-      <div style="background: var(--bg-elevated); padding: 24px; border-radius: 12px; text-align: center; margin-bottom: 24px;">
-        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">VERIFICATION CODE</div>
-        <div style="font-size: 32px; font-weight: 700; color: var(--teal); letter-spacing: 4px;" id="verificationCode">LITOCLIPS000000</div>
-        <button class="btn btn-secondary btn-sm" onclick="copyCode()" style="margin-top: 12px;">Copy Code</button>
-      </div>
-      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px; text-align: center;">
-        Add this code to your profile bio, then click "Verify Now". You can remove it after verification.
-      </p>
-      <input type="hidden" id="pendingAccountId">
-      <input type="hidden" id="pendingCode">
-      <div style="display: flex; gap: 12px;">
-        <button class="btn btn-secondary" onclick="closeModal('verifyAccountModal')" style="flex: 1;">Cancel</button>
-        <button class="btn btn-primary" onclick="verifyAccount()" style="flex: 1;">Verify Now</button>
-      </div>
-      <button class="btn btn-outline btn-full" onclick="skipVerification()" style="margin-top: 12px;">Skip (Manual Verification)</button>
-    </div>
-  </div>
-
-  <!-- Delete Account Modal -->
   <div class="modal-overlay" id="deleteAccountModal">
     <div class="modal">
-      <div class="modal-header">
-        <h2 style="color: var(--danger);">⚠️ Delete Account</h2>
-        <p>This action cannot be undone. All your data will be permanently deleted.</p>
-      </div>
+      <h2 style="color:#fca5a5;">Delete Account</h2>
+      <p>This cannot be undone. All your data will be permanently deleted.</p>
       <form id="deleteAccountForm">
         <div class="form-group">
-          <label>Enter your password to confirm</label>
-          <input type="password" id="deletePassword" placeholder="Enter password" required>
+          <label>Enter password to confirm</label>
+          <input type="password" id="deletePassword" placeholder="Your password" required>
         </div>
-        <div style="background: rgba(239, 68, 68, 0.1); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
-          <p style="color: var(--danger); font-size: 14px; margin: 0;">
-            This will delete:
-            <br>• All your submissions
-            <br>• All your earnings history
-            <br>• All connected social accounts
-            <br>• Your entire profile
-          </p>
-        </div>
-        <div style="display: flex; gap: 12px;">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('deleteAccountModal')" style="flex: 1;">Cancel</button>
-          <button type="submit" class="btn btn-danger" style="flex: 1;">Delete Account</button>
+        <div class="modal-actions">
+          <button type="button" class="btn-settings btn-settings-secondary" onclick="closeModal('deleteAccountModal')">Cancel</button>
+          <button type="submit" class="btn-settings btn-settings-danger" style="flex:1;">Delete Account</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Toast Notification -->
-  <div class="notification-toast" id="toast">
-    <span id="toastMessage">Settings saved!</span>
-  </div>
+  <div class="toast" id="toast"><span id="toastMessage"></span></div>
 
-  <script src="auth.js"></script>
   <script>
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_URL = isLocalhost ? 'http://localhost:37373/api' : `${window.location.origin}/api`;
-    let currentUserData = null;
+    const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:37373/api' : (window.location.origin + '/api');
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadUserData();
-      loadSocialAccounts();
-      loadNotificationPrefs();
-      loadAffiliateDashboard();
-      setupForms();
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    const dashLink = document.getElementById('navDashboard');
+    const userType = user?.userType || user?.user_type || 'creator';
+    if (dashLink) {
+      dashLink.href = userType === 'sponsor' ? 'sponsor-dashboard.html' : 'brand-overview.html';
+      dashLink.textContent = 'Dashboard';
+    }
+
+    if (userType === 'sponsor') {
+      fetch(API_URL + '/sponsors/wallet', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          const nav = document.getElementById('navBalance');
+          if (nav) { nav.style.display = 'inline-flex'; document.getElementById('balanceAmount').textContent = '$' + ((d?.balanceCents || 0) / 100).toFixed(2); }
+        });
+    } else {
+      fetch(API_URL + '/wallet', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          const nav = document.getElementById('navBalance');
+          if (nav) { nav.style.display = 'inline-flex'; document.getElementById('balanceAmount').textContent = '$' + ((d?.availableBalance ?? 0).toFixed(2)); }
+        });
+    }
+
+    const avatarEl = document.getElementById('userAvatar');
+    const avatarDropdown = document.getElementById('userAvatarDropdown');
+    if (avatarEl && user) {
+      const name = user.name || user.email || '';
+      const parts = name.trim().split(/\s+/);
+      avatarEl.textContent = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase() : (name[0] || 'U').toUpperCase();
+    }
+    avatarEl?.addEventListener('click', function(e) {
+      e.stopPropagation();
+      avatarDropdown?.classList.toggle('open');
+    });
+    document.addEventListener('click', () => avatarDropdown?.classList.remove('open'));
+
+    document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'index.html';
     });
 
-    function getAuthHeaders() {
-      return {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      };
-    }
-
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toastMessage');
-      toastMsg.textContent = message;
-      toast.className = 'notification-toast ' + type;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
+    let currentUserData = null;
 
     async function loadUserData() {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          window.location.href = 'login.html';
-          return;
-        }
-
-        const response = await fetch(`${API_URL}/auth/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-          currentUserData = await response.json();
-          document.getElementById('userName').textContent = currentUserData.name || 'User';
+        const r = await fetch(API_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (r.ok) {
+          currentUserData = await r.json();
           document.getElementById('displayName').textContent = currentUserData.name || 'User';
           document.getElementById('userEmail').textContent = currentUserData.email || '';
-          
-          // Populate referral info
-          if (currentUserData.referralCode) {
-            document.getElementById('referralCode').textContent = currentUserData.referralCode;
-            document.getElementById('referralLink').value = `${window.location.origin}/?ref=${currentUserData.referralCode}`;
-          }
         }
-        
-        // Load gamification profile for XP/Level
-        const gamRes = await fetch(`${API_URL}/gamification/profile`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (gamRes.ok) {
-          const profile = await gamRes.json();
-          updateHeaderXP(profile);
-        }
-      } catch (e) { 
-        console.error(e); 
-      }
-    }
-    
-    function updateHeaderXP(profile) {
-      const level = profile.level || 1;
-      const xp = profile.xp || 0;
-      const nextLevelXP = profile.nextLevelXP || 100;
-      
-      const levelCircle = document.getElementById('headerLevel');
-      const levelXP = document.querySelector('.level-xp');
-      
-      if (levelCircle) levelCircle.textContent = level;
-      if (levelXP) levelXP.textContent = `${xp} / ${nextLevelXP} XP`;
+      } catch (e) { console.error(e); }
     }
 
-    async function loadSocialAccounts() {
-      try {
-        const response = await fetch(`${API_URL}/social-accounts`, {
-          headers: getAuthHeaders()
-        });
-        
-        if (response.ok) {
-          const accounts = await response.json();
-          renderAccounts(Array.isArray(accounts) ? accounts : (accounts.accounts || []));
-        }
-      } catch (e) { 
-        console.error(e);
-        document.getElementById('socialAccountsList').innerHTML = 
-          '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No accounts connected yet</p>';
-      }
-    }
-
-    function renderAccounts(accounts) {
-      const container = document.getElementById('socialAccountsList');
-      
-      if (!accounts || accounts.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No accounts connected yet</p>';
-        updateAccountStats([]);
-        return;
-      }
-
-      const platformColors = {
-        tiktok: '#00f2ea',
-        youtube: '#ff0000',
-        instagram: '#e1306c',
-        twitter: '#1da1f2',
-        x: '#1da1f2'
-      };
-
-      const platformEmojis = {
-        tiktok: '🎵',
-        youtube: '▶️',
-        instagram: '📷',
-        twitter: '𝕏',
-        x: '𝕏'
-      };
-
-      container.innerHTML = accounts.map(account => {
-        const isVerified = account.verified || account.is_verified;
-        return `
-        <div class="social-account-card">
-          <div class="platform-icon" style="background: ${platformColors[account.platform]}15; color: ${platformColors[account.platform]};">
-            ${platformEmojis[account.platform] || '🔗'}
-          </div>
-          <div style="flex: 1;">
-            <div style="font-size: 15px; font-weight: 600;">@${account.username || account.handle}</div>
-            <div style="font-size: 13px; color: var(--text-muted); text-transform: capitalize;">${account.platform === 'x' ? 'X / Twitter' : account.platform}</div>
-          </div>
-          <span class="badge ${isVerified ? 'badge-success' : 'badge-warning'}">${isVerified ? '✓ Linked' : 'Pending'}</span>
-          <button class="btn btn-secondary btn-sm" onclick="removeAccount('${account.id}')">Remove</button>
-        </div>
-      `}).join('');
-
-      updateAccountStats(accounts);
-    }
-
-    function updateAccountStats(accounts) {
-      document.getElementById('totalAccounts').textContent = accounts.length;
-      document.getElementById('verifiedAccounts').textContent = accounts.filter(a => a.verified || a.is_verified).length;
-      document.getElementById('pendingAccounts').textContent = accounts.filter(a => !a.verified && !a.is_verified).length;
-      const platforms = new Set(accounts.map(a => a.platform));
-      document.getElementById('platformsCount').textContent = platforms.size;
+    function showToast(msg, type) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = msg;
+      t.className = 'toast ' + (type === 'error' ? 'error' : '');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
     }
 
     async function loadNotificationPrefs() {
       try {
-        const response = await fetch(`${API_URL}/auth/notifications`, {
-          headers: getAuthHeaders()
-        });
-        
-        if (response.ok) {
-          const prefs = await response.json();
-          document.getElementById('emailNotifications').checked = prefs.emailNotifications !== false;
-          document.getElementById('pushNotifications').checked = prefs.pushNotifications === true;
+        const r = await fetch(API_URL + '/auth/notifications', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (r.ok) {
+          const p = await r.json();
+          document.getElementById('emailNotifications').checked = (p.email_notifications || 1) !== 0;
+          document.getElementById('pushNotifications').checked = (p.push_notifications || 0) === 1;
         }
-      } catch (e) { 
-        console.error(e);
+      } catch (e) {
         document.getElementById('emailNotifications').checked = true;
         document.getElementById('pushNotifications').checked = false;
       }
@@ -849,388 +323,109 @@
 
     async function saveNotificationPrefs() {
       try {
-        const emailNotifications = document.getElementById('emailNotifications').checked;
-        const pushNotifications = document.getElementById('pushNotifications').checked;
-        
-        const response = await fetch(`${API_URL}/auth/notifications`, {
+        const r = await fetch(API_URL + '/auth/notifications', {
           method: 'PUT',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ emailNotifications, pushNotifications })
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            emailNotifications: document.getElementById('emailNotifications').checked,
+            pushNotifications: document.getElementById('pushNotifications').checked
+          })
         });
-        
-        if (response.ok) {
-          showToast('Notification preferences saved!');
-        }
-      } catch (e) { 
-        console.error(e);
-        showToast('Failed to save preferences', 'error');
-      }
+        if (r.ok) showToast('Saved');
+      } catch (e) { showToast('Failed to save', 'error'); }
     }
 
-    function setupForms() {
-      // Edit Name Form
-      document.getElementById('editNameForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('newName').value.trim();
-        
-        try {
-          const response = await fetch(`${API_URL}/auth/profile`, {
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ name })
-          });
-          
-          if (response.ok) {
-            showToast('Name updated successfully!');
-            closeModal('editNameModal');
-            loadUserData();
-          } else {
-            const err = await response.json();
-            showToast(err.error || 'Failed to update name', 'error');
-          }
-        } catch (e) {
-          showToast('Failed to update name', 'error');
-        }
-      });
-
-      // Edit Email Form
-      document.getElementById('editEmailForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('newEmail').value.trim();
-        
-        try {
-          const response = await fetch(`${API_URL}/auth/email`, {
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ email })
-          });
-          
-          if (response.ok) {
-            showToast('Email updated successfully!');
-            closeModal('editEmailModal');
-            loadUserData();
-          } else {
-            const err = await response.json();
-            showToast(err.error || 'Failed to update email', 'error');
-          }
-        } catch (e) {
-          showToast('Failed to update email', 'error');
-        }
-      });
-
-      // Change Password Form
-      document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        
-        if (newPassword !== confirmPassword) {
-          showToast('New passwords do not match', 'error');
-          return;
-        }
-        
-        try {
-          const response = await fetch(`${API_URL}/auth/password`, {
-            method: 'PUT',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ currentPassword, newPassword })
-          });
-          
-          if (response.ok) {
-            showToast('Password changed successfully!');
-            closeModal('changePasswordModal');
-            document.getElementById('changePasswordForm').reset();
-          } else {
-            const err = await response.json();
-            showToast(err.error || 'Failed to change password', 'error');
-          }
-        } catch (e) {
-          showToast('Failed to change password', 'error');
-        }
-      });
-
-      // Add Account Form
-      document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const platform = document.getElementById('accountPlatform').value;
-        const handle = document.getElementById('accountUsername').value.trim();
-        
-        try {
-          const response = await fetch(`${API_URL}/social-accounts/generate-code`, {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ platform, handle })
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            closeModal('addAccountModal');
-            
-            // Show verification modal
-            document.getElementById('verificationCode').textContent = data.code;
-            document.getElementById('pendingAccountId').value = data.accountId;
-            document.getElementById('pendingCode').value = data.code;
-            document.getElementById('verifyAccountModal').classList.add('active');
-            
-            document.getElementById('addAccountForm').reset();
-            loadSocialAccounts();
-          } else {
-            const err = await response.json();
-            showToast(err.error || 'Failed to add account', 'error');
-          }
-        } catch (e) {
-          showToast('Failed to add account', 'error');
-        }
-      });
-
-      // Delete Account Form
-      document.getElementById('deleteAccountForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const password = document.getElementById('deletePassword').value;
-        
-        if (!confirm('Are you ABSOLUTELY sure? This cannot be undone!')) {
-          return;
-        }
-        
-        try {
-          const response = await fetch(`${API_URL}/auth/account`, {
-            method: 'DELETE',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ password })
-          });
-          
-          if (response.ok) {
-            localStorage.removeItem('token');
-            alert('Your account has been deleted. Goodbye!');
-            window.location.href = 'index-2.html';
-          } else {
-            const err = await response.json();
-            showToast(err.error || 'Failed to delete account', 'error');
-          }
-        } catch (e) {
-          showToast('Failed to delete account', 'error');
-        }
-      });
-    }
-
-    function copyCode() {
-      const code = document.getElementById('verificationCode').textContent;
-      navigator.clipboard.writeText(code).then(() => {
-        showToast('Code copied to clipboard!');
-      });
-    }
-
-    async function verifyAccount() {
-      const accountId = document.getElementById('pendingAccountId').value;
-      const code = document.getElementById('pendingCode').value;
-      
+    document.getElementById('editNameForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
       try {
-        const response = await fetch(`${API_URL}/social-accounts/verify`, {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ accountId, code })
+        const r = await fetch(API_URL + '/auth/profile', {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: document.getElementById('newName').value.trim() })
         });
-        
-        if (response.ok) {
-          showToast('Account verified successfully!');
-          closeModal('verifyAccountModal');
-          loadSocialAccounts();
-        } else {
-          const err = await response.json();
-          // Check for Twitter/X specific restriction message
-          if (err.twitterRestricted || (err.error && err.error.includes('X/Twitter'))) {
-            showToast('X/Twitter auto-verification is restricted. Using manual verification.', 'error');
-            // Auto-trigger manual verification for Twitter
-            setTimeout(() => skipVerification(), 1500);
-          } else if (err.requiresManualVerification) {
-            showToast('Auto-verification failed. Try manual verification.', 'error');
-          } else {
-            showToast(err.error || 'Verification failed', 'error');
-          }
-        }
-      } catch (e) {
-        showToast('Verification failed', 'error');
-      }
-    }
+        if (r.ok) { showToast('Name updated'); closeModal('editNameModal'); loadUserData(); }
+        else { const d = await r.json(); showToast(d.error || 'Failed', 'error'); }
+      } catch (e) { showToast('Failed', 'error'); }
+    });
 
-    async function skipVerification() {
-      const accountId = document.getElementById('pendingAccountId').value;
-      const code = document.getElementById('pendingCode').value;
-      
+    document.getElementById('editEmailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
       try {
-        const response = await fetch(`${API_URL}/social-accounts/verify`, {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ accountId, code, skipApiCheck: true })
+        const r = await fetch(API_URL + '/auth/email', {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: document.getElementById('newEmail').value.trim() })
         });
-        
-        if (response.ok) {
-          showToast('Account linked successfully! ✓');
-          closeModal('verifyAccountModal');
-          loadSocialAccounts();
-        } else {
-          const err = await response.json();
-          showToast(err.error || 'Failed to link account', 'error');
-        }
-      } catch (e) {
-        showToast('Failed to link account', 'error');
-      }
-    }
+        if (r.ok) { showToast('Email updated'); closeModal('editEmailModal'); loadUserData(); }
+        else { const d = await r.json(); showToast(d.error || 'Failed', 'error'); }
+      } catch (e) { showToast('Failed', 'error'); }
+    });
 
-    async function removeAccount(accountId) {
-      if (!confirm('Are you sure you want to remove this account?')) return;
-      
+    document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const np = document.getElementById('newPassword').value;
+      if (np !== document.getElementById('confirmPassword').value) {
+        showToast('Passwords do not match', 'error');
+        return;
+      }
       try {
-        const response = await fetch(`${API_URL}/social-accounts/${accountId}`, {
+        const r = await fetch(API_URL + '/auth/password', {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword: document.getElementById('currentPassword').value, newPassword: np })
+        });
+        if (r.ok) { showToast('Password changed'); closeModal('changePasswordModal'); e.target.reset(); }
+        else { const d = await r.json(); showToast(d.error || 'Failed', 'error'); }
+      } catch (e) { showToast('Failed', 'error'); }
+    });
+
+    document.getElementById('deleteAccountForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!confirm('Are you sure? This cannot be undone.')) return;
+      try {
+        const r = await fetch(API_URL + '/auth/account', {
           method: 'DELETE',
-          headers: getAuthHeaders()
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: document.getElementById('deletePassword').value })
         });
-        
-        if (response.ok) {
-          showToast('Account removed successfully');
-          loadSocialAccounts();
-        } else {
-          showToast('Failed to remove account', 'error');
-        }
-      } catch (e) {
-        showToast('Failed to remove account', 'error');
-      }
-    }
+        if (r.ok) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = 'index.html';
+        } else { const d = await r.json(); showToast(d.error || 'Failed', 'error'); }
+      } catch (e) { showToast('Failed', 'error'); }
+    });
 
-    // Modal functions
     function openEditNameModal() {
       document.getElementById('newName').value = currentUserData?.name || '';
       document.getElementById('editNameModal').classList.add('active');
     }
-
     function openEditEmailModal() {
       document.getElementById('newEmail').value = currentUserData?.email || '';
       document.getElementById('editEmailModal').classList.add('active');
     }
-
     function openChangePasswordModal() {
       document.getElementById('changePasswordForm').reset();
       document.getElementById('changePasswordModal').classList.add('active');
     }
-
-    function openAddAccountModal() {
-      document.getElementById('addAccountForm').reset();
-      document.getElementById('addAccountModal').classList.add('active');
-    }
-
     function openDeleteAccountModal() {
       document.getElementById('deleteAccountForm').reset();
       document.getElementById('deleteAccountModal').classList.add('active');
     }
-
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.remove('active');
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
     }
 
-    // Close modal when clicking outside
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.classList.remove('active');
-        }
-      });
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
     });
 
-    // Affiliate copy functions
-    function copyReferralCode() {
-      const code = document.getElementById('referralCode').textContent;
-      navigator.clipboard.writeText(code).then(() => alert('Referral code copied!'));
+    loadUserData();
+    loadNotificationPrefs();
+
+    if (window.location.hash === '#profile') {
+      setTimeout(() => document.getElementById('profile')?.scrollIntoView({ behavior: 'smooth' }), 300);
     }
-    
-    function copyReferralLink() {
-      const link = document.getElementById('referralLink').value;
-      navigator.clipboard.writeText(link).then(() => alert('Invite link copied!'));
-    }
-    
-    // Load affiliate dashboard data
-    async function loadAffiliateDashboard() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        const res = await fetch(`${API_URL}/affiliate/dashboard`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!res.ok) return;
-        const data = await res.json();
-        
-        // Commission rate
-        document.getElementById('affRateDisplay').textContent = `${data.commissionRate || 0}%`;
-        
-        // Stats
-        document.getElementById('affMyReferred').textContent = data.referredUsers?.length || 0;
-        document.getElementById('affMyTotal').textContent = `$${(data.earnings?.total_commission || 0).toFixed(2)}`;
-        document.getElementById('affMyPending').textContent = `$${(data.earnings?.pending_commission || 0).toFixed(2)}`;
-        document.getElementById('affMyPaid').textContent = `$${(data.earnings?.paid_commission || 0).toFixed(2)}`;
-        
-        // Referred users list
-        const listEl = document.getElementById('affReferredList');
-        if (data.referredUsers && data.referredUsers.length > 0) {
-          listEl.innerHTML = data.referredUsers.map(u => `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--bg-elevated); border-radius: 10px; border: 1px solid var(--border);">
-              <div>
-                <div style="font-weight: 600; font-size: 14px;">${u.name || 'Unknown'}</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Joined ${new Date(u.created_at).toLocaleDateString()}</div>
-              </div>
-              <div style="text-align: right;">
-                <div style="font-weight: 700; color: var(--teal);">$${(u.total_earnings || 0).toFixed(2)}</div>
-                <div style="font-size: 11px; color: var(--text-muted);">${(u.total_views || 0).toLocaleString()} views</div>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          listEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 14px;">No referrals yet. Share your link to start earning!</div>';
-        }
-        
-        // Commission log
-        const logEl = document.getElementById('affCommissionLog');
-        if (data.recentCommissions && data.recentCommissions.length > 0) {
-          logEl.innerHTML = data.recentCommissions.map(c => `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-elevated); border-radius: 8px; font-size: 13px;">
-              <div>
-                <span style="font-weight: 600;">${c.referred_name || 'User'}</span> earned $${(c.referred_earnings || 0).toFixed(2)}
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="color: var(--teal); font-weight: 700;">+$${(c.commission_amount || 0).toFixed(2)}</span>
-                <span style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: ${c.status === 'paid' ? 'rgba(34,197,94,0.15)' : 'rgba(234,179,8,0.15)'}; color: ${c.status === 'paid' ? '#22c55e' : '#eab308'};">${c.status}</span>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          logEl.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 14px;">No commissions yet. Earn when your referrals get paid!</div>';
-        }
-      } catch (e) {
-        console.error('Affiliate dashboard error:', e);
-      }
-    }
-
-    document.getElementById('logoutBtn')?.addEventListener('click', () => {
-      localStorage.removeItem('token');
-      window.location.href = 'index.html';
-    });
-
-    // Mobile menu toggle
-    document.getElementById('mobileMenuToggle')?.addEventListener('click', () => {
-      const sidebar = document.querySelector('.sidebar');
-      sidebar?.classList.toggle('active');
-    });
-
-    // Close sidebar when clicking outside
-    document.addEventListener('click', (e) => {
-      const sidebar = document.querySelector('.sidebar');
-      const toggle = document.getElementById('mobileMenuToggle');
-      if (sidebar && toggle && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-        sidebar.classList.remove('active');
-      }
-    });
   </script>
 </body>
-
 </html>

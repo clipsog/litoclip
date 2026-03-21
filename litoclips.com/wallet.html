@@ -165,26 +165,26 @@
 
   <div class="layout">
     <aside class="sidebar">
-      <a href="dashboard-creator.html" class="nav-item">
+      <a href="brand-overview.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
           <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
         </svg>
         Overview
       </a>
-      <a href="browse-campaigns.html" class="nav-item">
+      <a href="brand-overview.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
         </svg>
         Browse Campaigns
       </a>
-      <a href="my-campaigns.html" class="nav-item">
+      <a href="brand-overview.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
         </svg>
         My Campaigns
       </a>
-      <a href="submissions.html" class="nav-item">
+      <a href="brand-overview.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
         </svg>
@@ -426,13 +426,16 @@
     </main>
   </div>
 
-  <script src="dashboard.js"></script>
   <script src="auth.js"></script>
   <script>
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocalhost ? 'http://localhost:37373/api' : `${window.location.origin}/api`;
 
     document.addEventListener('DOMContentLoaded', () => {
+      if (!localStorage.getItem('token')) {
+        window.location.href = 'login.html';
+        return;
+      }
       loadWalletData();
       loadUserData();
       setupForm();

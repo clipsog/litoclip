@@ -33,8 +33,13 @@ if (config.frontendPath) {
   const frontendDir = path.isAbsolute(config.frontendPath)
     ? config.frontendPath
     : path.join(__dirname, config.frontendPath);
-  // Redirect clean URLs to .html (fixes Cannot GET /dashboard-creator etc)
-  ['/dashboard-creator', '/brand-overview', '/sponsor-dashboard', '/login', '/signup'].forEach(route => {
+  // Redirect clean URLs to .html; old dashboard routes → brand-overview
+  const oldDashboardRoutes = ['/dashboard-creator', '/browse-campaigns', '/my-campaigns', '/submissions'];
+  oldDashboardRoutes.forEach(route => {
+    app.get(route, (req, res) => res.redirect(302, '/brand-overview.html'));
+    app.get(route + '.html', (req, res) => res.redirect(302, '/brand-overview.html'));
+  });
+  ['/brand-overview', '/sponsor-dashboard', '/login', '/signup'].forEach(route => {
     app.get(route, (req, res) => res.redirect(302, route + '.html'));
   });
   app.use(express.static(frontendDir));

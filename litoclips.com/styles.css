@@ -80,6 +80,7 @@ body.onboarding-theme.gradient-section-bg .user-name {
 body.dashboard-theme.gradient-section-bg .dashboard-page,
 body.dashboard-theme.gradient-section-bg .sponsor-page,
 body.dashboard-theme.gradient-section-bg .track-page,
+body.dashboard-theme.gradient-section-bg .settings-page,
 body.onboarding-theme.gradient-section-bg .campaign-page {
   position: relative;
   z-index: 1;

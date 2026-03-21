@@ -1,12 +1,23 @@
 {
+  "redirects": [
+    { "source": "/dashboard-creator", "destination": "/brand-overview.html", "statusCode": 302 },
+    { "source": "/dashboard-creator.html", "destination": "/brand-overview.html", "statusCode": 302 },
+    { "source": "/browse-campaigns", "destination": "/brand-overview.html", "statusCode": 302 },
+    { "source": "/browse-campaigns.html", "destination": "/brand-overview.html", "statusCode": 302 },
+    { "source": "/my-campaigns", "destination": "/brand-overview.html", "statusCode": 302 },
+    { "source": "/my-campaigns.html", "destination": "/brand-overview.html", "statusCode": 302 },
+    { "source": "/submissions", "destination": "/brand-overview.html", "statusCode": 302 },
+    { "source": "/submissions.html", "destination": "/brand-overview.html", "statusCode": 302 }
+  ],
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://litoclip.onrender.com/api/:path*" },
     { "source": "/auth/:path*", "destination": "https://litoclip.onrender.com/auth/:path*" },
-    { "source": "/dashboard-creator", "destination": "/dashboard-creator.html" },
     { "source": "/brand-overview", "destination": "/brand-overview.html" },
     { "source": "/sponsor-dashboard", "destination": "/sponsor-dashboard.html" },
     { "source": "/login", "destination": "/login.html" },
     { "source": "/signup", "destination": "/signup.html" },
-    { "source": "/onboarding", "destination": "/onboarding.html" }
+    { "source": "/onboarding", "destination": "/onboarding.html" },
+    { "source": "/settings", "destination": "/settings.html" },
+    { "source": "/wallet", "destination": "/wallet.html" }
   ]
 }
