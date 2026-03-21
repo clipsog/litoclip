@@ -38,6 +38,25 @@
     .quick-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
     .quick-actions a { color: #2563eb; text-decoration: none; font-size: 14px; }
     .quick-actions a:hover { text-decoration: underline; }
+    .calendar-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
+    .calendar-section h3 { font-size: 15px; margin-bottom: 16px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #e2e8f0; border-radius: 8px; overflow: hidden; }
+    .cal-day { background: #fff; padding: 12px; min-height: 90px; font-size: 13px; }
+    .cal-day .day-num { font-weight: 600; color: #64748b; margin-bottom: 6px; }
+    .cal-day.warmup { background: #fef3c7; }
+    .cal-day.warmup .badge { font-size: 10px; padding: 2px 6px; background: #f59e0b; color: white; border-radius: 4px; }
+    .cal-day.post { background: #f0fdf4; }
+    .cal-day.post .badge { font-size: 10px; padding: 2px 6px; background: #22c55e; color: white; border-radius: 4px; }
+    .cal-day.empty-day { background: #f8fafc; color: #94a3b8; cursor: pointer; transition: background 0.2s; }
+    .cal-day.empty-day:hover { background: #f0f9ff; }
+    .cal-day.clickable { cursor: pointer; }
+    .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #e2e8f0; margin-bottom: 1px; border-radius: 8px 8px 0 0; overflow: hidden; }
+    .cal-header span { padding: 10px; font-size: 11px; font-weight: 600; color: #64748b; text-align: center; background: #f1f5f9; }
+    .calendar-cta { margin-top: 16px; font-size: 14px; color: #64748b; }
+    .calendar-cta a { color: #2563eb; text-decoration: none; font-weight: 500; }
+    .calendar-cta a:hover { text-decoration: underline; }
+    .calendar-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+    .calendar-toolbar .btn-start-campaign { margin: 0; }
   </style>
 </head>
 <body class="dashboard-theme">
@@ -63,25 +82,34 @@
       <p id="welcomeMessage">Your profile is set up. You're ready to create your first campaign and grow your reach.</p>
     </div>
 
-    <div class="dashboard-section">
+    <!-- Your Campaigns: shown when user has campaigns -->
+    <div class="dashboard-section" id="campaignsSection" style="display: none;">
       <h2>Your Campaigns</h2>
       <div id="campaignsContainer">
-        <div class="empty-state" id="emptyState">
-          <div class="empty-state-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
-          </div>
-          <h3>No campaigns yet</h3>
-          <p>Create your first campaign to turn your content into viral clips. Choose platforms, set your budget, and we'll get to work.</p>
-          <a href="new-campaign.html" class="btn-start-campaign">
-            Start a campaign
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
-        </div>
-        <div id="campaignList" class="campaign-list" style="display: none;"></div>
+        <div id="campaignList" class="campaign-list"></div>
       </div>
-      <div class="quick-actions" id="quickActions" style="display: none;">
+      <div class="quick-actions" id="quickActions">
         <a href="new-campaign.html">+ New campaign</a>
       </div>
+    </div>
+
+    <!-- Calendar: always shown. When no campaigns, it's the main view with Start campaign above -->
+    <div class="dashboard-section calendar-section" id="calendarSection">
+      <div class="calendar-toolbar" id="calendarToolbar">
+        <div>
+          <h3 style="margin:0 0 4px 0;">Campaign Calendar</h3>
+          <p style="font-size: 13px; color: #64748b; margin: 0;"><strong>Days 1–2:</strong> Warming up. <strong>Day 3+:</strong> Posts and views. Click a date or Start campaign to begin.</p>
+        </div>
+        <a href="new-campaign.html" class="btn-start-campaign" id="startCampaignBtn">
+          Start a campaign
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="cal-header">
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div class="calendar-cta" id="calendarCta"></div>
     </div>
 
     <div class="dashboard-section">
@@ -143,10 +171,12 @@
       const bypass = token === 'demo-bypass-token';
 
       function renderCampaigns(campaigns) {
+        const campaignsSection = document.getElementById('campaignsSection');
+        const startBtn = document.getElementById('startCampaignBtn');
         if (campaigns && campaigns.length > 0) {
-          document.getElementById('emptyState').style.display = 'none';
-          document.getElementById('campaignList').style.display = 'flex';
-          document.getElementById('quickActions').style.display = 'flex';
+          campaignsSection.style.display = 'block';
+          if (startBtn) startBtn.style.display = 'none';
+          document.getElementById('campaignList').innerHTML = '';
           campaigns.forEach(c => {
             const card = document.createElement('a');
             card.className = 'campaign-card';
@@ -156,6 +186,9 @@
             card.innerHTML = '<div><h4>' + (c.title || 'Untitled') + '</h4><span class="meta">' + (c.platform || '') + ' &middot; $' + (c.budget || 5) + '/wk</span></div><span class="status active">' + (c.status || 'active') + '</span>';
             document.getElementById('campaignList').appendChild(card);
           });
+        } else {
+          campaignsSection.style.display = 'none';
+          if (startBtn) startBtn.style.display = 'inline-flex';
         }
       }
 
@@ -167,11 +200,8 @@
               { id: 'demo-1', title: 'TikTok Launch', platform: 'tiktok', budget: 5, status: 'active' },
               { id: 'demo-2', title: 'Instagram Growth', platform: 'instagram', budget: 5, status: 'active' }
             ];
+        campaignsList = demoCampaigns;
         renderCampaigns(demoCampaigns);
-      } else {
-        fetch(API_URL + '/campaigns/created', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        }).then(r => r.ok ? r.json() : []).catch(() => []).then(renderCampaigns);
       }
 
       function renderSponsorOffers(offers) {
@@ -199,6 +229,97 @@
           headers: { 'Authorization': 'Bearer ' + token }
         }).then(r => r.ok ? r.json() : []).catch(() => []).then(renderSponsorOffers);
       }
+
+      let campaignsList = [];
+      const newCampaignUrl = 'new-campaign.html';
+
+      function buildCalendar(posts, campaignId) {
+        const today = new Date();
+        const start = new Date(today);
+        start.setDate(start.getDate() - 13);
+        const grid = document.getElementById('calendarGrid');
+        const ctaEl = document.getElementById('calendarCta');
+        grid.innerHTML = '';
+        const DAYS = 14;
+        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const postsByDate = {};
+        if (Array.isArray(posts) && posts.length) {
+          posts.forEach(p => {
+            const key = (p.postDate || '').slice(0, 10);
+            if (!postsByDate[key]) postsByDate[key] = [];
+            postsByDate[key].push(p);
+          });
+        }
+        const hasData = Object.keys(postsByDate).length > 0;
+        const noCampaigns = campaignsList.length === 0;
+
+        for (let i = 0; i < DAYS; i++) {
+          const d = new Date(start);
+          d.setDate(d.getDate() + i);
+          const dateKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+          const dayPosts = postsByDate[dateKey] || [];
+          const isWarmup = !hasData && i < 2;
+          const isPost = dayPosts.length > 0;
+          const dayEl = document.createElement(noCampaigns ? 'a' : 'div');
+          if (noCampaigns) {
+            dayEl.href = newCampaignUrl + '?start=' + dateKey;
+            dayEl.style.textDecoration = 'none';
+            dayEl.style.color = 'inherit';
+          }
+          dayEl.className = 'cal-day' + (isWarmup ? ' warmup' : '') + (isPost ? ' post' : '') + (!isWarmup && !isPost ? ' empty-day' : '') + (noCampaigns ? ' clickable' : '');
+          let inner = '<div class="day-num">' + d.getDate() + ' ' + monthNames[d.getMonth()] + '</div>';
+          if (isWarmup) {
+            inner += '<span class="badge">Warming up</span><div style="font-size:11px;margin-top:6px;color:#92400e;">Interacting with niche</div>';
+          } else if (isPost && dayPosts.length) {
+            inner += '<span class="badge">' + dayPosts.length + ' post' + (dayPosts.length > 1 ? 's' : '') + '</span>';
+            dayPosts.forEach(p => {
+              inner += '<div style="font-size:11px;margin-top:4px;">' + (p.platform || 'TikTok') + ' · <span style="color:#2563eb;font-weight:600;">' + (p.views || 0) + ' views</span></div>';
+            });
+          } else if (!hasData) {
+            inner += '<div style="font-size:11px;color:#cbd5e1;margin-top:6px;">Click to start</div>';
+          }
+          dayEl.innerHTML = inner;
+          grid.appendChild(dayEl);
+        }
+
+        if (hasData && campaignId) {
+          ctaEl.innerHTML = '<a href="campaign-track.html?id=' + encodeURIComponent(campaignId) + '">View full calendar &rarr;</a>';
+        } else if (campaignsList.length > 0) {
+          ctaEl.innerHTML = '<a href="campaign-track.html?id=' + encodeURIComponent(campaignsList[0].id) + '&name=' + encodeURIComponent(campaignsList[0].title || 'Campaign') + '">View campaign calendar &rarr;</a>';
+        } else {
+          ctaEl.innerHTML = 'Click any date or the button above to start your campaign.';
+        }
+      }
+
+      function loadCalendarData() {
+        if (bypass) {
+          const d = new Date();
+          const today = d.toISOString().slice(0, 10);
+          buildCalendar(
+            [{ platform: 'tiktok', views: 1200, postDate: today }, { platform: 'tiktok', views: 800, postDate: today }],
+            'demo'
+          );
+          return;
+        }
+        fetch(API_URL + '/campaigns/created', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => r.ok ? r.json() : [])
+          .catch(() => [])
+          .then(campaigns => {
+            campaignsList = campaigns || [];
+            renderCampaigns(campaignsList);
+            if (campaignsList.length > 0) {
+              const first = campaignsList[0];
+              return fetch(API_URL + '/campaigns/' + first.id + '/posts', { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(r => r.ok ? r.json() : [])
+                .catch(() => [])
+                .then(posts => ({ posts: posts || [], campaignId: first.id }));
+            }
+            return { posts: [], campaignId: null };
+          })
+          .then(({ posts, campaignId }) => buildCalendar(posts, campaignId));
+      }
+
+      loadCalendarData();
     })();
   </script>
 </body>
