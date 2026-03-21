@@ -236,10 +236,8 @@
           const platforms = Array.isArray(c.platforms) ? c.platforms : (c.platform ? [c.platform] : []);
           const platformStr = platforms.length ? platforms.join(', ') : (c.platform || '—');
           const sampleBadge = isMock ? '<span class="status-badge" style="background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);margin-right:8px;">Sample</span>' : '';
-          card.innerHTML = '<div><h4>' + sampleBadge + (c.title || 'Untitled') + '</h4><span class="meta">' + platformStr + (c.allowWatermark ? ' · Watermark allowed' : '') + '</span></div><button type="button" class="btn-sponsor" data-id="' + c.id + '" ' + (isMock ? 'disabled title="Sample campaign for preview"' : '') + '>Sponsor</button>';
-          if (!isMock) {
-            card.querySelector('.btn-sponsor').addEventListener('click', () => openSponsorModal(c));
-          }
+          card.innerHTML = '<div><h4>' + sampleBadge + (c.title || 'Untitled') + '</h4><span class="meta">' + platformStr + (c.allowWatermark ? ' · Watermark allowed' : '') + '</span></div><button type="button" class="btn-sponsor" data-id="' + c.id + '">Sponsor</button>';
+          card.querySelector('.btn-sponsor').addEventListener('click', () => openSponsorModal(c));
           listEl.appendChild(card);
         });
       }
@@ -355,6 +353,11 @@
         }
         if (!selectedCampaignId) {
           errEl.textContent = 'No campaign selected.';
+          errEl.style.display = 'block';
+          return;
+        }
+        if ((selectedCampaignId || '').startsWith('mock-')) {
+          errEl.textContent = 'This is a sample campaign for preview. When creators enable sponsor offers on their campaigns, you can sponsor them here.';
           errEl.style.display = 'block';
           return;
         }
