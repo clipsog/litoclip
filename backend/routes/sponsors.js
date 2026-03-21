@@ -82,11 +82,18 @@ router.get('/offers', requireAuth, requireSponsor, async (req, res) => {
 
 // Mock campaigns for demo when no real campaigns exist
 const MOCK_CAMPAIGNS = [
-  { id: 'mock-gaming-1', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], acceptSponsorOffers: true, allowWatermark: true },
-  { id: 'mock-podcast-1', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], acceptSponsorOffers: true, allowWatermark: false },
-  { id: 'mock-lifestyle-1', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], acceptSponsorOffers: true, allowWatermark: true },
-  { id: 'mock-tech-1', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], acceptSponsorOffers: true, allowWatermark: true },
-  { id: 'mock-music-1', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], acceptSponsorOffers: true, allowWatermark: false },
+  { id: 'mock-gaming-1', creatorName: 'Alex Rivera', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], acceptSponsorOffers: true, allowWatermark: true },
+  { id: 'mock-podcast-1', creatorName: 'Jamie Chen', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], acceptSponsorOffers: true, allowWatermark: false },
+  { id: 'mock-lifestyle-1', creatorName: 'Morgan Lee', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], acceptSponsorOffers: true, allowWatermark: true },
+  { id: 'mock-tech-1', creatorName: 'Sam Torres', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], acceptSponsorOffers: true, allowWatermark: true },
+  { id: 'mock-music-1', creatorName: 'Jordan Blake', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], acceptSponsorOffers: true, allowWatermark: false },
+];
+
+// Mock posts for demo campaigns
+const MOCK_POSTS = [
+  { id: 'mock-post-1', platform: 'tiktok', postUrl: 'https://tiktok.com/@example/video/1', views: 12400, postDate: '2025-03-10', accountHandle: '@alexgaming' },
+  { id: 'mock-post-2', platform: 'tiktok', postUrl: 'https://tiktok.com/@example/video/2', views: 8200, postDate: '2025-03-09', accountHandle: '@alexgaming' },
+  { id: 'mock-post-3', platform: 'youtube', postUrl: 'https://youtube.com/shorts/abc123', views: 15600, postDate: '2025-03-08', accountHandle: '@jamiepodcast' },
 ];
 
 // GET /api/sponsors/campaigns – list campaigns that accept sponsor offers (for sponsors to browse)
@@ -94,8 +101,9 @@ router.get('/campaigns', requireAuth, requireSponsor, async (req, res) => {
   let rows = [];
   try {
     rows = await db.prepare(`
-      SELECT c.id, c.title, c.platform, c.platforms, c.accept_sponsor_offers, c.allow_watermark
+      SELECT c.id, c.title, c.platform, c.platforms, c.accept_sponsor_offers, c.allow_watermark, u.name as creator_name
       FROM campaigns c
+      LEFT JOIN users u ON u.id = c.owner_id
       WHERE c.status = 'active' AND c.accept_sponsor_offers = 1
       ORDER BY c.created_at DESC
     `).all();
@@ -104,6 +112,7 @@ router.get('/campaigns', requireAuth, requireSponsor, async (req, res) => {
   }
   const campaigns = rows.map(r => ({
     id: r.id,
+    creatorName: r.creator_name || 'Creator',
     title: r.title,
     platform: r.platform,
     platforms: r.platforms ? (typeof r.platforms === 'string' ? JSON.parse(r.platforms || '[]') : r.platforms) : [],
@@ -115,6 +124,32 @@ router.get('/campaigns', requireAuth, requireSponsor, async (req, res) => {
     return res.json(MOCK_CAMPAIGNS);
   }
   res.json(campaigns);
+});
+
+// GET /api/sponsors/campaigns/:id/posts – view campaign posts (videos) for sponsors
+router.get('/campaigns/:id/posts', requireAuth, requireSponsor, async (req, res) => {
+  const campaignId = req.params.id;
+  if ((campaignId || '').startsWith('mock-')) {
+    return res.json(MOCK_POSTS);
+  }
+  const campaign = await db.prepare('SELECT id, accept_sponsor_offers FROM campaigns WHERE id = ?').get(campaignId);
+  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+  if (!campaign.accept_sponsor_offers) return res.status(403).json({ error: 'Campaign does not accept sponsors' });
+  try {
+    const rows = await db.prepare(`
+      SELECT p.id, p.platform, p.post_url, p.views, p.post_date, a.handle as account_handle
+      FROM campaign_posts p
+      LEFT JOIN campaign_accounts a ON a.id = p.campaign_account_id
+      WHERE p.campaign_id = ?
+      ORDER BY p.post_date DESC, p.created_at DESC
+    `).all(campaignId);
+    res.json(rows.map(r => ({
+      id: r.id, platform: r.platform, postUrl: r.post_url, views: r.views || 0,
+      postDate: r.post_date, accountHandle: r.account_handle
+    })));
+  } catch (e) {
+    res.json([]);
+  }
 });
 
 // POST /api/sponsors/deals – sponsor sends offer to campaign

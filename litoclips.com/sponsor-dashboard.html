@@ -49,6 +49,15 @@
     .status-badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
     .status-badge.active { background: rgba(34, 197, 94, 0.25); color: #86efac; }
     .status-badge.exhausted { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+    .campaign-card { cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+    .campaign-card:hover { background: rgba(255,255,255,0.1) !important; }
+    .modal-wide { max-width: 560px; }
+    .videos-list { display: flex; flex-direction: column; gap: 10px; }
+    .video-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; }
+    .video-item a { color: #93c5fd; text-decoration: none; }
+    .video-item a:hover { text-decoration: underline; }
+    .video-item .platform { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .video-item .views { font-weight: 600; color: #86efac; }
   </style>
 </head>
 <body class="dashboard-theme gradient-section-bg">
@@ -80,7 +89,7 @@
 
     <div class="dashboard-section">
       <h2>Browse Campaigns</h2>
-      <p class="section-desc">Active campaigns from creators who allow sponsors. Click Sponsor to send your offer.</p>
+      <p class="section-desc">Active campaigns from creators who allow sponsors. Click a card to view their videos, then Sponsor to send your offer.</p>
       <div id="campaignsList" class="campaign-list">
         <div class="empty-state" id="campaignsEmpty">
           <div class="empty-state-icon">
@@ -128,6 +137,26 @@
     </div>
   </main>
 
+  <div class="modal-overlay" id="campaignDetailModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3 id="campaignDetailTitle">Campaign</h3>
+        <button type="button" class="modal-close" id="campaignDetailClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4 style="font-size: 14px; margin-bottom: 16px; color: rgba(255,255,255,0.8);">Videos</h4>
+        <div id="campaignVideosList" class="videos-list"></div>
+        <div id="campaignVideosEmpty" class="empty-state" style="display:none; padding: 24px;">
+          <p>No videos posted yet. Check back later.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="campaignDetailCancel">Close</button>
+        <button type="button" class="btn-primary" id="campaignDetailSponsorBtn">Sponsor this campaign</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="sponsorModal">
     <div class="modal">
       <div class="modal-header">
@@ -138,11 +167,11 @@
         <p id="sponsorModalCampaign" class="section-desc" style="margin-bottom: 16px;"></p>
         <div class="form-group">
           <label>Select offer</label>
-          <select id="sponsorOfferSelect" style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px;">
+          <select id="sponsorOfferSelect" style="width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,0.2); border-radius:8px; font-size:14px; background: rgba(255,255,255,0.08); color: white;">
             <option value="">-- Choose an offer --</option>
           </select>
         </div>
-        <p id="sponsorModalError" style="color: #dc2626; font-size: 14px; margin-top: 12px; display: none;"></p>
+        <p id="sponsorModalError" style="color: #f87171; font-size: 14px; margin-top: 12px; display: none;"></p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-secondary" id="sponsorModalCancel">Cancel</button>
@@ -202,11 +231,11 @@
       let selectedCampaignId = null;
 
       const MOCK_CAMPAIGNS = [
-        { id: 'mock-gaming-1', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], allowWatermark: true },
-        { id: 'mock-podcast-1', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], allowWatermark: false },
-        { id: 'mock-lifestyle-1', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], allowWatermark: true },
-        { id: 'mock-tech-1', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], allowWatermark: true },
-        { id: 'mock-music-1', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], allowWatermark: false },
+        { id: 'mock-gaming-1', creatorName: 'Alex Rivera', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], allowWatermark: true },
+        { id: 'mock-podcast-1', creatorName: 'Jamie Chen', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], allowWatermark: false },
+        { id: 'mock-lifestyle-1', creatorName: 'Morgan Lee', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], allowWatermark: true },
+        { id: 'mock-tech-1', creatorName: 'Sam Torres', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], allowWatermark: true },
+        { id: 'mock-music-1', creatorName: 'Jordan Blake', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], allowWatermark: false },
       ];
 
       function loadCampaigns() {
@@ -233,11 +262,13 @@
           const isMock = (c.id || '').startsWith('mock-');
           const card = document.createElement('div');
           card.className = 'campaign-card';
+          const creatorName = c.creatorName || 'Creator';
+          const campaignTitle = c.title || 'Untitled';
           const platforms = Array.isArray(c.platforms) ? c.platforms : (c.platform ? [c.platform] : []);
           const platformStr = platforms.length ? platforms.join(', ') : (c.platform || '—');
           const sampleBadge = isMock ? '<span class="status-badge" style="background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);margin-right:8px;">Sample</span>' : '';
-          card.innerHTML = '<div><h4>' + sampleBadge + (c.title || 'Untitled') + '</h4><span class="meta">' + platformStr + (c.allowWatermark ? ' · Watermark allowed' : '') + '</span></div><button type="button" class="btn-sponsor" data-id="' + c.id + '">Sponsor</button>';
-          card.querySelector('.btn-sponsor').addEventListener('click', () => openSponsorModal(c));
+          card.innerHTML = '<div><h4>' + sampleBadge + creatorName + ' · ' + campaignTitle + '</h4><span class="meta">' + platformStr + (c.allowWatermark ? ' · Watermark allowed' : '') + '</span></div><span style="color:rgba(255,255,255,0.6);font-size:14px;">View videos →</span>';
+          card.addEventListener('click', (e) => { e.stopPropagation(); openCampaignDetail(c); });
           listEl.appendChild(card);
         });
       }
@@ -314,9 +345,51 @@
           .finally(() => { this.disabled = false; });
       });
 
+      function openCampaignDetail(campaign) {
+        selectedCampaignId = campaign?.id;
+        const creatorName = campaign?.creatorName || 'Creator';
+        const campaignTitle = campaign?.title || 'Campaign';
+        document.getElementById('campaignDetailTitle').textContent = creatorName + ' · ' + campaignTitle;
+        document.getElementById('campaignVideosList').innerHTML = '';
+        document.getElementById('campaignVideosEmpty').style.display = 'none';
+        document.getElementById('campaignDetailModal').classList.add('active');
+        fetch(API_URL + '/sponsors/campaigns/' + campaign.id + '/posts', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => r.ok ? r.json() : [])
+          .catch(() => [])
+          .then(posts => {
+            const listEl = document.getElementById('campaignVideosList');
+            const emptyEl = document.getElementById('campaignVideosEmpty');
+            if (!posts || posts.length === 0) {
+              emptyEl.style.display = 'block';
+              return;
+            }
+            posts.forEach(p => {
+              const item = document.createElement('div');
+              item.className = 'video-item';
+              const link = (p.postUrl && p.postUrl.startsWith('http')) ? '<a href="' + p.postUrl + '" target="_blank" rel="noopener">' + (p.platform || 'Video') + ' · ' + (p.accountHandle || '') + '</a>' : '<span>' + (p.platform || 'Video') + ' · ' + (p.accountHandle || '') + '</span>';
+              item.innerHTML = '<div><div>' + link + '</div><div class="platform">' + (p.postDate || '') + '</div></div><span class="views">' + (p.views || 0).toLocaleString() + ' views</span>';
+              listEl.appendChild(item);
+            });
+          });
+      }
+
+      function closeCampaignDetail() {
+        document.getElementById('campaignDetailModal').classList.remove('active');
+      }
+
+      document.getElementById('campaignDetailClose').addEventListener('click', closeCampaignDetail);
+      document.getElementById('campaignDetailCancel').addEventListener('click', closeCampaignDetail);
+      document.getElementById('campaignDetailSponsorBtn').addEventListener('click', function() {
+        const c = campaigns.find(x => x.id === selectedCampaignId);
+        if (c) {
+          closeCampaignDetail();
+          openSponsorModal(c);
+        }
+      });
+
       function openSponsorModal(campaign) {
         selectedCampaignId = campaign?.id;
-        document.getElementById('sponsorModalTitle').textContent = 'Sponsor: ' + (campaign?.title || 'Campaign');
+        document.getElementById('sponsorModalTitle').textContent = 'Sponsor: ' + (campaign?.creatorName || '') + ' · ' + (campaign?.title || 'Campaign');
         document.getElementById('sponsorModalCampaign').textContent = 'Choose an offer to send to this campaign. The offer\'s budget will be reserved.';
         document.getElementById('sponsorModalError').style.display = 'none';
         updateSponsorModalOffers();
