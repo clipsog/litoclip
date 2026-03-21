@@ -70,6 +70,8 @@
     .nav-balance-pill svg { flex-shrink: 0; width: 18px; height: 18px; }
     .nav-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #e2e8f0; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
     .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .sponsor-settings-section { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 24px; margin-top: 24px; }
+    .sponsor-settings-section h3 { font-size: 16px; margin-bottom: 8px; }
   </style>
 </head>
 <body class="dashboard-theme">
@@ -111,6 +113,15 @@
         <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
       </div>
       <div class="calendar-grid" id="calendarGrid"></div>
+
+      <div class="sponsor-settings-section" id="sponsorSettingsSection">
+        <h3>Sponsor offers</h3>
+        <p style="font-size: 14px; color: #64748b; margin-bottom: 12px;">Let sponsors discover your campaign and make offers. When enabled, sponsors can browse and send sponsorship deals to your campaign.</p>
+        <label class="auto-charge">
+          <input type="checkbox" id="acceptSponsorOffers" />
+          Allow sponsors to view and offer on this campaign
+        </label>
+      </div>
 
       <div class="pay-section" id="paySection">
         <h3>Keep it going</h3>
@@ -254,6 +265,29 @@
         if (accounts.length === 0 && !bypass && campaignId && campaignId !== 'demo') renderAccounts();
         buildCalendar();
       });
+
+      function loadSponsorSettings() {
+        if (bypass || !campaignId || campaignId === 'demo') return;
+        fetch(API_URL + '/campaigns/' + campaignId + '/sponsor-settings', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            const cb = document.getElementById('acceptSponsorOffers');
+            if (cb) cb.checked = !!data?.acceptSponsorOffers;
+          })
+          .catch(() => {});
+      }
+      function saveSponsorSettings() {
+        if (bypass || !campaignId || campaignId === 'demo') return;
+        const cb = document.getElementById('acceptSponsorOffers');
+        if (!cb) return;
+        fetch(API_URL + '/campaigns/' + campaignId + '/sponsor-settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ acceptSponsorOffers: cb.checked })
+        }).catch(() => {});
+      }
+      loadSponsorSettings();
+      document.getElementById('acceptSponsorOffers')?.addEventListener('change', saveSponsorSettings);
 
       function formatDateKey(d) {
         const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');

@@ -117,6 +117,14 @@
       </div>
 
       <div class="form-section">
+        <label class="platform-checkbox" style="max-width: 400px;">
+          <input type="checkbox" name="acceptSponsorOffers" id="acceptSponsorOffers" />
+          <span class="platform-label">Allow sponsors to view and offer on this campaign</span>
+        </label>
+        <p class="platform-hint" style="margin-top: 8px;">When enabled, sponsors can discover your campaign and send sponsorship deals. You can change this later in campaign settings.</p>
+      </div>
+
+      <div class="form-section">
         <h2 style="display:flex; align-items:center; gap:8px;">Platforms <button type="button" class="btn-platform-guide" id="platformGuideBtn" title="Find out what suits best your campaign goals">i</button></h2>
         <div class="platform-guide-wrap" id="platformGuideWrap">
         <div class="platform-table-wrap">
@@ -395,6 +403,7 @@
           return;
         }
         const postsPerDay = parseInt(row.querySelector('input[name^="posts_per_day_"]')?.value, 10) || 3;
+        const acceptSponsor = document.getElementById('acceptSponsorOffers')?.checked || false;
         const body = {
           title,
           platform,
@@ -405,7 +414,8 @@
           posts_per_day: postsPerDay,
           budget: parseFloat(calcPriceFirstMonth(numAccounts)),
           platforms: [platform],
-          requirePayment: false
+          requirePayment: false,
+          acceptSponsorOffers: acceptSponsor
         };
         if (bypass) {
           localStorage.setItem('lastCampaign', JSON.stringify({ id: 'bypass-' + Date.now(), title, platform, goal, num_accounts: numAccounts }));

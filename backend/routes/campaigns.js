@@ -7,7 +7,7 @@ const router = express.Router();
 
 // POST /api/campaigns – create a new campaign (authenticated)
 router.post('/', requireAuth, async (req, res) => {
-  const { title, description, niche, platform, budget, rpm, content_link, platforms, num_accounts, goal, payment_schedule, requirePayment, posts_per_day } = req.body || {};
+  const { title, description, niche, platform, budget, rpm, content_link, platforms, num_accounts, goal, payment_schedule, requirePayment, posts_per_day, acceptSponsorOffers } = req.body || {};
   if (!title || !title.trim()) {
     return res.status(400).json({ error: 'Campaign title is required' });
   }
@@ -20,10 +20,11 @@ router.post('/', requireAuth, async (req, res) => {
 
   try {
     const postsPerDayVal = posts_per_day != null ? Math.min(10, Math.max(1, parseInt(posts_per_day, 10))) : null;
+    const acceptSponsor = !!acceptSponsorOffers;
     try {
       await db.prepare(`
-        INSERT INTO campaigns (id, title, description, niche, platform, budget, rpm, status, owner_id, content_link, platforms, num_accounts, goal, payment_schedule, payment_status, posts_per_day)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO campaigns (id, title, description, niche, platform, budget, rpm, status, owner_id, content_link, platforms, num_accounts, goal, payment_schedule, payment_status, posts_per_day, accept_sponsor_offers)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         id,
         title.trim(),
@@ -32,6 +33,7 @@ router.post('/', requireAuth, async (req, res) => {
         (platform || '').trim() || null,
         budget != null ? parseFloat(budget) : 0,
         rpm != null ? parseFloat(rpm) : 0,
+        status,
         ownerId,
         (content_link || '').trim() || null,
         platformsStr,
@@ -39,7 +41,8 @@ router.post('/', requireAuth, async (req, res) => {
         (goal || '').trim() || null,
         (payment_schedule || '').trim() || null,
         paymentStatus,
-        postsPerDayVal
+        postsPerDayVal,
+        acceptSponsor ? 1 : 0
       );
     } catch (colErr) {
       if (colErr.message && colErr.message.includes('posts_per_day')) {
