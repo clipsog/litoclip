@@ -80,22 +80,41 @@ router.get('/offers', requireAuth, requireSponsor, async (req, res) => {
   })));
 });
 
+// Mock campaigns for demo when no real campaigns exist
+const MOCK_CAMPAIGNS = [
+  { id: 'mock-gaming-1', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], acceptSponsorOffers: true, allowWatermark: true },
+  { id: 'mock-podcast-1', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], acceptSponsorOffers: true, allowWatermark: false },
+  { id: 'mock-lifestyle-1', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], acceptSponsorOffers: true, allowWatermark: true },
+  { id: 'mock-tech-1', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], acceptSponsorOffers: true, allowWatermark: true },
+  { id: 'mock-music-1', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], acceptSponsorOffers: true, allowWatermark: false },
+];
+
 // GET /api/sponsors/campaigns – list campaigns that accept sponsor offers (for sponsors to browse)
 router.get('/campaigns', requireAuth, requireSponsor, async (req, res) => {
-  const rows = await db.prepare(`
-    SELECT c.id, c.title, c.platform, c.platforms, c.accept_sponsor_offers, c.allow_watermark
-    FROM campaigns c
-    WHERE c.status = 'active' AND c.accept_sponsor_offers = 1
-    ORDER BY c.created_at DESC
-  `).all();
-  res.json(rows.map(r => ({
+  let rows = [];
+  try {
+    rows = await db.prepare(`
+      SELECT c.id, c.title, c.platform, c.platforms, c.accept_sponsor_offers, c.allow_watermark
+      FROM campaigns c
+      WHERE c.status = 'active' AND c.accept_sponsor_offers = 1
+      ORDER BY c.created_at DESC
+    `).all();
+  } catch (e) {
+    // DB may not be ready
+  }
+  const campaigns = rows.map(r => ({
     id: r.id,
     title: r.title,
     platform: r.platform,
-    platforms: r.platforms ? JSON.parse(r.platforms || '[]') : [],
+    platforms: r.platforms ? (typeof r.platforms === 'string' ? JSON.parse(r.platforms || '[]') : r.platforms) : [],
     acceptSponsorOffers: !!r.accept_sponsor_offers,
     allowWatermark: !!r.allow_watermark,
-  })));
+  }));
+  // When no real campaigns, include mock campaigns for demo/preview
+  if (campaigns.length === 0) {
+    return res.json(MOCK_CAMPAIGNS);
+  }
+  res.json(campaigns);
 });
 
 // POST /api/sponsors/deals – sponsor sends offer to campaign
