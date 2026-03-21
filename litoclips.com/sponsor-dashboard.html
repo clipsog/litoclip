@@ -10,49 +10,45 @@
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
-    body.dashboard-theme { background: #f8fafc; color: #0f172a; }
-    body.dashboard-theme .header { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
-    body.dashboard-theme .header .logo-text { color: #0f172a; }
-    body.dashboard-theme .nav-links a { color: #475569; }
-    body.dashboard-theme .nav-links a:hover { color: #2563eb; }
-    body.dashboard-theme .nav-cta { color: #2563eb !important; }
+    /* Blue theme applied via gradient-section-bg in styles.css */
     .sponsor-page { max-width: 1000px; margin: 0 auto; padding: 48px 24px 80px; }
-    .welcome-banner { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 16px; padding: 32px; color: white; margin-bottom: 40px; }
+    .welcome-banner { border-radius: 16px; padding: 32px; margin-bottom: 40px; }
     .welcome-banner h1 { font-size: 24px; margin-bottom: 8px; font-weight: 600; }
     .welcome-banner p { opacity: 0.95; font-size: 15px; }
-    .dashboard-section { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; margin-bottom: 24px; }
-    .dashboard-section h2 { font-size: 18px; color: #0f172a; margin-bottom: 20px; font-weight: 600; }
+    .dashboard-section { border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+    .dashboard-section h2 { font-size: 18px; margin-bottom: 20px; font-weight: 600; }
     .empty-state { text-align: center; padding: 48px 24px; }
-    .empty-state-icon { width: 64px; height: 64px; margin: 0 auto 16px; background: #f1f5f9; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #94a3b8; }
-    .empty-state h3 { font-size: 18px; color: #0f172a; margin-bottom: 8px; }
-    .empty-state p { color: #64748b; font-size: 14px; margin-bottom: 24px; max-width: 360px; margin-left: auto; margin-right: auto; }
+    .empty-state-icon { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+    .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; margin-bottom: 24px; max-width: 360px; margin-left: auto; margin-right: auto; }
     .campaign-list, .offer-list, .deal-list { display: flex; flex-direction: column; gap: 12px; }
-    .campaign-card, .offer-card, .deal-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; flex-wrap: wrap; gap: 12px; }
-    .campaign-card h4, .offer-card h4, .deal-card h4 { font-size: 16px; color: #0f172a; margin-bottom: 4px; }
-    .campaign-card .meta, .offer-card .meta, .deal-card .meta { font-size: 13px; color: #64748b; }
+    .campaign-card, .offer-card, .deal-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-radius: 12px; flex-wrap: wrap; gap: 12px; }
+    .campaign-card h4, .offer-card h4, .deal-card h4 { font-size: 16px; margin-bottom: 4px; }
+    .campaign-card .meta, .offer-card .meta, .deal-card .meta { font-size: 13px; }
     .btn-sponsor { padding: 10px 20px; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; }
     .btn-sponsor:hover { opacity: 0.95; }
     .btn-sponsor:disabled { opacity: 0.5; cursor: not-allowed; }
-    .nav-balance-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 9999px; text-decoration: none; color: #2563eb; font-weight: 600; font-size: 14px; }
+    .section-desc { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px; }
+    .nav-balance-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 14px; }
     .nav-balance-pill svg { width: 18px; height: 18px; }
-    .nav-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #e2e8f0; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+    .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 500; color: #334155; margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+    .form-group input { width: 100%; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .modal-overlay.active { display: flex; }
-    .modal { background: #fff; border-radius: 16px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-    .modal-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .modal { border-radius: 16px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { font-size: 18px; margin: 0; }
-    .modal-close { background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
     .modal-body { padding: 24px; }
-    .modal-footer { padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; }
-    .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+    .modal-footer { padding: 16px 24px; display: flex; justify-content: flex-end; gap: 12px; }
+    .btn-secondary { padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; }
     .btn-primary { background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; }
     .btn-primary:hover, .btn-secondary:hover { opacity: 0.95; }
     .status-badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
-    .status-badge.active { background: #dcfce7; color: #166534; }
-    .status-badge.exhausted { background: #f1f5f9; color: #64748b; }
+    .status-badge.active { background: rgba(34, 197, 94, 0.25); color: #86efac; }
+    .status-badge.exhausted { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
   </style>
 </head>
 <body class="dashboard-theme gradient-section-bg">
@@ -84,7 +80,7 @@
 
     <div class="dashboard-section">
       <h2>Browse Campaigns</h2>
-      <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Active campaigns from creators who allow sponsors. Click Sponsor to send your offer.</p>
+      <p class="section-desc">Active campaigns from creators who allow sponsors. Click Sponsor to send your offer.</p>
       <div id="campaignsList" class="campaign-list">
         <div class="empty-state" id="campaignsEmpty">
           <div class="empty-state-icon">
@@ -98,7 +94,7 @@
 
     <div class="dashboard-section">
       <h2>My Offers</h2>
-      <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Create sponsor offers (watermark, CPM, budget). Use an offer when sponsoring a campaign.</p>
+      <p class="section-desc">Create sponsor offers (watermark, CPM, budget). Use an offer when sponsoring a campaign.</p>
       <div class="form-group" style="max-width: 400px; margin-bottom: 24px;">
         <label>Offer name</label>
         <input type="text" id="offerName" placeholder="e.g. Brand X Watermark">
@@ -123,7 +119,7 @@
 
     <div class="dashboard-section">
       <h2>My Deals</h2>
-      <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Sponsorship deals you've sent to campaigns.</p>
+      <p class="section-desc">Sponsorship deals you've sent to campaigns.</p>
       <div id="dealsList" class="deal-list">
         <div class="empty-state" id="dealsEmpty">
           <p>No deals yet. Browse campaigns above and send an offer to get started.</p>
@@ -139,7 +135,7 @@
         <button type="button" class="modal-close" id="sponsorModalClose">&times;</button>
       </div>
       <div class="modal-body">
-        <p id="sponsorModalCampaign" style="margin-bottom: 16px; color: #64748b;"></p>
+        <p id="sponsorModalCampaign" class="section-desc" style="margin-bottom: 16px;"></p>
         <div class="form-group">
           <label>Select offer</label>
           <select id="sponsorOfferSelect" style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px;">
@@ -258,7 +254,7 @@
           listEl.appendChild(card);
         });
         if (offers.length === 0) {
-          listEl.innerHTML = '<p style="color:#64748b; font-size:14px;">No offers yet. Create one above.</p>';
+          listEl.innerHTML = '<p class="section-desc" style="font-size:14px;">No offers yet. Create one above.</p>';
         }
       }
 
