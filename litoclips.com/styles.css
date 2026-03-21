@@ -83,6 +83,7 @@ body.dashboard-theme.gradient-section-bg .track-page,
 body.onboarding-theme.gradient-section-bg .campaign-page {
   position: relative;
   z-index: 1;
+  padding-top: 120px; /* clear fixed header */
 }
 body.dashboard-theme.gradient-section-bg .welcome-banner,
 body.onboarding-theme.gradient-section-bg .welcome-banner {
@@ -288,6 +289,7 @@ body.onboarding-theme.gradient-section-bg .btn-add-platform:hover {
 body.onboarding-theme.gradient-section-bg .onboarding-page {
   position: relative;
   z-index: 1;
+  padding-top: 120px; /* clear fixed header */
 }
 body.onboarding-theme.gradient-section-bg .onboarding-card {
   background: rgba(255,255,255,0.06);
