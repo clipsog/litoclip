@@ -258,7 +258,8 @@
           d.setDate(d.getDate() + i);
           const dateKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
           const dayPosts = postsByDate[dateKey] || [];
-          const isWarmup = !hasData && i < 2;
+          const isFirstDay = !hasData && i === 0 && noCampaigns;
+          const isWarmup = false;
           const isPost = dayPosts.length > 0;
           const dayEl = document.createElement(noCampaigns ? 'a' : 'div');
           if (noCampaigns) {
@@ -268,15 +269,15 @@
           }
           dayEl.className = 'cal-day' + (isWarmup ? ' warmup' : '') + (isPost ? ' post' : '') + (!isWarmup && !isPost ? ' empty-day' : '') + (noCampaigns ? ' clickable' : '');
           let inner = '<div class="day-num">' + d.getDate() + ' ' + monthNames[d.getMonth()] + '</div>';
-          if (isWarmup) {
-            inner += '<span class="badge">Warming up</span><div style="font-size:11px;margin-top:6px;color:#92400e;">Interacting with niche</div>';
+          if (isFirstDay && noCampaigns) {
+            inner += '<div style="font-size:12px;margin-top:8px;color:#2563eb;font-weight:600;">Start campaign</div>';
           } else if (isPost && dayPosts.length) {
             inner += '<span class="badge">' + dayPosts.length + ' post' + (dayPosts.length > 1 ? 's' : '') + '</span>';
             dayPosts.forEach(p => {
               inner += '<div style="font-size:11px;margin-top:4px;">' + (p.platform || 'TikTok') + ' · <span style="color:#2563eb;font-weight:600;">' + (p.views || 0) + ' views</span></div>';
             });
-          } else if (!hasData) {
-            inner += '<div style="font-size:11px;color:#cbd5e1;margin-top:6px;">Click to start</div>';
+          } else if (!hasData && !isFirstDay) {
+            inner += '<div style="font-size:11px;color:#cbd5e1;margin-top:6px;">—</div>';
           }
           dayEl.innerHTML = inner;
           grid.appendChild(dayEl);
