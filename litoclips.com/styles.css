@@ -42,6 +42,339 @@ body {
   z-index: 1;
 }
 
+/* Dashboard blue theme (matches homepage) */
+body.dashboard-theme.gradient-section-bg,
+body.onboarding-theme.gradient-section-bg {
+  min-height: 100vh;
+  color: rgba(255,255,255,0.9);
+}
+body.dashboard-theme.gradient-section-bg .header,
+body.onboarding-theme.gradient-section-bg .header {
+  background: transparent;
+  border-bottom: none;
+}
+body.dashboard-theme.gradient-section-bg .header .logo-text,
+body.onboarding-theme.gradient-section-bg .header .logo-text {
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .nav-links a,
+body.onboarding-theme.gradient-section-bg .nav-links a {
+  color: rgba(255,255,255,0.9);
+}
+body.dashboard-theme.gradient-section-bg .nav-links a:hover,
+body.onboarding-theme.gradient-section-bg .nav-links a:hover {
+  opacity: 0.8;
+}
+body.dashboard-theme.gradient-section-bg .nav-cta,
+body.onboarding-theme.gradient-section-bg .nav-cta {
+  color: white !important;
+}
+body.dashboard-theme.gradient-section-bg .user-name,
+body.onboarding-theme.gradient-section-bg .user-name {
+  color: rgba(255,255,255,0.8);
+}
+body.dashboard-theme.gradient-section-bg .dashboard-page,
+body.dashboard-theme.gradient-section-bg .sponsor-page,
+body.dashboard-theme.gradient-section-bg .track-page,
+body.onboarding-theme.gradient-section-bg .campaign-page {
+  position: relative;
+  z-index: 1;
+}
+body.dashboard-theme.gradient-section-bg .welcome-banner,
+body.onboarding-theme.gradient-section-bg .welcome-banner {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+body.dashboard-theme.gradient-section-bg .dashboard-section,
+body.onboarding-theme.gradient-section-bg .dashboard-section {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+body.dashboard-theme.gradient-section-bg .dashboard-section h2,
+body.onboarding-theme.gradient-section-bg .dashboard-section h2 {
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .empty-state,
+body.onboarding-theme.gradient-section-bg .empty-state {
+  color: rgba(255,255,255,0.7);
+}
+body.dashboard-theme.gradient-section-bg .empty-state-icon,
+body.onboarding-theme.gradient-section-bg .empty-state-icon {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+}
+body.dashboard-theme.gradient-section-bg .empty-state h3,
+body.onboarding-theme.gradient-section-bg .empty-state h3 {
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .empty-state p,
+body.onboarding-theme.gradient-section-bg .dashboard-section p,
+body.onboarding-theme.gradient-section-bg .empty-state p,
+body.onboarding-theme.gradient-section-bg .dashboard-section p {
+  color: rgba(255,255,255,0.7);
+}
+body.dashboard-theme.gradient-section-bg .campaign-card,
+body.dashboard-theme.gradient-section-bg .offer-card,
+body.dashboard-theme.gradient-section-bg .deal-card,
+body.onboarding-theme.gradient-section-bg .platform-checkbox {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+}
+body.dashboard-theme.gradient-section-bg .campaign-card h4,
+body.dashboard-theme.gradient-section-bg .offer-card h4,
+body.dashboard-theme.gradient-section-bg .deal-card h4 {
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .campaign-card .meta,
+body.dashboard-theme.gradient-section-bg .offer-card .meta,
+body.dashboard-theme.gradient-section-bg .deal-card .meta {
+  color: rgba(255,255,255,0.65);
+}
+body.dashboard-theme.gradient-section-bg .quick-actions a,
+body.dashboard-theme.gradient-section-bg .calendar-cta a {
+  color: #93c5fd;
+}
+body.dashboard-theme.gradient-section-bg .quick-actions a:hover,
+body.onboarding-theme.gradient-section-bg .calendar-cta a:hover {
+  color: #bfdbfe;
+}
+body.dashboard-theme.gradient-section-bg .calendar-section,
+body.dashboard-theme.gradient-section-bg .accounts-section {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+}
+body.dashboard-theme.gradient-section-bg .calendar-section h3,
+body.dashboard-theme.gradient-section-bg .accounts-section h3 {
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .cal-header span {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8);
+}
+body.dashboard-theme.gradient-section-bg .cal-day {
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.9);
+}
+body.dashboard-theme.gradient-section-bg .cal-day .day-num {
+  color: rgba(255,255,255,0.7);
+}
+body.dashboard-theme.gradient-section-bg .cal-day.warmup {
+  background: rgba(245, 158, 11, 0.2);
+}
+body.dashboard-theme.gradient-section-bg .cal-day.post {
+  background: rgba(34, 197, 94, 0.15);
+}
+body.dashboard-theme.gradient-section-bg .cal-day.empty-day {
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.5);
+}
+body.dashboard-theme.gradient-section-bg .cal-day.empty-day:hover {
+  background: rgba(255,255,255,0.08);
+}
+body.dashboard-theme.gradient-section-bg .calendar-grid {
+  background: rgba(255,255,255,0.1);
+}
+body.dashboard-theme.gradient-section-bg .pay-section,
+body.dashboard-theme.gradient-section-bg .sponsor-settings-section {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+}
+body.dashboard-theme.gradient-section-bg .pay-section h3,
+body.dashboard-theme.gradient-section-bg .pay-section p,
+body.dashboard-theme.gradient-section-bg .sponsor-settings-section h3,
+body.dashboard-theme.gradient-section-bg .sponsor-settings-section p {
+  color: rgba(255,255,255,0.9);
+}
+body.dashboard-theme.gradient-section-bg .pay-section .auto-charge,
+body.dashboard-theme.gradient-section-bg .sponsor-settings-section .auto-charge {
+  color: rgba(255,255,255,0.85);
+}
+body.dashboard-theme.gradient-section-bg .nav-balance-pill,
+body.onboarding-theme.gradient-section-bg .nav-balance-pill {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+  color: #93c5fd;
+}
+body.dashboard-theme.gradient-section-bg .nav-balance-pill:hover,
+body.onboarding-theme.gradient-section-bg .nav-balance-pill:hover {
+  background: rgba(255,255,255,0.15);
+  color: #bfdbfe;
+}
+body.dashboard-theme.gradient-section-bg .nav-avatar,
+body.onboarding-theme.gradient-section-bg .nav-avatar {
+  border-color: rgba(255,255,255,0.3);
+}
+body.onboarding-theme.gradient-section-bg .campaign-page h1,
+body.onboarding-theme.gradient-section-bg .campaign-page .subtitle {
+  color: white;
+}
+body.onboarding-theme.gradient-section-bg .campaign-page .subtitle {
+  color: rgba(255,255,255,0.8);
+}
+body.onboarding-theme.gradient-section-bg .form-section h2 {
+  color: white;
+}
+body.onboarding-theme.gradient-section-bg .form-group label,
+body.onboarding-theme.gradient-section-bg .platform-checkbox .platform-label {
+  color: rgba(255,255,255,0.9);
+}
+body.onboarding-theme.gradient-section-bg .form-group input,
+body.onboarding-theme.gradient-section-bg .form-group select,
+body.onboarding-theme.gradient-section-bg .form-group textarea {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+  color: white;
+}
+body.onboarding-theme.gradient-section-bg .form-group input::placeholder,
+body.onboarding-theme.gradient-section-bg .form-group textarea::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+body.onboarding-theme.gradient-section-bg .form-group input:focus,
+body.onboarding-theme.gradient-section-bg .form-group select:focus,
+body.onboarding-theme.gradient-section-bg .form-group textarea:focus {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(147, 197, 253, 0.6);
+}
+body.onboarding-theme.gradient-section-bg .platform-table-wrap {
+  border-color: rgba(255,255,255,0.15);
+}
+body.onboarding-theme.gradient-section-bg .platform-table th,
+body.onboarding-theme.gradient-section-bg .platform-table td {
+  border-color: rgba(255,255,255,0.12);
+}
+body.onboarding-theme.gradient-section-bg .platform-table th {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+body.onboarding-theme.gradient-section-bg .platform-table tr:hover td {
+  background: rgba(255,255,255,0.06);
+}
+body.onboarding-theme.gradient-section-bg .platform-table .platform-name {
+  color: white;
+}
+body.onboarding-theme.gradient-section-bg .pricing-box {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(37, 99, 235, 0.3);
+  color: rgba(255,255,255,0.9);
+}
+body.onboarding-theme.gradient-section-bg .platform-row {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+}
+body.onboarding-theme.gradient-section-bg .platform-row .field label {
+  color: rgba(255,255,255,0.6);
+}
+body.onboarding-theme.gradient-section-bg .platform-row .field input,
+body.onboarding-theme.gradient-section-bg .platform-row .field select {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+  color: white;
+}
+body.onboarding-theme.gradient-section-bg .platform-row .price-display {
+  color: white;
+}
+body.onboarding-theme.gradient-section-bg .btn-add-platform {
+  border-color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.8);
+}
+body.onboarding-theme.gradient-section-bg .btn-add-platform:hover {
+  border-color: #93c5fd;
+  color: #bfdbfe;
+}
+body.onboarding-theme.gradient-section-bg .onboarding-page {
+  position: relative;
+  z-index: 1;
+}
+body.onboarding-theme.gradient-section-bg .onboarding-card {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.15);
+}
+body.onboarding-theme.gradient-section-bg .onboarding-card h1 {
+  color: white;
+}
+body.onboarding-theme.gradient-section-bg .onboarding-card .subtitle {
+  color: rgba(255,255,255,0.8);
+}
+body.onboarding-theme.gradient-section-bg .onboarding-footer a {
+  color: #93c5fd;
+}
+body.dashboard-theme.gradient-section-bg .track-page .back-link,
+body.dashboard-theme.gradient-section-bg .track-page h1 {
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .track-page .back-link:hover {
+  color: #93c5fd;
+}
+body.dashboard-theme.gradient-section-bg .account-pill {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(147, 197, 253, 0.4);
+}
+body.dashboard-theme.gradient-section-bg .modal,
+body.onboarding-theme.gradient-section-bg .modal {
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+body.dashboard-theme.gradient-section-bg .modal-header,
+body.onboarding-theme.gradient-section-bg .modal-header {
+  border-color: rgba(255,255,255,0.12);
+}
+body.dashboard-theme.gradient-section-bg .modal-header h3,
+body.onboarding-theme.gradient-section-bg .modal-header h3 {
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .modal-close,
+body.onboarding-theme.gradient-section-bg .modal-close {
+  color: rgba(255,255,255,0.7);
+}
+body.dashboard-theme.gradient-section-bg .modal-footer,
+body.onboarding-theme.gradient-section-bg .modal-footer {
+  border-color: rgba(255,255,255,0.12);
+}
+body.dashboard-theme.gradient-section-bg .form-group label,
+body.dashboard-theme.gradient-section-bg .form-group input,
+body.dashboard-theme.gradient-section-bg .form-group select {
+  color: rgba(255,255,255,0.9);
+}
+body.dashboard-theme.gradient-section-bg .form-group input,
+body.dashboard-theme.gradient-section-bg .form-group select {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+}
+body.dashboard-theme.gradient-section-bg .btn-secondary {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .day-modal {
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+body.dashboard-theme.gradient-section-bg .day-modal-header {
+  border-color: rgba(255,255,255,0.12);
+}
+body.dashboard-theme.gradient-section-bg .day-modal-header h3 {
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .day-modal-close {
+  color: rgba(255,255,255,0.7);
+}
+body.dashboard-theme.gradient-section-bg .day-modal .account-name {
+  color: white;
+}
+body.dashboard-theme.gradient-section-bg .day-modal .post-card {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+}
+body.dashboard-theme.gradient-section-bg .day-modal .post-card:hover {
+  border-color: rgba(147, 197, 253, 0.5);
+}
+body.dashboard-theme.gradient-section-bg .day-modal .post-card .view-link {
+  color: rgba(255,255,255,0.6);
+}
+body.dashboard-theme.gradient-section-bg .day-modal .warmup-desc {
+  color: rgba(251, 191, 36, 0.9);
+}
+
 /* ==================== ANIMATIONS ==================== */
 @keyframes fadeInUp {
   from {
