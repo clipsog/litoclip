@@ -15,8 +15,11 @@ async function optionalAuth(req, res, next) {
     const decoded = jwt.verify(token, config.jwt.secret);
     const user = await db.prepare('SELECT id, email, name, user_type, referral_code FROM users WHERE id = ?').get(decoded.userId);
     req.user = user || null;
-  } catch {
+  } catch (e) {
     req.user = null;
+    if (e.message && !e.message.includes('jwt') && !e.message.includes('expired')) {
+      console.error('optionalAuth db error:', e.message);
+    }
   }
   next();
 }

@@ -194,6 +194,8 @@
               credentials: 'include',
               body: JSON.stringify({ position })
             });
+            const resText = await res.text();
+            if (!res.ok) console.warn('Profile PUT failed:', res.status, resText);
             if (res.ok) {
               const u = user || {};
               u.position = position;
@@ -207,7 +209,7 @@
               localStorage.removeItem('user');
               setTimeout(() => { window.location.href = 'signup.html'; }, 1500);
             } else {
-              const data = await res.json().catch(() => ({}));
+              const data = (() => { try { return JSON.parse(resText); } catch (_) { return {}; } })();
               formError.textContent = data.error || 'Something went wrong. Please try again.';
             }
           } catch (err) {

@@ -115,6 +115,12 @@ app.get('/api/articles', (req, res) => {
   res.json([]);
 });
 
+// Global error handler (catches async errors and next(err))
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: err.message || 'Internal server error' });
+});
+
 ensureSchema().then(() => {
   app.listen(config.port, () => {
     console.log(`Backend running at http://localhost:${config.port}`);

@@ -91,7 +91,7 @@ router.get('/me', requireAuth, async (req, res) => {
   });
 });
 
-router.put('/profile', requireAuth, async (req, res) => {
+router.put('/profile', requireAuth, async (req, res, next) => {
   try {
     const body = req.body || {};
     const { name, firstName, lastName, position } = body;
@@ -109,8 +109,8 @@ router.put('/profile', requireAuth, async (req, res) => {
     await db.prepare('UPDATE users SET ' + updates.join(', ') + ' WHERE id = ?').run(...vals);
     res.json({ ok: true });
   } catch (err) {
-    console.error('PUT /profile error:', err);
-    res.status(500).json({ error: err.message || 'Profile update failed' });
+    console.error('PUT /profile error:', err.message, err.stack);
+    res.status(500).json({ error: err.message || 'Profile update failed', code: 'PROFILE_UPDATE_FAILED' });
   }
 });
 
