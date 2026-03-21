@@ -64,6 +64,8 @@
     .day-modal .post-card .views { font-size: 14px; color: #2563eb; font-weight: 600; margin-top: 6px; }
     .day-modal .post-card .view-link { font-size: 12px; color: #64748b; margin-top: 6px; }
     .day-modal .warmup-desc { color: #92400e; font-size: 14px; line-height: 1.5; }
+    .nav-balance { color: #16a34a; font-weight: 500; text-decoration: none; }
+    .nav-balance:hover { color: #15803d; }
   </style>
 </head>
 <body class="dashboard-theme">
@@ -76,6 +78,7 @@
       <nav class="nav-links">
         <a href="index.html#how-it-works">How It Works</a>
         <a href="brand-overview.html">Dashboard</a>
+        <a href="wallet.html" class="nav-balance" id="accountBalanceLink" style="display:none;">Account balance: <span id="accountBalance">$0.00</span></a>
         <span class="user-name" id="userName"></span>
         <a href="index.html" class="nav-cta" id="logoutBtn">Logout</a>
       </nav>
@@ -178,6 +181,24 @@
         localStorage.removeItem('user');
         window.location.href = 'index.html';
       });
+
+      function loadAccountBalance() {
+        if (token === 'demo-bypass-token') return;
+        const linkEl = document.getElementById('accountBalanceLink');
+        const spanEl = document.getElementById('accountBalance');
+        if (!linkEl || !spanEl) return;
+        fetch(API_URL + '/wallet', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            linkEl.style.display = 'inline';
+            spanEl.textContent = '$' + ((data && data.availableBalance != null) ? Number(data.availableBalance).toFixed(2) : '0.00');
+          })
+          .catch(() => {
+            linkEl.style.display = 'inline';
+            spanEl.textContent = '$0.00';
+          });
+      }
+      loadAccountBalance();
 
       const bypass = token === 'demo-bypass-token';
       document.getElementById('campaignTitle').textContent = params.get('name') || 'Campaign';

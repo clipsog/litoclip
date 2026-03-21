@@ -71,6 +71,8 @@
     .btn-platform-guide:hover { background: #f0f9ff; border-color: #2563eb; color: #2563eb; }
     .platform-guide-wrap { display: none; margin-top: 16px; }
     .platform-guide-wrap.visible { display: block; }
+    .nav-balance { color: #16a34a; font-weight: 500; text-decoration: none; }
+    .nav-balance:hover { color: #15803d; }
     @media (max-width: 900px) {
       .platform-row { grid-template-columns: 1fr 1fr auto; }
       .platform-row .field:nth-child(4), .platform-row .field:nth-child(5) { grid-column: span 1; }
@@ -88,6 +90,7 @@
       <nav class="nav-links">
         <a href="index.html#how-it-works">How It Works</a>
         <a href="brand-overview.html">Dashboard</a>
+        <a href="wallet.html" class="nav-balance" id="accountBalanceLink" style="display:none;">Account balance: <span id="accountBalance">$0.00</span></a>
         <span class="user-name" id="userName"></span>
         <a href="index.html" class="nav-cta" id="logoutBtn">Logout</a>
       </nav>
@@ -257,6 +260,24 @@
         localStorage.removeItem('user');
         window.location.href = 'index.html';
       });
+
+      function loadAccountBalance() {
+        if (token === 'demo-bypass-token') return;
+        const linkEl = document.getElementById('accountBalanceLink');
+        const spanEl = document.getElementById('accountBalance');
+        if (!linkEl || !spanEl) return;
+        fetch(API_URL + '/wallet', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            linkEl.style.display = 'inline';
+            spanEl.textContent = '$' + ((data && data.availableBalance != null) ? Number(data.availableBalance).toFixed(2) : '0.00');
+          })
+          .catch(() => {
+            linkEl.style.display = 'inline';
+            spanEl.textContent = '$0.00';
+          });
+      }
+      loadAccountBalance();
 
       document.getElementById('platformGuideBtn').addEventListener('click', function() {
         const wrap = document.getElementById('platformGuideWrap');

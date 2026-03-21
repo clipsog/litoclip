@@ -57,6 +57,8 @@
     .calendar-cta a:hover { text-decoration: underline; }
     .calendar-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
     .calendar-toolbar .btn-start-campaign { margin: 0; }
+    .nav-balance { color: #16a34a; font-weight: 500; text-decoration: none; }
+    .nav-balance:hover { color: #15803d; }
   </style>
 </head>
 <body class="dashboard-theme">
@@ -70,6 +72,7 @@
         <a href="index.html#how-it-works">How It Works</a>
         <a href="index.html#who-its-for">Who It's For</a>
         <a href="brand-overview.html">Dashboard</a>
+        <a href="wallet.html" class="nav-balance" id="accountBalanceLink" style="display:none;">Account balance: <span id="accountBalance">$0.00</span></a>
         <span class="user-name" id="userName"></span>
         <a href="index.html" class="nav-cta" id="logoutBtn">Logout</a>
       </nav>
@@ -168,7 +171,25 @@
 
       const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:37373/api' : (window.location.origin + '/api');
+
+      function loadAccountBalance() {
+        if (token === 'demo-bypass-token') return;
+        const linkEl = document.getElementById('accountBalanceLink');
+        const spanEl = document.getElementById('accountBalance');
+        if (!linkEl || !spanEl) return;
+        fetch(API_URL + '/wallet', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            linkEl.style.display = 'inline';
+            spanEl.textContent = '$' + ((data && data.availableBalance != null) ? Number(data.availableBalance).toFixed(2) : '0.00');
+          })
+          .catch(() => {
+            linkEl.style.display = 'inline';
+            spanEl.textContent = '$0.00';
+          });
+      }
       const bypass = token === 'demo-bypass-token';
+      loadAccountBalance();
 
       function renderCampaigns(campaigns) {
         const campaignsSection = document.getElementById('campaignsSection');
