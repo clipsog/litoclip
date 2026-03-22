@@ -81,6 +81,7 @@ body.dashboard-theme.gradient-section-bg .dashboard-page,
 body.dashboard-theme.gradient-section-bg .sponsor-page,
 body.dashboard-theme.gradient-section-bg .track-page,
 body.dashboard-theme.gradient-section-bg .settings-page,
+body.dashboard-theme.gradient-section-bg .wallet-page,
 body.onboarding-theme.gradient-section-bg .campaign-page {
   position: relative;
   z-index: 1;
@@ -209,6 +210,23 @@ body.onboarding-theme.gradient-section-bg .nav-balance-pill:hover {
 body.dashboard-theme.gradient-section-bg .nav-avatar,
 body.onboarding-theme.gradient-section-bg .nav-avatar {
   border-color: rgba(255,255,255,0.3);
+}
+body.dashboard-theme.gradient-section-bg .nav-bell,
+body.onboarding-theme.gradient-section-bg .nav-bell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: rgba(255,255,255,0.9);
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+}
+body.dashboard-theme.gradient-section-bg .nav-bell:hover,
+body.onboarding-theme.gradient-section-bg .nav-bell:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
 }
 body.onboarding-theme.gradient-section-bg .campaign-page h1,
 body.onboarding-theme.gradient-section-bg .campaign-page .subtitle {

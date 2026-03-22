@@ -1,697 +1,403 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
   <meta charset="UTF-8">
   <link rel="icon" type="image/png" href="assets/logo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wallet - LitoClips</title>
+  <title>Wallet — LitoClips</title>
+  <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="litoclips-theme.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
-    .payment-fields {
-      background: rgba(0, 200, 150, 0.05);
-      border: 1px solid rgba(0, 200, 150, 0.2);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
-      animation: slideDown 0.3s ease;
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .payment-fields .form-group {
-      margin-bottom: 16px;
-    }
-
-    .payment-fields .form-group:last-child {
-      margin-bottom: 0;
-    }
-
-    .payment-fields label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-    }
-
-    .payment-fields input,
-    .payment-fields select {
-      width: 100%;
-      padding: 12px 16px;
-      background: var(--bg-dark);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-size: 14px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .payment-fields input:focus,
-    .payment-fields select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.1);
-    }
-
-    .payment-fields small {
-      display: block;
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-
-    .payment-fields select option {
-      background: var(--bg-dark);
-      color: var(--text-primary);
-    }
-
-    @media (max-width: 768px) {
-      .main {
-        padding: 16px 12px;
-      }
-
-      .page-title {
-        font-size: 24px;
-      }
-
-      .wallet-card,
-      .transaction-item {
-        padding: 16px;
-      }
-
-      .btn {
-        padding: 10px 16px;
-        font-size: 14px;
-        width: 100%;
-      }
-
-      .modal-content {
-        width: 95%;
-        max-width: 95%;
-        margin: 20px auto;
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-
-      .payment-fields {
-        padding: 16px;
-      }
-
-      .grid-60-40 {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .main {
-        padding: 12px 8px;
-      }
-
-      .page-title {
-        font-size: 20px;
-      }
-
-      .modal-content {
-        width: 100%;
-        margin: 0;
-        border-radius: 0;
-        max-height: 100vh;
-      }
-
-      .payment-fields {
-        padding: 12px;
-      }
-    }
+    .wallet-page { max-width: 900px; margin: 0 auto; padding: 120px 24px 80px; position: relative; z-index: 1; }
+    .wallet-page h1 { font-size: 24px; color: white; margin-bottom: 8px; }
+    .wallet-page .subtitle { color: rgba(255,255,255,0.7); font-size: 15px; margin-bottom: 32px; }
+    .wallet-balance-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 32px; margin-bottom: 24px; text-align: center; }
+    .wallet-balance-card .label { font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+    .wallet-balance-card .value { font-size: 36px; font-weight: 700; color: white; }
+    .wallet-balance-card .hint { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 8px; }
+    .wallet-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    @media (max-width: 700px) { .wallet-stats { grid-template-columns: repeat(2, 1fr); } }
+    .wallet-stat { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 20px; }
+    .wallet-stat .label { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+    .wallet-stat .value { font-size: 18px; font-weight: 600; color: white; }
+    .wallet-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+    @media (max-width: 700px) { .wallet-grid { grid-template-columns: 1fr; } }
+    .wallet-section { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 24px; }
+    .wallet-section h3 { font-size: 16px; color: white; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .payment-fields { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .wallet-form-group { margin-bottom: 16px; }
+    .wallet-form-group label { display: block; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.9); margin-bottom: 6px; }
+    .wallet-form-group input, .wallet-form-group select, .wallet-form-group textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box; }
+    .wallet-form-group input::placeholder, .wallet-form-group textarea::placeholder { color: rgba(255,255,255,0.4); }
+    .wallet-form-group small { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+    .btn-request { display: block; width: 100%; padding: 12px 16px; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; }
+    .btn-request:hover { opacity: 0.95; }
+    .payout-item { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .payout-item:last-child { border-bottom: none; }
+    .payout-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .payout-icon.done { background: rgba(34, 197, 94, 0.2); }
+    .payout-icon.pending { background: rgba(234, 179, 8, 0.2); }
+    .payout-info { flex: 1; min-width: 0; }
+    .payout-amount { font-size: 15px; font-weight: 600; color: white; }
+    .payout-meta { font-size: 13px; color: rgba(255,255,255,0.6); }
+    .payout-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+    .payout-badge.completed { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+    .payout-badge.pending { background: rgba(234, 179, 8, 0.2); color: #fde047; }
+    .nav-avatar-wrap { position: relative; }
+    .nav-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; font-family: inherit; }
+    .nav-avatar-dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; min-width: 160px; background: rgba(30, 41, 59, 0.98); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 8px 0; box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 200; }
+    .nav-avatar-dropdown.open { display: block; }
+    .nav-avatar-dropdown a { display: block; padding: 10px 16px; color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px; }
+    .nav-avatar-dropdown a:hover { background: rgba(255,255,255,0.08); color: white; }
   </style>
 </head>
-<body>
-  <header class="header">
-    <div style="display: flex; align-items: center; gap: 16px;">
-      <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+<body class="dashboard-theme gradient-section-bg">
+  <header class="header scrolled">
+    <div class="header-container">
       <a href="index.html" class="logo">
-      <div class="logo-icon"><img src="assets/logo.png" alt="Logo"></div>
-      <span class="logo-text">LitoClips</span>
-    </a>
-    <div class="header-right">
-      <a href="index.html" class="header-link">Home</a>
-      <div class="level-pill">
-        <div class="level-circle" id="headerLevel">1</div>
-        <div class="level-info">
-          <span class="level-label">Level</span>
-          <span class="level-xp">0 / 100 XP</span>
+        <img src="assets/logo.png" alt="Logo">
+        <span class="logo-text">LitoClips</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html#how-it-works">How It Works</a>
+        <a href="index.html#who-its-for">Who It's For</a>
+        <a href="#" id="navDashboard">Dashboard</a>
+        <a href="wallet.html" class="nav-balance-pill" id="navBalance" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>
+          <span id="balanceAmount">$0.00</span>
+        </a>
+        <a href="settings.html#notifications" class="nav-bell" title="Notifications" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </a>
+        <div class="nav-avatar-wrap">
+          <button type="button" class="nav-avatar" id="userAvatar" aria-haspopup="true" aria-expanded="false">U</button>
+          <div class="nav-avatar-dropdown" id="userAvatarDropdown">
+            <a href="settings.html#profile">Edit profile</a>
+            <a href="settings.html">Settings</a>
+          </div>
         </div>
-      </div>
-      <button class="user-btn">
-        <div class="user-avatar"></div>
-        <span id="userName">User</span>
-      </button>
-      <button class="logout-btn" id="logoutBtn">Logout</button>
+        <a href="index.html" class="nav-cta" id="logoutBtn">Logout</a>
+      </nav>
     </div>
   </header>
 
-  <div class="layout">
-    <aside class="sidebar">
-      <a href="brand-overview.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-        </svg>
-        Overview
-      </a>
-      <a href="brand-overview.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-        </svg>
-        Browse Campaigns
-      </a>
-      <a href="brand-overview.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-        </svg>
-        My Campaigns
-      </a>
-      <a href="brand-overview.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
-        </svg>
-        Submissions
-      </a>
-      <a href="wallet.html" class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-        Wallet
-      </a>
-      <a href="settings.html" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-        Settings
-      </a>
-    </aside>
+  <main class="wallet-page">
+    <h1>Wallet</h1>
+    <p class="subtitle">Manage your earnings and request payouts</p>
 
-    <main class="main">
-      <div class="page-header">
-        <h1>Creator <span>Wallet</span></h1>
-        <p>Manage your earnings and request payouts</p>
+    <div class="wallet-balance-card">
+      <div class="label">Available Balance</div>
+      <div class="value" id="availableBalance">$0.00</div>
+      <div class="hint">Ready for withdrawal</div>
+    </div>
+
+    <div class="wallet-stats">
+      <div class="wallet-stat">
+        <div class="label">Total Earnings</div>
+        <div class="value" id="totalEarnings">$0.00</div>
       </div>
-
-      <!-- Balance Card -->
-      <div class="wallet-balance">
-        <div class="wallet-balance-label">Available Balance</div>
-        <div class="wallet-balance-value" id="availableBalance">$0.00</div>
-        <div class="wallet-balance-subtitle">Ready for withdrawal</div>
+      <div class="wallet-stat">
+        <div class="label">Pending</div>
+        <div class="value" id="pendingBalance">$0.00</div>
       </div>
-
-      <!-- Stats -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon teal">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value" id="totalEarnings">$0.00</div>
-            <div class="stat-label">Total Earnings</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon yellow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value" id="pendingBalance">$0.00</div>
-            <div class="stat-label">Pending</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon orange">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value" id="pendingPayouts">$0.00</div>
-            <div class="stat-label">Pending Payouts</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value" id="totalPaid">$0.00</div>
-            <div class="stat-label">Total Paid Out</div>
-          </div>
-        </div>
+      <div class="wallet-stat">
+        <div class="label">Pending Payouts</div>
+        <div class="value" id="pendingPayouts">$0.00</div>
       </div>
+      <div class="wallet-stat">
+        <div class="label">Total Paid Out</div>
+        <div class="value" id="totalPaid">$0.00</div>
+      </div>
+    </div>
 
-      <!-- Content Grid -->
-      <div class="grid-60-40">
-        <!-- Request Payout -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
-              </svg>
-              Request Payout
-            </h3>
+    <div class="wallet-grid">
+      <div class="wallet-section">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          Request Payout
+        </h3>
+        <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px;">Withdraw your available balance. Minimum: $10.00</p>
+        <form id="withdrawForm">
+          <div class="wallet-form-group">
+            <label>Amount (USD)</label>
+            <input type="number" id="withdrawAmount" step="0.01" min="10" placeholder="0.00" required>
+            <small>Available: <span id="availableAmount">$0.00</span></small>
           </div>
-          <p style="color: var(--text-muted); margin-bottom: 24px;">Withdraw your available balance to your preferred payment method. Minimum withdrawal: $10.00</p>
-          <form id="withdrawForm">
-            <div class="form-group">
-              <label>Amount (USD)</label>
-              <input type="number" id="withdrawAmount" step="0.01" min="10" placeholder="0.00" required>
-              <small>Available: <span id="availableAmount">$0.00</span></small>
+          <div class="wallet-form-group">
+            <label>Payment Method</label>
+            <select id="paymentMethod" required>
+              <option value="">Select payment method</option>
+              <option value="paypal">PayPal</option>
+              <option value="wise">Wise (TransferWise)</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="crypto">Cryptocurrency</option>
+            </select>
+          </div>
+          <div id="paypalFields" class="payment-fields" style="display: none;">
+            <div class="wallet-form-group">
+              <label>PayPal Email</label>
+              <input type="email" id="paypalEmail" placeholder="your@email.com">
+              <small>Email linked to your PayPal account</small>
             </div>
-            <div class="form-group">
-              <label>Payment Method</label>
-              <select id="paymentMethod" required>
-                <option value="">Select payment method</option>
-                <option value="paypal">PayPal</option>
-                <option value="wise">Wise (TransferWise)</option>
-                <option value="bank">Bank Transfer</option>
-                <option value="crypto">Cryptocurrency</option>
+          </div>
+          <div id="wiseFields" class="payment-fields" style="display: none;">
+            <div class="wallet-form-group">
+              <label>Wise Email</label>
+              <input type="email" id="wiseEmail" placeholder="your@email.com">
+            </div>
+            <div class="wallet-form-group">
+              <label>Currency</label>
+              <select id="wiseCurrency">
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+                <option value="CAD">CAD</option>
+                <option value="AUD">AUD</option>
               </select>
             </div>
-
-            <!-- PayPal Fields -->
-            <div id="paypalFields" class="payment-fields" style="display: none;">
-              <div class="form-group">
-                <label>PayPal Email</label>
-                <input type="email" id="paypalEmail" placeholder="your@email.com">
-                <small>The email address linked to your PayPal account</small>
-              </div>
-            </div>
-
-            <!-- Wise Fields -->
-            <div id="wiseFields" class="payment-fields" style="display: none;">
-              <div class="form-group">
-                <label>Wise Email</label>
-                <input type="email" id="wiseEmail" placeholder="your@email.com">
-                <small>The email address linked to your Wise account</small>
-              </div>
-              <div class="form-group">
-                <label>Currency Preference</label>
-                <select id="wiseCurrency">
-                  <option value="USD">USD - US Dollar</option>
-                  <option value="EUR">EUR - Euro</option>
-                  <option value="GBP">GBP - British Pound</option>
-                  <option value="CAD">CAD - Canadian Dollar</option>
-                  <option value="AUD">AUD - Australian Dollar</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Bank Transfer Fields -->
-            <div id="bankFields" class="payment-fields" style="display: none;">
-              <div class="form-group">
-                <label>Account Holder Name</label>
-                <input type="text" id="bankAccountName" placeholder="Full name on account">
-              </div>
-              <div class="form-group">
-                <label>Bank Name</label>
-                <input type="text" id="bankName" placeholder="e.g. Chase, Bank of America">
-              </div>
-              <div class="form-group">
-                <label>Account Number / IBAN</label>
-                <input type="text" id="bankAccountNumber" placeholder="Account number or IBAN">
-              </div>
-              <div class="form-group">
-                <label>Routing Number / SWIFT / BIC</label>
-                <input type="text" id="bankRoutingNumber" placeholder="Routing number, SWIFT or BIC code">
-              </div>
-              <div class="form-group">
-                <label>Country</label>
-                <select id="bankCountry">
-                  <option value="">Select country</option>
-                  <option value="US">United States</option>
-                  <option value="UK">United Kingdom</option>
-                  <option value="CA">Canada</option>
-                  <option value="AU">Australia</option>
-                  <option value="DE">Germany</option>
-                  <option value="FR">France</option>
-                  <option value="NL">Netherlands</option>
-                  <option value="ES">Spain</option>
-                  <option value="IT">Italy</option>
-                  <option value="IN">India</option>
-                  <option value="PK">Pakistan</option>
-                  <option value="BD">Bangladesh</option>
-                  <option value="PH">Philippines</option>
-                  <option value="NG">Nigeria</option>
-                  <option value="BR">Brazil</option>
-                  <option value="MX">Mexico</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Cryptocurrency Fields -->
-            <div id="cryptoFields" class="payment-fields" style="display: none;">
-              <div class="form-group">
-                <label>Coin</label>
-                <select id="cryptoType" onchange="updateNetworkOptions()">
-                  <option value="">Select coin</option>
-                  <option value="BTC">Bitcoin (BTC)</option>
-                  <option value="ETH">Ethereum (ETH)</option>
-                  <option value="USDT">USDT (Tether)</option>
-                  <option value="USDC">USDC</option>
-                  <option value="LTC">Litecoin (LTC)</option>
-                  <option value="SOL">Solana (SOL)</option>
-                  <option value="XRP">XRP (Ripple)</option>
-                  <option value="BNB">BNB</option>
-                </select>
-              </div>
-              <div class="form-group" id="networkGroup" style="display: none;">
-                <label>Network</label>
-                <select id="cryptoNetwork">
-                  <option value="">Select network</option>
-                </select>
-                <small>Select the correct network to avoid lost funds</small>
-              </div>
-              <div class="form-group">
-                <label>Wallet Address</label>
-                <input type="text" id="cryptoAddress" placeholder="Enter your wallet address">
-                <small>Double-check your address - crypto transactions cannot be reversed</small>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Notes (Optional)</label>
-              <textarea id="withdrawNotes" rows="3" placeholder="Add any notes for this request..."></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Request Payout</button>
-          </form>
-        </div>
-
-        <!-- Recent Payouts -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-              Recent Payouts
-            </h3>
           </div>
-          <div id="payoutsList">
-            <div class="empty-state" style="padding: 40px 20px;">
-              <div class="empty-state-icon">💸</div>
-              <div class="empty-state-title">No payouts yet</div>
-              <div class="empty-state-text">Your payout history will appear here</div>
+          <div id="bankFields" class="payment-fields" style="display: none;">
+            <div class="wallet-form-group">
+              <label>Account Holder Name</label>
+              <input type="text" id="bankAccountName" placeholder="Full name on account">
             </div>
+            <div class="wallet-form-group">
+              <label>Bank Name</label>
+              <input type="text" id="bankName" placeholder="e.g. Chase, Bank of America">
+            </div>
+            <div class="wallet-form-group">
+              <label>Account Number / IBAN</label>
+              <input type="text" id="bankAccountNumber" placeholder="Account number or IBAN">
+            </div>
+            <div class="wallet-form-group">
+              <label>Routing / SWIFT / BIC</label>
+              <input type="text" id="bankRoutingNumber" placeholder="Routing, SWIFT or BIC">
+            </div>
+            <div class="wallet-form-group">
+              <label>Country</label>
+              <select id="bankCountry">
+                <option value="">Select country</option>
+                <option value="US">United States</option>
+                <option value="UK">United Kingdom</option>
+                <option value="CA">Canada</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+          </div>
+          <div id="cryptoFields" class="payment-fields" style="display: none;">
+            <div class="wallet-form-group">
+              <label>Coin</label>
+              <select id="cryptoType" onchange="updateNetworkOptions()">
+                <option value="">Select coin</option>
+                <option value="BTC">Bitcoin (BTC)</option>
+                <option value="ETH">Ethereum (ETH)</option>
+                <option value="USDT">USDT</option>
+                <option value="USDC">USDC</option>
+                <option value="LTC">Litecoin (LTC)</option>
+                <option value="SOL">Solana (SOL)</option>
+                <option value="XRP">XRP</option>
+                <option value="BNB">BNB</option>
+              </select>
+            </div>
+            <div class="wallet-form-group" id="networkGroup" style="display: none;">
+              <label>Network</label>
+              <select id="cryptoNetwork">
+                <option value="">Select network</option>
+              </select>
+              <small>Select the correct network to avoid lost funds</small>
+            </div>
+            <div class="wallet-form-group">
+              <label>Wallet Address</label>
+              <input type="text" id="cryptoAddress" placeholder="Your wallet address">
+              <small>Double-check your address - transactions cannot be reversed</small>
+            </div>
+          </div>
+          <div class="wallet-form-group">
+            <label>Notes (Optional)</label>
+            <textarea id="withdrawNotes" rows="2" placeholder="Add any notes..."></textarea>
+          </div>
+          <button type="submit" class="btn-request">Request Payout</button>
+        </form>
+      </div>
+
+      <div class="wallet-section">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Recent Payouts
+        </h3>
+        <div id="payoutsList">
+          <div class="payout-item" style="border:none;padding:24px 0;color:rgba(255,255,255,0.5);font-size:14px;">
+            <span style="font-size:28px;margin-right:12px;">💸</span>
+            <span>No payouts yet. Your payout history will appear here.</span>
           </div>
         </div>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 
   <script src="auth.js"></script>
   <script>
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocalhost ? 'http://localhost:37373/api' : `${window.location.origin}/api`;
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    const userType = user?.userType || user?.user_type || 'creator';
+    if (userType === 'sponsor') {
+      window.location.href = 'sponsor-dashboard.html';
+      throw new Error('Redirecting');
+    }
+    document.getElementById('navDashboard').href = userType === 'sponsor' ? 'sponsor-dashboard.html' : 'brand-overview.html';
+
+    if (userType === 'sponsor') {
+      fetch(API_URL + '/sponsors/wallet', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          const nav = document.getElementById('navBalance');
+          if (nav) { nav.style.display = 'inline-flex'; document.getElementById('balanceAmount').textContent = '$' + ((d?.balanceCents || 0) / 100).toFixed(2); }
+        });
+    } else {
+      fetch(API_URL + '/wallet', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          const nav = document.getElementById('navBalance');
+          if (nav) { nav.style.display = 'inline-flex'; document.getElementById('balanceAmount').textContent = '$' + ((d?.availableBalance ?? 0).toFixed(2)); }
+        });
+    }
+
+    const avatarEl = document.getElementById('userAvatar');
+    const avatarDropdown = document.getElementById('userAvatarDropdown');
+    if (avatarEl && user) {
+      const name = user.name || user.email || '';
+      const parts = name.trim().split(/\s+/);
+      avatarEl.textContent = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase() : (name[0] || 'U').toUpperCase();
+    }
+    avatarEl?.addEventListener('click', (e) => { e.stopPropagation(); avatarDropdown?.classList.toggle('open'); });
+    document.addEventListener('click', () => avatarDropdown?.classList.remove('open'));
+
+    document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'index.html';
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
-      if (!localStorage.getItem('token')) {
-        window.location.href = 'login.html';
-        return;
-      }
       loadWalletData();
-      loadUserData();
       setupForm();
     });
 
-    async function loadUserData() {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const response = await fetch(`${API_URL}/auth/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (response.ok) {
-            const user = await response.json();
-            document.getElementById('userName').textContent = user.name || 'User';
-          }
-          
-          // Load gamification profile for XP/Level
-          const gamRes = await fetch(`${API_URL}/gamification/profile`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (gamRes.ok) {
-            const profile = await gamRes.json();
-            updateHeaderXP(profile);
-          }
-        }
-      } catch (e) { console.error(e); }
-    }
-    
-    function updateHeaderXP(profile) {
-      const level = profile.level || 1;
-      const xp = profile.xp || 0;
-      const nextLevelXP = profile.nextLevelXP || 100;
-      
-      const levelCircle = document.getElementById('headerLevel');
-      const levelXP = document.querySelector('.level-xp');
-      
-      if (levelCircle) levelCircle.textContent = level;
-      if (levelXP) levelXP.textContent = `${xp} / ${nextLevelXP} XP`;
-    }
-
     async function loadWalletData() {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/wallet`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
+        const r = await fetch(API_URL + '/wallet', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (r.ok) {
+          const data = await r.json();
           document.getElementById('availableBalance').textContent = '$' + (data.availableBalance || 0).toFixed(2);
           document.getElementById('availableAmount').textContent = '$' + (data.availableBalance || 0).toFixed(2);
           document.getElementById('totalEarnings').textContent = '$' + (data.totalEarnings || 0).toFixed(2);
           document.getElementById('pendingBalance').textContent = '$' + (data.pendingBalance || 0).toFixed(2);
           document.getElementById('pendingPayouts').textContent = '$' + (data.pendingPayouts || 0).toFixed(2);
           document.getElementById('totalPaid').textContent = '$' + (data.totalPaid || 0).toFixed(2);
-          
           renderPayouts(data.recentPayouts || []);
         }
-      } catch (e) {
-        console.error('Failed to load wallet:', e);
-      }
+      } catch (e) { console.error('Wallet load error:', e); }
     }
 
     function renderPayouts(payouts) {
       const container = document.getElementById('payoutsList');
-      
-      if (payouts.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state" style="padding: 40px 20px;">
-            <div class="empty-state-icon">💸</div>
-            <div class="empty-state-title">No payouts yet</div>
-            <div class="empty-state-text">Your payout history will appear here</div>
-          </div>
-        `;
+      if (!payouts.length) {
+        container.innerHTML = '<div class="payout-item" style="border:none;padding:24px 0;color:rgba(255,255,255,0.5);font-size:14px;"><span style="font-size:28px;margin-right:12px;">💸</span><span>No payouts yet. Your payout history will appear here.</span></div>';
         return;
       }
-
-      container.innerHTML = payouts.map(payout => `
-        <div style="display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border);">
-          <div style="width: 44px; height: 44px; border-radius: 12px; background: ${payout.status === 'completed' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(234, 179, 8, 0.15)'}; display: flex; align-items: center; justify-content: center; font-size: 20px;">
-            ${payout.status === 'completed' ? '✅' : '⏳'}
+      container.innerHTML = payouts.map(p => `
+        <div class="payout-item">
+          <div class="payout-icon ${p.status === 'completed' ? 'done' : 'pending'}">${p.status === 'completed' ? '✅' : '⏳'}</div>
+          <div class="payout-info">
+            <div class="payout-amount">$${p.amount.toFixed(2)}</div>
+            <div class="payout-meta">${p.method} • ${new Date(p.date).toLocaleDateString()}</div>
           </div>
-          <div style="flex: 1;">
-            <div style="font-size: 15px; font-weight: 600;">$${payout.amount.toFixed(2)}</div>
-            <div style="font-size: 13px; color: var(--text-muted);">${payout.method} • ${new Date(payout.date).toLocaleDateString()}</div>
-          </div>
-          <span class="badge ${payout.status === 'completed' ? 'badge-success' : 'badge-warning'}">${payout.status}</span>
+          <span class="payout-badge ${p.status === 'completed' ? 'completed' : 'pending'}">${p.status}</span>
         </div>
       `).join('');
     }
 
-    // Network options per coin
     function updateNetworkOptions() {
       const coin = document.getElementById('cryptoType').value;
       const networkGroup = document.getElementById('networkGroup');
       const networkSelect = document.getElementById('cryptoNetwork');
-      
       const networks = {
         'BTC': [{ value: 'Bitcoin', label: 'Bitcoin Network' }],
         'ETH': [{ value: 'ERC20', label: 'Ethereum (ERC20)' }],
-        'USDT': [
-          { value: 'TRC20', label: 'Tron (TRC20)' },
-          { value: 'ERC20', label: 'Ethereum (ERC20)' },
-          { value: 'BEP20', label: 'BNB Smart Chain (BEP20)' },
-          { value: 'SOL', label: 'Solana' },
-        ],
-        'USDC': [
-          { value: 'ERC20', label: 'Ethereum (ERC20)' },
-          { value: 'SOL', label: 'Solana' },
-          { value: 'TRC20', label: 'Tron (TRC20)' },
-          { value: 'BEP20', label: 'BNB Smart Chain (BEP20)' },
-          { value: 'POLYGON', label: 'Polygon' },
-          { value: 'ARBITRUM', label: 'Arbitrum' },
-          { value: 'BASE', label: 'Base' },
-        ],
+        'USDT': [{ value: 'TRC20', label: 'Tron (TRC20)' }, { value: 'ERC20', label: 'Ethereum (ERC20)' }, { value: 'BEP20', label: 'BEP20' }, { value: 'SOL', label: 'Solana' }],
+        'USDC': [{ value: 'ERC20', label: 'Ethereum (ERC20)' }, { value: 'SOL', label: 'Solana' }, { value: 'TRC20', label: 'Tron' }, { value: 'BEP20', label: 'BEP20' }, { value: 'POLYGON', label: 'Polygon' }, { value: 'BASE', label: 'Base' }],
         'LTC': [{ value: 'Litecoin', label: 'Litecoin Network' }],
         'SOL': [{ value: 'Solana', label: 'Solana Network' }],
         'XRP': [{ value: 'XRP', label: 'XRP Ledger' }],
-        'BNB': [
-          { value: 'BEP20', label: 'BNB Smart Chain (BEP20)' },
-          { value: 'BEP2', label: 'BNB Beacon Chain (BEP2)' },
-        ],
+        'BNB': [{ value: 'BEP20', label: 'BEP20' }, { value: 'BEP2', label: 'BEP2' }],
       };
-
       if (coin && networks[coin]) {
-        networkSelect.innerHTML = '<option value="">Select network</option>' +
-          networks[coin].map(n => `<option value="${n.value}">${n.label}</option>`).join('');
+        networkSelect.innerHTML = '<option value="">Select network</option>' + networks[coin].map(n => `<option value="${n.value}">${n.label}</option>`).join('');
         networkGroup.style.display = 'block';
-        if (networks[coin].length === 1) {
-          networkSelect.value = networks[coin][0].value;
-        }
+        if (networks[coin].length === 1) networkSelect.value = networks[coin][0].value;
       } else {
         networkGroup.style.display = 'none';
       }
     }
 
     function setupForm() {
-      // Handle payment method change to show/hide fields
-      const paymentMethodSelect = document.getElementById('paymentMethod');
-      paymentMethodSelect?.addEventListener('change', (e) => {
-        // Hide all payment fields first
-        document.querySelectorAll('.payment-fields').forEach(el => {
-          el.style.display = 'none';
-          // Clear required from hidden fields
-          el.querySelectorAll('input, select').forEach(input => input.removeAttribute('required'));
-        });
-        
-        // Show relevant fields based on selection
-        const method = e.target.value;
-        if (method === 'paypal') {
-          document.getElementById('paypalFields').style.display = 'block';
-          document.getElementById('paypalEmail').setAttribute('required', 'required');
-        } else if (method === 'wise') {
-          document.getElementById('wiseFields').style.display = 'block';
-          document.getElementById('wiseEmail').setAttribute('required', 'required');
-        } else if (method === 'bank') {
-          document.getElementById('bankFields').style.display = 'block';
-          document.getElementById('bankAccountName').setAttribute('required', 'required');
-          document.getElementById('bankName').setAttribute('required', 'required');
-          document.getElementById('bankAccountNumber').setAttribute('required', 'required');
-          document.getElementById('bankCountry').setAttribute('required', 'required');
-        } else if (method === 'crypto') {
-          document.getElementById('cryptoFields').style.display = 'block';
-          document.getElementById('cryptoType').setAttribute('required', 'required');
-          document.getElementById('cryptoAddress').setAttribute('required', 'required');
+      document.getElementById('paymentMethod')?.addEventListener('change', (e) => {
+        document.querySelectorAll('.payment-fields').forEach(el => { el.style.display = 'none'; el.querySelectorAll('input, select').forEach(i => i.removeAttribute('required')); });
+        const m = e.target.value;
+        if (m === 'paypal') { document.getElementById('paypalFields').style.display = 'block'; document.getElementById('paypalEmail').setAttribute('required', 'required'); }
+        else if (m === 'wise') { document.getElementById('wiseFields').style.display = 'block'; document.getElementById('wiseEmail').setAttribute('required', 'required'); }
+        else if (m === 'bank') {
+          const b = document.getElementById('bankFields');
+          b.style.display = 'block';
+          ['bankAccountName','bankName','bankAccountNumber','bankCountry'].forEach(id => document.getElementById(id)?.setAttribute('required', 'required'));
         }
+        else if (m === 'crypto') { document.getElementById('cryptoFields').style.display = 'block'; document.getElementById('cryptoType').setAttribute('required', 'required'); document.getElementById('cryptoAddress').setAttribute('required', 'required'); }
       });
 
       document.getElementById('withdrawForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const amount = document.getElementById('withdrawAmount').value;
+        const amount = parseFloat(document.getElementById('withdrawAmount').value);
         const paymentMethod = document.getElementById('paymentMethod').value;
         const notes = document.getElementById('withdrawNotes').value;
-        
-        // Collect payment details based on method
         let paymentDetails = {};
-        
-        if (paymentMethod === 'paypal') {
-          paymentDetails = {
-            email: document.getElementById('paypalEmail').value
-          };
-        } else if (paymentMethod === 'wise') {
-          paymentDetails = {
-            email: document.getElementById('wiseEmail').value,
-            currency: document.getElementById('wiseCurrency').value
-          };
-        } else if (paymentMethod === 'bank') {
-          paymentDetails = {
-            accountName: document.getElementById('bankAccountName').value,
-            bankName: document.getElementById('bankName').value,
-            accountNumber: document.getElementById('bankAccountNumber').value,
-            routingNumber: document.getElementById('bankRoutingNumber').value,
-            country: document.getElementById('bankCountry').value
-          };
-        } else if (paymentMethod === 'crypto') {
-          paymentDetails = {
-            cryptoType: document.getElementById('cryptoType').value,
-            address: document.getElementById('cryptoAddress').value,
-            network: document.getElementById('cryptoNetwork').value
-          };
-        }
-        
+        if (paymentMethod === 'paypal') paymentDetails = { email: document.getElementById('paypalEmail').value };
+        else if (paymentMethod === 'wise') paymentDetails = { email: document.getElementById('wiseEmail').value, currency: document.getElementById('wiseCurrency').value };
+        else if (paymentMethod === 'bank') paymentDetails = { accountName: document.getElementById('bankAccountName').value, bankName: document.getElementById('bankName').value, accountNumber: document.getElementById('bankAccountNumber').value, routingNumber: document.getElementById('bankRoutingNumber').value, country: document.getElementById('bankCountry').value };
+        else if (paymentMethod === 'crypto') paymentDetails = { cryptoType: document.getElementById('cryptoType').value, address: document.getElementById('cryptoAddress').value, network: document.getElementById('cryptoNetwork').value };
         try {
-          const token = localStorage.getItem('token');
-          const response = await fetch(`${API_URL}/wallet/withdraw`, {
+          const r = await fetch(API_URL + '/wallet/withdraw', {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-              amount: parseFloat(amount), 
-              paymentMethod, 
-              paymentDetails,
-              notes 
-            })
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount, paymentMethod, paymentDetails, notes })
           });
-          
-          if (response.ok) {
+          if (r.ok) {
             alert('Payout request submitted successfully! We will process it within 24-48 hours.');
             loadWalletData();
             e.target.reset();
-            // Hide all payment fields after reset
             document.querySelectorAll('.payment-fields').forEach(el => el.style.display = 'none');
           } else {
-            const error = await response.json();
-            alert(error.message || 'Failed to submit request');
+            const err = await r.json();
+            alert(err.message || 'Failed to submit request');
           }
-        } catch (e) {
-          console.error(e);
+        } catch (err) {
+          console.error(err);
           alert('Failed to submit request');
         }
       });
     }
-
-    document.getElementById('logoutBtn')?.addEventListener('click', () => {
-      localStorage.removeItem('token');
-      window.location.href = 'index.html';
-    });
-
-    // Mobile menu toggle
-    document.getElementById('mobileMenuToggle')?.addEventListener('click', () => {
-      const sidebar = document.querySelector('.sidebar');
-      sidebar?.classList.toggle('active');
-    });
-
-    // Close sidebar when clicking outside
-    document.addEventListener('click', (e) => {
-      const sidebar = document.querySelector('.sidebar');
-      const toggle = document.getElementById('mobileMenuToggle');
-      if (sidebar && toggle && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-        sidebar.classList.remove('active');
-      }
-    });
   </script>
 </body>
-
 </html>
