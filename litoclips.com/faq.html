@@ -15,14 +15,28 @@
     .faq-page h1 { font-size: 28px; color: white; margin-bottom: 8px; }
     .faq-page .subtitle { color: rgba(255,255,255,0.7); margin-bottom: 20px; }
     .faq-page .faq-section { padding: 0; margin-bottom: 0; }
-    .faq-page .faq-section + .faq-section h2 { margin-top: 14px; }
+    .faq-page .faq-section + .faq-section h2 { margin-top: 22px; }
     .faq-page .faq-section h2 { font-size: 18px; color: white; margin-bottom: 10px; margin-top: 0; }
+    .faq-page .faq-section[id] { scroll-margin-top: 100px; }
     .faq-page .faq-item { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 16px 20px; margin-bottom: 8px; }
     .faq-page .faq-item:last-child { margin-bottom: 0; }
     .faq-item h3 { font-size: 15px; color: white; margin-bottom: 6px; }
     .faq-item p { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6; margin: 0; }
     .back-link { display: inline-flex; align-items: center; gap: 8px; color: #93c5fd; text-decoration: none; margin-bottom: 24px; font-weight: 500; }
     .back-link:hover { color: #bfdbfe; }
+    .faq-jump { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .faq-jump a { display: inline-block; padding: 6px 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 500; text-decoration: none; transition: background 0.2s, border-color 0.2s; }
+    .faq-jump a:hover { background: rgba(255,255,255,0.12); border-color: rgba(147, 197, 253, 0.5); }
+    .profile-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; margin-bottom: 8px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+    .profile-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(147, 197, 253, 0.4); }
+    .profile-card.open { border-color: rgba(147, 197, 253, 0.5); }
+    .profile-card-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .profile-card-header h3 { font-size: 15px; color: white; margin: 0; }
+    .profile-card-header svg { width: 18px; height: 18px; color: rgba(255,255,255,0.6); transition: transform 0.2s; flex-shrink: 0; margin-left: 12px; }
+    .profile-card.open .profile-card-header svg { transform: rotate(180deg); }
+    .profile-card-detail { padding: 0 20px 16px; display: none; }
+    .profile-card.open .profile-card-detail { display: block; }
+    .profile-card-detail p { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6; margin: 0; }
   </style>
 </head>
 <body class="dashboard-theme gradient-section-bg">
@@ -53,29 +67,54 @@
     </a>
     <h1>FAQ</h1>
     <p class="subtitle">How LitoClips works and who it's for</p>
+    <div class="faq-jump">
+      <a href="#who-its-for">Who It's For</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#platforms">Platforms</a>
+      <a href="#sponsors">Sponsors</a>
+    </div>
 
-    <div class="faq-section">
+    <div class="faq-section" id="who-its-for">
       <h2>Who It's For</h2>
-      <p style="color: rgba(255,255,255,0.8); margin-bottom: 12px;">Upload your content. We turn it into clips and post for you. You can also earn from sponsors directly on our platform.</p>
-      <div class="faq-item">
-        <h3>Artists</h3>
-        <p>More streams, loyal fan base, ticket & merch sales.</p>
+      <div class="profile-card" data-profile>
+        <div class="profile-card-header">
+          <h3>Artists</h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="profile-card-detail">
+          <p>Turn performances, behind-the-scenes, and studio moments into clips that drive more streams, build a loyal fan base, and boost ticket and merch sales. Get your music and story in front of new audiences.</p>
+        </div>
       </div>
-      <div class="faq-item">
-        <h3>Streamers</h3>
-        <p>Build up audience, brand deals, narrative building (PR).</p>
+      <div class="profile-card" data-profile>
+        <div class="profile-card-header">
+          <h3>Streamers</h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="profile-card-detail">
+          <p>Clip your best moments to build audience beyond your stream. Grow reach, attract brand deals, and shape your narrative with PR-ready content that works when you're offline.</p>
+        </div>
       </div>
-      <div class="faq-item">
-        <h3>Podcasts</h3>
-        <p>Grow your audience, sponsors, new listeners.</p>
+      <div class="profile-card" data-profile>
+        <div class="profile-card-header">
+          <h3>Podcasts</h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="profile-card-detail">
+          <p>Turn episodes into short-form clips that grow your audience and attract sponsors. Reach new listeners who discover you through TikTok, Reels, or Shorts—then follow the full show.</p>
+        </div>
       </div>
-      <div class="faq-item">
-        <h3>Apps & TV Shows</h3>
-        <p>User acquisition, awareness, downloads, build buzz, reach new viewers, viral moments.</p>
+      <div class="profile-card" data-profile>
+        <div class="profile-card-header">
+          <h3>Apps & TV Shows</h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="profile-card-detail">
+          <p>Drive user acquisition, awareness, and downloads. Build buzz for new releases, reach new viewers with viral moments, and turn clips into a content engine that keeps your product top of mind.</p>
+        </div>
       </div>
     </div>
 
-    <div class="faq-section">
+    <div class="faq-section" id="how-it-works">
       <h2>How It Works</h2>
       <p style="color: rgba(255,255,255,0.8); margin-bottom: 12px;">Upload content. Pick platforms and how many accounts. Add the angle or narrative you want. We create the accounts and post for you.</p>
       <div class="faq-item">
@@ -96,7 +135,7 @@
       </div>
     </div>
 
-    <div class="faq-section">
+    <div class="faq-section" id="platforms">
       <h2>What platform should I start a campaign on?</h2>
       <p style="color: rgba(255,255,255,0.8); margin-bottom: 12px;">Each platform suits different goals and content types. Here's what each is best for:</p>
       <div class="faq-item">
@@ -117,7 +156,7 @@
       </div>
     </div>
 
-    <div class="faq-section">
+    <div class="faq-section" id="sponsors">
       <h2>Sponsors</h2>
       <p style="color: rgba(255,255,255,0.8); margin-bottom: 12px;">Creators can earn from sponsors directly on our platform.</p>
       <div class="faq-item">
@@ -148,6 +187,9 @@
       document.getElementById('dashboardBtn')?.addEventListener('click', (e) => {
         e.preventDefault();
         window.location.href = getDashboardHref();
+      });
+      document.querySelectorAll('.profile-card[data-profile]').forEach(card => {
+        card.addEventListener('click', () => card.classList.toggle('open'));
       });
     })();
   </script>
