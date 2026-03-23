@@ -18,6 +18,7 @@
     { "source": "/signup", "destination": "/signup.html" },
     { "source": "/onboarding", "destination": "/onboarding.html" },
     { "source": "/settings", "destination": "/settings.html" },
-    { "source": "/wallet", "destination": "/wallet.html" }
+    { "source": "/wallet", "destination": "/wallet.html" },
+    { "source": "/faq", "destination": "/faq.html" }
   ]
 }

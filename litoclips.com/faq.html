@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ — LitoClips</title>
+  <meta name="description" content="Frequently asked questions about LitoClips - How it works, who it's for, creators and sponsors.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    .faq-page { padding: 120px 24px 80px; max-width: 720px; margin: 0 auto; }
+    .faq-page h1 { font-size: 28px; color: white; margin-bottom: 8px; }
+    .faq-page .subtitle { color: rgba(255,255,255,0.7); margin-bottom: 40px; }
+    .faq-section { margin-bottom: 40px; }
+    .faq-section h2 { font-size: 18px; color: white; margin-bottom: 16px; }
+    .faq-item { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+    .faq-item h3 { font-size: 15px; color: white; margin-bottom: 8px; }
+    .faq-item p { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6; margin: 0; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: #93c5fd; text-decoration: none; margin-bottom: 24px; font-weight: 500; }
+    .back-link:hover { color: #bfdbfe; }
+  </style>
+</head>
+<body class="dashboard-theme gradient-section-bg">
+  <header class="header scrolled">
+    <div class="header-container">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="Logo">
+        <span class="logo-text">LitoClips</span>
+      </a>
+      <nav class="nav-links" id="navLinks">
+        <a href="faq.html">FAQ</a>
+        <div class="auth-buttons" id="authButtons">
+          <a href="signup.html" class="nav-cta">Sign Up</a>
+          <a href="login.html" class="nav-cta">Login</a>
+        </div>
+        <div class="user-menu hidden" id="userMenu">
+          <a href="#" class="nav-cta" id="dashboardBtn">Dashboard</a>
+          <a href="index.html" class="nav-cta" id="logoutBtn">Logout</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="faq-page">
+    <a href="index.html" class="back-link" id="backLink">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back
+    </a>
+    <h1>FAQ</h1>
+    <p class="subtitle">How LitoClips works and who it's for</p>
+
+    <div class="faq-section">
+      <h2>Who It's For</h2>
+      <p style="color: rgba(255,255,255,0.8); margin-bottom: 16px;">Upload your content. We turn it into clips and post for you. You can also earn from sponsors directly on our platform.</p>
+      <div class="faq-item">
+        <h3>Artists</h3>
+        <p>More streams, loyal fan base, ticket & merch sales.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Streamers</h3>
+        <p>Build up audience, brand deals, narrative building (PR).</p>
+      </div>
+      <div class="faq-item">
+        <h3>Podcasts</h3>
+        <p>Grow your audience, sponsors, new listeners.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Apps & TV Shows</h3>
+        <p>User acquisition, awareness, downloads, build buzz, reach new viewers, viral moments.</p>
+      </div>
+    </div>
+
+    <div class="faq-section">
+      <h2>How It Works</h2>
+      <p style="color: rgba(255,255,255,0.8); margin-bottom: 16px;">Upload content. Pick platforms and how many accounts. Add the angle or narrative you want. We create the accounts and post for you.</p>
+      <div class="faq-item">
+        <h3>1. Upload</h3>
+        <p>Add a link to your content (YouTube, drive, etc).</p>
+      </div>
+      <div class="faq-item">
+        <h3>2. Choose Platforms</h3>
+        <p>TikTok, YouTube, Instagram, X. Pick where you want to post.</p>
+      </div>
+      <div class="faq-item">
+        <h3>3. Set Your Angle</h3>
+        <p>Write the narrative or angle you want for the clips.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What happens next</h3>
+        <p>We create branded accounts and post clips for you. Track every post and view in your calendar. After week 1, pay to keep going or turn on auto-charge.</p>
+      </div>
+    </div>
+
+    <div class="faq-section">
+      <h2>Sponsors</h2>
+      <p style="color: rgba(255,255,255,0.8); margin-bottom: 16px;">Creators can earn from sponsors directly on our platform.</p>
+      <div class="faq-item">
+        <h3>For Creators</h3>
+        <p>Opt in to receive sponsor offers. Get paid per view when your posts are sponsored. Allow watermarks and get a coupon off your campaign.</p>
+      </div>
+      <div class="faq-item">
+        <h3>For Sponsors</h3>
+        <p>Deposit a budget. Pick campaigns to sponsor. Pay per view. When your budget runs out, sponsorship stops.</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="auth.js"></script>
+  <script>
+    (function() {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      function getDashboardHref() {
+        const u = user?.userType || user?.user_type || 'creator';
+        return u === 'sponsor' ? 'sponsor-dashboard.html' : 'brand-overview.html';
+      }
+      const backLink = document.getElementById('backLink');
+      if (token && user) {
+        backLink.href = getDashboardHref();
+        backLink.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Dashboard';
+      }
+      document.getElementById('dashboardBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = getDashboardHref();
+      });
+    })();
+  </script>
+</body>
+</html>

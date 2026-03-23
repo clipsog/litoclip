@@ -99,6 +99,12 @@ window.addEventListener('DOMContentLoaded', () => {
   
   // Login bypass: if ?bypass=1 or ?demo=1, fake logged-in state (no API call)
   if (applyLoginBypass()) {
+    const path = window.location.pathname || '';
+    const isHome = path === '/' || path === '/index.html' || path.endsWith('index.html');
+    if (isHome) {
+      window.location.replace(getDashboardHref(getBypassUserType()));
+      return;
+    }
     initAuthHandlers();
     initLogoutHandler();
     return;
@@ -454,11 +460,14 @@ async function checkAuthStatus() {
     if (response.ok) {
       const user = await response.json();
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('userType', user.userType); // Store user type for faster access
+      localStorage.setItem('userType', user.userType);
+      const path = window.location.pathname || '';
+      const isHome = path === '/' || path === '/index.html' || path.endsWith('index.html');
+      if (isHome) {
+        window.location.replace(getDashboardHref(user.userType));
+        return;
+      }
       updateUI(user);
-      
-      // Don't auto-redirect - let users browse the homepage while logged in
-      // They can use the Dashboard button to go to their dashboard
     } else {
       // Token invalid, clear it
       localStorage.removeItem('token');
