@@ -27,10 +27,13 @@
     .faq-jump { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
     .faq-jump a { display: inline-block; padding: 6px 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 500; text-decoration: none; transition: background 0.2s, border-color 0.2s; }
     .faq-jump a:hover { background: rgba(255,255,255,0.12); border-color: rgba(147, 197, 253, 0.5); }
-    .profile-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; margin-bottom: 8px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+    .profile-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (max-width: 500px) { .profile-grid { grid-template-columns: 1fr; } }
+    .profile-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, background 0.2s; aspect-ratio: 1; display: flex; flex-direction: column; }
     .profile-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(147, 197, 253, 0.4); }
     .profile-card.open { border-color: rgba(147, 197, 253, 0.5); }
-    .profile-card-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .profile-card.open { aspect-ratio: auto; }
+.profile-card-header { padding: 20px; display: flex; align-items: center; justify-content: space-between; flex: 1; }
     .profile-card-header h3 { font-size: 15px; color: white; margin: 0; }
     .profile-card-header svg { width: 18px; height: 18px; color: rgba(255,255,255,0.6); transition: transform 0.2s; flex-shrink: 0; margin-left: 12px; }
     .profile-card.open .profile-card-header svg { transform: rotate(180deg); }
@@ -76,6 +79,7 @@
 
     <div class="faq-section" id="who-its-for">
       <h2>Who It's For</h2>
+      <div class="profile-grid">
       <div class="profile-card" data-profile>
         <div class="profile-card-header">
           <h3>Artists</h3>
@@ -111,6 +115,7 @@
         <div class="profile-card-detail">
           <p>Drive user acquisition, awareness, and downloads. Build buzz for new releases, reach new viewers with viral moments, and turn clips into a content engine that keeps your product top of mind.</p>
         </div>
+      </div>
       </div>
     </div>
 
