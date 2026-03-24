@@ -104,7 +104,7 @@
       -webkit-overflow-scrolling: touch;
     }
     .start-campaign-modal #startCampaignWizardForm { margin: 0; }
-    .start-campaign-modal h3 { font-size: 19px; color: white; margin: 0 0 22px 0; font-weight: 600; letter-spacing: -0.02em; }
+    .start-campaign-step > h3 { font-size: 19px; color: white; margin: 0 0 16px 0; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; }
     .start-campaign-step h4 { font-size: 15px; color: rgba(255,255,255,0.95); margin: 0 0 16px 0; font-weight: 600; line-height: 1.3; }
     .start-campaign-wiz-field { margin-bottom: 18px; }
     .start-campaign-wiz-field:last-child { margin-bottom: 0; }
@@ -319,7 +319,7 @@
     </div>
   </main>
 
-  <div class="start-campaign-modal-overlay" id="startCampaignModal" role="dialog" aria-modal="true" aria-labelledby="startCampaignModalTitle">
+  <div class="start-campaign-modal-overlay" id="startCampaignModal" role="dialog" aria-modal="true" aria-labelledby="startCampaignStepLabel">
     <div class="start-campaign-modal">
       <div class="start-campaign-modal-toolbar">
         <div class="start-campaign-wizard-progress">
@@ -327,7 +327,7 @@
           <div class="start-campaign-dots" id="startCampaignDots" aria-hidden="true"></div>
         </div>
         <div class="start-campaign-modal-toolbar-actions">
-          <button type="button" class="btn-secondary" id="startCampaignModalCancel">Not now</button>
+          <button type="button" class="btn-secondary" id="startCampaignModalCancel">Save for later</button>
           <span class="wiz-toolbar-grow" aria-hidden="true"></span>
           <button type="button" class="btn-secondary" id="startCampaignWizardBack" style="display:none;">Back</button>
           <button type="button" class="btn-primary" id="startCampaignWizardNext">Next</button>
@@ -336,9 +336,8 @@
       </div>
       <div class="start-campaign-modal-body">
       <form id="startCampaignWizardForm" novalidate>
-        <h3 id="startCampaignModalTitle">Create your campaign</h3>
-
         <div class="start-campaign-step active" data-wizard-step="0">
+          <h3 id="startCampaignModalTitle">Create your campaign</h3>
           <h4>Campaign name</h4>
           <div class="start-campaign-wiz-field">
             <label for="wzTitle">Name</label>
@@ -453,6 +452,18 @@
       const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:37373/api' : (window.location.origin + '/api');
 
+      function redirectIfUnauthorized(res) {
+        if (res && res.status === 401) {
+          try {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          } catch (e) {}
+          window.location.href = 'signup.html';
+          return true;
+        }
+        return false;
+      }
+
       function loadAccountBalance() {
         const linkEl = document.getElementById('accountBalanceLink');
         const spanEl = document.getElementById('accountBalance');
@@ -533,7 +544,10 @@
       if (!bypass) {
         fetch(API_URL + '/campaigns/my-sponsor-offers', {
           headers: { 'Authorization': 'Bearer ' + token }
-        }).then(r => r.ok ? r.json() : []).catch(() => []).then(renderSponsorOffers);
+        }).then(r => {
+          if (redirectIfUnauthorized(r)) return [];
+          return r.ok ? r.json() : [];
+        }).catch(() => []).then(renderSponsorOffers);
       }
 
       let campaignsList = [];
@@ -544,6 +558,73 @@
       const WZ_FEE_FIRST_MONTH = 7.99;
       const WZ_FEE_MONTH2_BASE = 12.99;
       const WZ_FEE_EXTRA_POST = 2;
+      const WZ_ONBOARDING_STORAGE_PREFIX = 'litoclips_campaign_onboarding_v1_';
+
+      function getOnboardingStorageKey() {
+        var uid = (user && user.id) ? String(user.id) : 'anon';
+        return WZ_ONBOARDING_STORAGE_PREFIX + uid;
+      }
+      function clearCampaignOnboardingDraft() {
+        try {
+          localStorage.removeItem(getOnboardingStorageKey());
+        } catch (e) {}
+      }
+      function saveCampaignOnboardingDraft() {
+        var rowEls = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
+        var platformRows = [];
+        for (var i = 0; i < rowEls.length; i++) {
+          var sel = rowEls[i].querySelector('select[data-wz-platform]');
+          var numInp = rowEls[i].querySelector('input[data-wz-accounts]');
+          platformRows.push({
+            platform: sel ? sel.value : '',
+            num_accounts: numInp ? numInp.value : '1'
+          });
+        }
+        var draft = {
+          v: 1,
+          step: startCampaignWizardStep,
+          title: document.getElementById('wzTitle') ? document.getElementById('wzTitle').value : '',
+          acceptSponsorOffers: !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked),
+          content: document.getElementById('wzContent') ? document.getElementById('wzContent').value : '',
+          narrative: document.getElementById('wzNarrative') ? document.getElementById('wzNarrative').value : '',
+          goal: document.getElementById('wzGoal') ? document.getElementById('wzGoal').value : '',
+          postsPerDay: document.getElementById('wzPostsPerDay') ? document.getElementById('wzPostsPerDay').value : '3',
+          platformRows: platformRows
+        };
+        try {
+          localStorage.setItem(getOnboardingStorageKey(), JSON.stringify(draft));
+        } catch (err) {}
+      }
+      function applyCampaignOnboardingDraft(d) {
+        if (!d || d.v !== 1) return;
+        var t = document.getElementById('wzTitle');
+        if (t && d.title != null) t.value = d.title;
+        var s = document.getElementById('wzSponsor');
+        if (s) s.checked = !!d.acceptSponsorOffers;
+        var c = document.getElementById('wzContent');
+        if (c && d.content != null) c.value = d.content;
+        var n = document.getElementById('wzNarrative');
+        if (n && d.narrative != null) n.value = d.narrative;
+        var g = document.getElementById('wzGoal');
+        if (g && d.goal != null) g.value = d.goal;
+        var pd = document.getElementById('wzPostsPerDay');
+        if (pd && d.postsPerDay != null) pd.value = String(d.postsPerDay);
+        var wrap = document.getElementById('wzPlatformRows');
+        if (wrap && d.platformRows && d.platformRows.length > 0) {
+          wrap.innerHTML = '';
+          for (var p = 0; p < d.platformRows.length; p++) {
+            var row = createWzPlatformRow();
+            var pr = d.platformRows[p];
+            var sel = row.querySelector('select[data-wz-platform]');
+            var numInp = row.querySelector('input[data-wz-accounts]');
+            if (sel && pr.platform) sel.value = pr.platform;
+            if (numInp && pr.num_accounts != null) numInp.value = String(pr.num_accounts);
+            wrap.appendChild(row);
+          }
+          syncWzRemoveButtons();
+        }
+        updateModalWizardPrice();
+      }
 
       function calcWzMonth2Total(numAccounts, postsPerDay) {
         var n = parseInt(numAccounts, 10) || 0;
@@ -738,10 +819,25 @@
       }
 
       function openStartCampaignModal() {
-        startCampaignWizardStep = 0;
         clearStartCampaignWizardError();
         setWizardCampaignSubmitting(false);
+        startCampaignWizardStep = 0;
         resetStartCampaignWizardForm();
+        var raw = null;
+        try {
+          raw = localStorage.getItem(getOnboardingStorageKey());
+        } catch (e) {}
+        if (raw) {
+          try {
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.v === 1) {
+              applyCampaignOnboardingDraft(parsed);
+              if (typeof parsed.step === 'number') {
+                startCampaignWizardStep = Math.max(0, Math.min(START_CAMPAIGN_WIZARD_STEPS - 1, parsed.step));
+              }
+            }
+          } catch (err) {}
+        }
         document.getElementById('startCampaignModal').classList.add('open');
         document.body.style.overflow = 'hidden';
         syncStartCampaignWizard();
@@ -788,6 +884,7 @@
         var description = descParts.length ? descParts.join('\n\n') : undefined;
 
         if (bypass) {
+          clearCampaignOnboardingDraft();
           localStorage.setItem('lastCampaign', JSON.stringify({
             id: 'bypass-' + Date.now(),
             title: title,
@@ -821,6 +918,9 @@
           body: JSON.stringify(campaignBody)
         })
           .then(function(res) {
+            if (redirectIfUnauthorized(res)) {
+              throw new Error('Session expired. Sign in again.');
+            }
             return res.ok ? res.json() : res.json().then(function(d) {
               throw new Error((d && d.error) || 'Could not create campaign');
             });
@@ -838,6 +938,9 @@
             });
           })
           .then(function(pres) {
+            if (redirectIfUnauthorized(pres)) {
+              throw new Error('Session expired. Sign in again.');
+            }
             return pres.json().then(function(pd) {
               if (!pres.ok) throw new Error((pd && pd.error) || 'Could not start checkout');
               return pd;
@@ -845,6 +948,7 @@
           })
           .then(function(pay) {
             if (pay.checkoutUrl) {
+              clearCampaignOnboardingDraft();
               window.location.href = pay.checkoutUrl;
               return;
             }
@@ -874,7 +978,10 @@
         e.preventDefault();
         openStartCampaignModal();
       });
-      document.getElementById('startCampaignModalCancel')?.addEventListener('click', closeStartCampaignModal);
+      document.getElementById('startCampaignModalCancel')?.addEventListener('click', function() {
+        saveCampaignOnboardingDraft();
+        closeStartCampaignModal();
+      });
       document.getElementById('startCampaignWizardNext')?.addEventListener('click', function() {
         if (!validateStartCampaignWizardStep(startCampaignWizardStep)) return;
         if (startCampaignWizardStep < START_CAMPAIGN_WIZARD_STEPS - 1) {
@@ -981,7 +1088,10 @@
           return;
         }
         fetch(API_URL + '/campaigns/created', { headers: { 'Authorization': 'Bearer ' + token } })
-          .then(r => r.ok ? r.json() : [])
+          .then(r => {
+            if (redirectIfUnauthorized(r)) return [];
+            return r.ok ? r.json() : [];
+          })
           .catch(() => [])
           .then(campaigns => {
             campaignsList = campaigns || [];
@@ -989,7 +1099,10 @@
             if (campaignsList.length > 0) {
               const first = campaignsList[0];
               return fetch(API_URL + '/campaigns/' + first.id + '/posts', { headers: { 'Authorization': 'Bearer ' + token } })
-                .then(r => r.ok ? r.json() : [])
+                .then(r => {
+                  if (redirectIfUnauthorized(r)) return [];
+                  return r.ok ? r.json() : [];
+                })
                 .catch(() => [])
                 .then(posts => ({ posts: posts || [], campaignId: first.id }));
             }
