@@ -52,6 +52,42 @@
     .start-campaign-wiz-pricing strong { color: #93c5fd; }
     .start-campaign-wiz-price-line { font-size: 15px; font-weight: 600; color: white; margin-bottom: 8px; }
     .start-campaign-wiz-price-line .muted { display: block; font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.55); margin-top: 4px; }
+    .start-campaign-wiz-platform-row {
+      display: grid;
+      grid-template-columns: 1fr minmax(88px, 100px) 36px;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+    .start-campaign-wiz-platform-row .wz-row-remove {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.45);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 6px 4px;
+      line-height: 1;
+      font-family: inherit;
+    }
+    .start-campaign-wiz-platform-row .wz-row-remove:hover { color: #f87171; }
+    .start-campaign-wiz-add-platform {
+      margin-top: 2px;
+      margin-bottom: 4px;
+      padding: 10px 14px;
+      background: transparent;
+      border: 2px dashed rgba(255,255,255,0.22);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.75);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      width: 100%;
+    }
+    .start-campaign-wiz-add-platform:hover {
+      border-color: rgba(96,165,250,0.55);
+      color: #93c5fd;
+    }
     .start-campaign-modal-actions { display: flex; gap: 12px; flex-wrap: wrap; }
     .start-campaign-modal .btn-secondary { flex: 1; min-width: 120px; padding: 12px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-family: inherit; }
     .start-campaign-modal .btn-secondary:hover { background: rgba(255,255,255,0.15); }
@@ -211,19 +247,9 @@
         </div>
 
         <div class="start-campaign-step" data-wizard-step="1">
-          <h4>Platform &amp; content</h4>
+          <h4>Content</h4>
           <div class="start-campaign-wiz-field">
-            <label for="wzPlatform">Platform</label>
-            <select id="wzPlatform" name="wzPlatform" required>
-              <option value="">Select…</option>
-              <option value="tiktok">TikTok</option>
-              <option value="instagram">Instagram</option>
-              <option value="x">X (Twitter)</option>
-              <option value="youtube">YouTube</option>
-            </select>
-          </div>
-          <div class="start-campaign-wiz-field">
-            <label for="wzContent">Content link</label>
+            <label for="wzContent">content link we'll create the clips from</label>
             <input type="url" id="wzContent" name="wzContent" required placeholder="https://…" inputmode="url">
             <p class="start-campaign-wiz-hint">YouTube, Google Drive, Dropbox, or any public URL.</p>
           </div>
@@ -245,16 +271,14 @@
         </div>
 
         <div class="start-campaign-step" data-wizard-step="2">
-          <h4>Accounts &amp; posting</h4>
-          <div class="start-campaign-wiz-field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div>
-              <label for="wzNumAccounts"># Accounts</label>
-              <input type="number" id="wzNumAccounts" name="wzNumAccounts" min="1" max="50" value="1" required>
-            </div>
-            <div>
-              <label for="wzPostsPerDay" title="Month 2+">Posts/day (mo. 2+)</label>
-              <input type="number" id="wzPostsPerDay" name="wzPostsPerDay" min="3" max="10" value="3" required>
-            </div>
+          <h4>Platforms &amp; accounts</h4>
+          <p class="start-campaign-wiz-hint" style="margin-bottom:14px;">Choose where we post and how many accounts for each platform. Add as many as you need.</p>
+          <div id="wzPlatformRows"></div>
+          <button type="button" class="start-campaign-wiz-add-platform" id="wzAddPlatform" aria-label="Add another platform">+ Add platform</button>
+          <div class="start-campaign-wiz-field" style="margin-top:12px;">
+            <label for="wzPostsPerDay" title="Month 2+">Posts/day (mo. 2+)</label>
+            <input type="number" id="wzPostsPerDay" name="wzPostsPerDay" min="3" max="10" value="3" required>
+            <p class="start-campaign-wiz-hint">Applies to every platform row below for month 2+ pricing.</p>
           </div>
           <div class="start-campaign-wiz-pricing">
             <div class="start-campaign-wiz-price-line" id="wzPriceLine"></div>
@@ -431,16 +455,56 @@
         return (n * perAccount).toFixed(2);
       }
 
+      function syncWzRemoveButtons() {
+        var wrap = document.getElementById('wzPlatformRows');
+        if (!wrap) return;
+        var multi = wrap.querySelectorAll('.wz-platform-row').length > 1;
+        wrap.querySelectorAll('[data-wz-remove]').forEach(function(btn) {
+          btn.hidden = !multi;
+          btn.setAttribute('aria-hidden', multi ? 'false' : 'true');
+        });
+      }
+
+      function createWzPlatformRow() {
+        var row = document.createElement('div');
+        row.className = 'wz-platform-row start-campaign-wiz-platform-row';
+        row.innerHTML =
+          '<div class="start-campaign-wiz-field" style="margin-bottom:0;">' +
+          '<label>platform you want us to post on</label>' +
+          '<select data-wz-platform required>' +
+          '<option value="">Select…</option>' +
+          '<option value="tiktok">TikTok</option>' +
+          '<option value="instagram">Instagram</option>' +
+          '<option value="x">X (Twitter)</option>' +
+          '<option value="youtube">YouTube</option>' +
+          '</select></div>' +
+          '<div class="start-campaign-wiz-field" style="margin-bottom:0;">' +
+          '<label># accounts</label>' +
+          '<input type="number" data-wz-accounts min="1" max="50" value="1" required></div>' +
+          '<button type="button" class="wz-row-remove" data-wz-remove hidden title="Remove platform" aria-label="Remove platform">&times;</button>';
+        row.querySelector('[data-wz-remove]').addEventListener('click', function() {
+          var wrap = document.getElementById('wzPlatformRows');
+          if (wrap && wrap.querySelectorAll('.wz-platform-row').length > 1) row.remove();
+          syncWzRemoveButtons();
+          updateModalWizardPrice();
+        });
+        row.querySelector('select').addEventListener('change', updateModalWizardPrice);
+        row.querySelector('input[data-wz-accounts]').addEventListener('input', updateModalWizardPrice);
+        return row;
+      }
+
       function updateModalWizardPrice() {
-        var numEl = document.getElementById('wzNumAccounts');
         var postsEl = document.getElementById('wzPostsPerDay');
         var lineEl = document.getElementById('wzPriceLine');
         var noteEl = document.getElementById('wzPriceNote');
-        if (!numEl || !postsEl || !lineEl) return;
-        var num = parseInt(numEl.value, 10) || 0;
+        if (!postsEl || !lineEl) return;
+        var totalAccounts = 0;
+        document.querySelectorAll('#wzPlatformRows input[data-wz-accounts]').forEach(function(inp) {
+          totalAccounts += parseInt(inp.value, 10) || 0;
+        });
         var posts = parseInt(postsEl.value, 10) || 3;
-        var firstMonth = (num * WZ_FEE_FIRST_MONTH).toFixed(2);
-        var month2 = calcWzMonth2Total(num, posts);
+        var firstMonth = (totalAccounts * WZ_FEE_FIRST_MONTH).toFixed(2);
+        var month2 = calcWzMonth2Total(totalAccounts, posts);
         lineEl.textContent = '$' + firstMonth + '/wk — 1st month (1 post/day per account)';
         if (noteEl) {
           noteEl.textContent = 'Month 2+: $' + month2 + '/wk' + (posts > 3 ? ' (' + posts + ' posts/day)' : ' (3 posts/day)');
@@ -452,31 +516,55 @@
         if (t) t.value = '';
         var s = document.getElementById('wzSponsor');
         if (s) s.checked = false;
-        var p = document.getElementById('wzPlatform');
-        if (p) p.value = '';
         var c = document.getElementById('wzContent');
         if (c) c.value = '';
         var n = document.getElementById('wzNarrative');
         if (n) n.value = '';
         var g = document.getElementById('wzGoal');
         if (g) g.value = '';
-        var na = document.getElementById('wzNumAccounts');
-        if (na) na.value = '1';
+        var wrap = document.getElementById('wzPlatformRows');
+        if (wrap) {
+          wrap.innerHTML = '';
+          wrap.appendChild(createWzPlatformRow());
+          syncWzRemoveButtons();
+        }
         var pd = document.getElementById('wzPostsPerDay');
         if (pd) pd.value = '3';
         updateModalWizardPrice();
       }
 
       function validateStartCampaignWizardStep(stepIndex) {
+        if (stepIndex === 2) {
+          var rows = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
+          if (!rows.length) return false;
+          for (var i = 0; i < rows.length; i++) {
+            var sel = rows[i].querySelector('select[data-wz-platform]');
+            var num = rows[i].querySelector('input[data-wz-accounts]');
+            if (sel && !sel.checkValidity()) {
+              sel.reportValidity();
+              return false;
+            }
+            if (num && !num.checkValidity()) {
+              num.reportValidity();
+              return false;
+            }
+          }
+          var postsEl = document.getElementById('wzPostsPerDay');
+          if (postsEl && !postsEl.checkValidity()) {
+            postsEl.reportValidity();
+            return false;
+          }
+          return true;
+        }
         var modal = document.getElementById('startCampaignModal');
         if (!modal) return true;
         var steps = modal.querySelectorAll('.start-campaign-step');
         var step = steps[stepIndex];
         if (!step) return true;
         var fields = step.querySelectorAll('input[required], select[required]');
-        for (var i = 0; i < fields.length; i++) {
-          if (!fields[i].checkValidity()) {
-            fields[i].reportValidity();
+        for (var j = 0; j < fields.length; j++) {
+          if (!fields[j].checkValidity()) {
+            fields[j].reportValidity();
             return false;
           }
         }
@@ -532,17 +620,30 @@
       }
       function continueToNewCampaign() {
         if (!validateStartCampaignWizardStep(startCampaignWizardStep)) return;
+        var content = (document.getElementById('wzContent') && document.getElementById('wzContent').value.trim()) || '';
+        var narrative = (document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim()) || '';
+        var goal = (document.getElementById('wzGoal') && document.getElementById('wzGoal').value) || '';
+        var posts = parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3;
+        var rowEls = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
+        var rows = [];
+        for (var r = 0; r < rowEls.length; r++) {
+          var sel = rowEls[r].querySelector('select[data-wz-platform]');
+          var numInp = rowEls[r].querySelector('input[data-wz-accounts]');
+          if (!sel || !numInp || !sel.value) continue;
+          rows.push({
+            platform: sel.value,
+            content: content,
+            narrative: narrative,
+            goal: goal,
+            num_accounts: parseInt(numInp.value, 10) || 1,
+            posts_per_day: posts
+          });
+        }
+        if (!rows.length) return;
         var draft = {
           title: (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '',
           acceptSponsorOffers: document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked,
-          rows: [{
-            platform: document.getElementById('wzPlatform') && document.getElementById('wzPlatform').value,
-            content: document.getElementById('wzContent') && document.getElementById('wzContent').value.trim(),
-            narrative: document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim(),
-            goal: document.getElementById('wzGoal') && document.getElementById('wzGoal').value,
-            num_accounts: parseInt(document.getElementById('wzNumAccounts') && document.getElementById('wzNumAccounts').value, 10) || 1,
-            posts_per_day: parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3
-          }]
+          rows: rows
         };
         try {
           sessionStorage.setItem(CAMPAIGN_DRAFT_KEY, JSON.stringify(draft));
@@ -557,7 +658,14 @@
       document.getElementById('startCampaignWizardForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
       });
-      document.getElementById('wzNumAccounts')?.addEventListener('input', updateModalWizardPrice);
+      document.getElementById('wzAddPlatform')?.addEventListener('click', function() {
+        var wrap = document.getElementById('wzPlatformRows');
+        if (wrap) {
+          wrap.appendChild(createWzPlatformRow());
+          syncWzRemoveButtons();
+          updateModalWizardPrice();
+        }
+      });
       document.getElementById('wzPostsPerDay')?.addEventListener('input', updateModalWizardPrice);
 
       document.getElementById('startCampaignBtn')?.addEventListener('click', function() { openStartCampaignModal(null); });
