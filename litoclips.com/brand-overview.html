@@ -31,7 +31,78 @@
     .btn-start-campaign:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35); color: white; }
     .start-campaign-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .start-campaign-modal-overlay.open { display: flex; }
-    .start-campaign-modal { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 540px; width: 100%; padding: 28px 28px 26px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+    .start-campaign-modal {
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      max-width: 540px;
+      width: 100%;
+      max-height: min(90vh, 720px);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .start-campaign-modal-toolbar {
+      flex-shrink: 0;
+      padding: 18px 24px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: #1e293b;
+    }
+    .start-campaign-modal-toolbar .start-campaign-wizard-progress {
+      margin-bottom: 14px;
+    }
+    .start-campaign-modal-toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .start-campaign-modal-toolbar-actions .wiz-toolbar-grow {
+      flex: 1 1 80px;
+      min-width: 0;
+    }
+    .start-campaign-modal-toolbar-actions .btn-secondary {
+      flex: 0 1 auto;
+      min-width: 88px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      font-family: inherit;
+    }
+    .start-campaign-modal-toolbar-actions .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.15); }
+    .start-campaign-modal-toolbar-actions .btn-primary {
+      flex: 0 1 auto;
+      min-width: 88px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      background: linear-gradient(180deg, #2563eb, #1d4ed8);
+      border: none;
+      color: white;
+      font-family: inherit;
+    }
+    .start-campaign-modal-toolbar-actions .btn-primary:hover:not(:disabled) { opacity: 0.95; }
+    .start-campaign-modal-toolbar-actions .btn-secondary:disabled,
+    .start-campaign-modal-toolbar-actions .btn-primary:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    #startCampaignModalFinish { min-width: 120px; }
+    .start-campaign-modal-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 20px 24px 24px;
+      -webkit-overflow-scrolling: touch;
+    }
     .start-campaign-modal #startCampaignWizardForm { margin: 0; }
     .start-campaign-modal h3 { font-size: 19px; color: white; margin: 0 0 22px 0; font-weight: 600; letter-spacing: -0.02em; }
     .start-campaign-step h4 { font-size: 15px; color: rgba(255,255,255,0.95); margin: 0 0 16px 0; font-weight: 600; line-height: 1.3; }
@@ -105,44 +176,19 @@
     }
     .start-campaign-wiz-posts-block { margin-top: 20px; margin-bottom: 0; }
     .start-campaign-wiz-posts-block .start-campaign-wiz-hint { margin-top: 8px; }
-    .start-campaign-modal-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: stretch;
-      margin-top: 28px;
-      padding-top: 22px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-    .start-campaign-modal .btn-secondary {
-      flex: 1 1 100px;
-      min-width: 0;
+    .start-campaign-wiz-error {
+      display: none;
+      margin-top: 16px;
       padding: 12px 14px;
       border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: white;
-      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.35);
+      border: 1px solid rgba(248, 113, 113, 0.45);
     }
-    .start-campaign-modal .btn-secondary:hover { background: rgba(255,255,255,0.15); }
-    .start-campaign-modal .btn-primary {
-      flex: 2 1 168px;
-      min-width: 120px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      background: linear-gradient(180deg, #2563eb, #1d4ed8);
-      border: none;
-      color: white;
-      font-family: inherit;
-    }
-    .start-campaign-modal .btn-primary:hover { opacity: 0.95; }
-    .start-campaign-wizard-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+    .start-campaign-wiz-error.visible { display: block; }
+    .start-campaign-wizard-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 0; flex-wrap: wrap; }
     .start-campaign-wizard-progress span { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500; }
     .start-campaign-dots { display: flex; gap: 6px; }
     .start-campaign-dots b { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.2s, transform 0.2s; }
@@ -275,11 +321,21 @@
 
   <div class="start-campaign-modal-overlay" id="startCampaignModal" role="dialog" aria-modal="true" aria-labelledby="startCampaignModalTitle">
     <div class="start-campaign-modal">
-      <form id="startCampaignWizardForm" novalidate>
+      <div class="start-campaign-modal-toolbar">
         <div class="start-campaign-wizard-progress">
           <span id="startCampaignStepLabel">Step 1 of 3</span>
           <div class="start-campaign-dots" id="startCampaignDots" aria-hidden="true"></div>
         </div>
+        <div class="start-campaign-modal-toolbar-actions">
+          <button type="button" class="btn-secondary" id="startCampaignModalCancel">Not now</button>
+          <span class="wiz-toolbar-grow" aria-hidden="true"></span>
+          <button type="button" class="btn-secondary" id="startCampaignWizardBack" style="display:none;">Back</button>
+          <button type="button" class="btn-primary" id="startCampaignWizardNext">Next</button>
+          <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Start campaign</button>
+        </div>
+      </div>
+      <div class="start-campaign-modal-body">
+      <form id="startCampaignWizardForm" novalidate>
         <h3 id="startCampaignModalTitle">Create your campaign</h3>
 
         <div class="start-campaign-step active" data-wizard-step="0">
@@ -292,7 +348,7 @@
             <input type="checkbox" id="wzSponsor" name="wzSponsor">
             <span>Allow sponsors to view and offer on this campaign</span>
           </label>
-          <p class="start-campaign-wiz-hint">You can add more platforms and adjust everything on the next screen before anything is saved.</p>
+          <p class="start-campaign-wiz-hint">Finish the steps, then pay securely with Stripe to start your campaign.</p>
         </div>
 
         <div class="start-campaign-step" data-wizard-step="1">
@@ -335,13 +391,8 @@
             <strong>Pricing</strong> — First month: <strong>$7.99</strong> per account per week (1 post/day). Month 2+: <strong>$12.99</strong> per account per week (3 posts/day); +$2 per extra post/day.
           </div>
         </div>
+        <div class="start-campaign-wiz-error" id="startCampaignWizardError" role="alert"></div>
       </form>
-
-      <div class="start-campaign-modal-actions">
-        <button type="button" class="btn-secondary" id="startCampaignModalCancel">Not now</button>
-        <button type="button" class="btn-secondary" id="startCampaignWizardBack" style="display:none;">Back</button>
-        <button type="button" class="btn-primary" id="startCampaignWizardNext">Next</button>
-        <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Continue to campaign form</button>
       </div>
     </div>
   </div>
@@ -486,11 +537,9 @@
       }
 
       let campaignsList = [];
-      const newCampaignUrl = 'new-campaign.html';
-      const CAMPAIGN_DRAFT_KEY = 'litoclips_campaign_draft';
-      let startCampaignPendingDate = null;
       const START_CAMPAIGN_WIZARD_STEPS = 3;
       let startCampaignWizardStep = 0;
+      let wizardCampaignSubmitting = false;
 
       const WZ_FEE_FIRST_MONTH = 7.99;
       const WZ_FEE_MONTH2_BASE = 12.99;
@@ -620,7 +669,41 @@
         return true;
       }
 
+      function clearStartCampaignWizardError() {
+        var el = document.getElementById('startCampaignWizardError');
+        if (el) {
+          el.textContent = '';
+          el.classList.remove('visible');
+        }
+      }
+      function showStartCampaignWizardError(msg) {
+        var el = document.getElementById('startCampaignWizardError');
+        if (el) {
+          el.textContent = msg;
+          el.classList.add('visible');
+        }
+      }
+      function setWizardCampaignSubmitting(loading) {
+        wizardCampaignSubmitting = !!loading;
+        var finish = document.getElementById('startCampaignModalFinish');
+        var next = document.getElementById('startCampaignWizardNext');
+        var back = document.getElementById('startCampaignWizardBack');
+        var cancel = document.getElementById('startCampaignModalCancel');
+        if (finish) {
+          finish.disabled = loading;
+          finish.textContent = loading ? 'Redirecting…' : 'Start campaign';
+        }
+        if (next) next.disabled = loading;
+        if (back) back.disabled = loading;
+        if (cancel) cancel.disabled = loading;
+      }
+      function wzPlatformLabel(slug) {
+        var map = { tiktok: 'TikTok', instagram: 'Instagram', x: 'X (Twitter)', youtube: 'YouTube' };
+        return map[slug] || slug;
+      }
+
       function syncStartCampaignWizard() {
+        clearStartCampaignWizardError();
         var modal = document.getElementById('startCampaignModal');
         if (!modal) return;
         modal.querySelectorAll('.start-campaign-step').forEach(function(el, i) {
@@ -654,9 +737,10 @@
         if (finishBtn) finishBtn.style.display = last ? '' : 'none';
       }
 
-      function openStartCampaignModal(startDate) {
-        startCampaignPendingDate = startDate || null;
+      function openStartCampaignModal() {
         startCampaignWizardStep = 0;
+        clearStartCampaignWizardError();
+        setWizardCampaignSubmitting(false);
         resetStartCampaignWizardForm();
         document.getElementById('startCampaignModal').classList.add('open');
         document.body.style.overflow = 'hidden';
@@ -665,43 +749,111 @@
       function closeStartCampaignModal() {
         document.getElementById('startCampaignModal').classList.remove('open');
         document.body.style.overflow = '';
-        startCampaignPendingDate = null;
+        clearStartCampaignWizardError();
+        setWizardCampaignSubmitting(false);
       }
-      function continueToNewCampaign() {
+      function submitCampaignWithStripe() {
+        if (wizardCampaignSubmitting) return;
         if (!validateStartCampaignWizardStep(startCampaignWizardStep)) return;
+        clearStartCampaignWizardError();
+        var title = (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '';
         var content = (document.getElementById('wzContent') && document.getElementById('wzContent').value.trim()) || '';
         var narrative = (document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim()) || '';
         var goal = (document.getElementById('wzGoal') && document.getElementById('wzGoal').value) || '';
         var posts = parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3;
+        var acceptSponsor = !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked);
         var rowEls = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
-        var rows = [];
+        var platformsList = [];
+        var mixParts = [];
+        var totalAccounts = 0;
+        var totalFirstWeekUsd = 0;
         for (var r = 0; r < rowEls.length; r++) {
           var sel = rowEls[r].querySelector('select[data-wz-platform]');
           var numInp = rowEls[r].querySelector('input[data-wz-accounts]');
           if (!sel || !numInp || !sel.value) continue;
-          rows.push({
-            platform: sel.value,
-            content: content,
-            narrative: narrative,
-            goal: goal,
-            num_accounts: parseInt(numInp.value, 10) || 1,
-            posts_per_day: posts
-          });
+          var n = parseInt(numInp.value, 10) || 0;
+          if (n < 1) continue;
+          platformsList.push(sel.value);
+          mixParts.push(wzPlatformLabel(sel.value) + ' ×' + n);
+          totalAccounts += n;
+          totalFirstWeekUsd += n * WZ_FEE_FIRST_MONTH;
         }
-        if (!rows.length) return;
-        var draft = {
-          title: (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '',
-          acceptSponsorOffers: document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked,
-          rows: rows
+        if (!platformsList.length) {
+          showStartCampaignWizardError('Add at least one platform and number of accounts.');
+          return;
+        }
+        var descParts = [];
+        if (narrative) descParts.push(narrative);
+        if (mixParts.length) descParts.push('Account mix: ' + mixParts.join(', '));
+        var description = descParts.length ? descParts.join('\n\n') : undefined;
+
+        if (bypass) {
+          localStorage.setItem('lastCampaign', JSON.stringify({
+            id: 'bypass-' + Date.now(),
+            title: title,
+            platform: platformsList[0],
+            goal: goal,
+            num_accounts: totalAccounts
+          }));
+          window.location.href = 'campaign-track.html?name=' + encodeURIComponent(title);
+          return;
+        }
+
+        var amountCents = Math.max(100, Math.round(totalFirstWeekUsd * 100));
+        var campaignBody = {
+          title: title,
+          description: description,
+          platform: platformsList[0],
+          content_link: content,
+          goal: goal || undefined,
+          num_accounts: totalAccounts,
+          posts_per_day: posts,
+          budget: parseFloat(totalFirstWeekUsd.toFixed(2)),
+          platforms: platformsList,
+          requirePayment: true,
+          acceptSponsorOffers: acceptSponsor
         };
-        try {
-          sessionStorage.setItem(CAMPAIGN_DRAFT_KEY, JSON.stringify(draft));
-        } catch (err) {}
-        var url = newCampaignUrl;
-        var qs = [];
-        if (startCampaignPendingDate) qs.push('start=' + encodeURIComponent(startCampaignPendingDate));
-        if (qs.length) url += '?' + qs.join('&');
-        window.location.href = url;
+
+        setWizardCampaignSubmitting(true);
+        fetch(API_URL + '/campaigns', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(campaignBody)
+        })
+          .then(function(res) {
+            return res.ok ? res.json() : res.json().then(function(d) {
+              throw new Error((d && d.error) || 'Could not create campaign');
+            });
+          })
+          .then(function(data) {
+            return fetch(API_URL + '/payments/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify({
+                campaignId: data.id,
+                amountCents: amountCents,
+                currency: 'usd',
+                paymentMethod: 'stripe'
+              })
+            });
+          })
+          .then(function(pres) {
+            return pres.json().then(function(pd) {
+              if (!pres.ok) throw new Error((pd && pd.error) || 'Could not start checkout');
+              return pd;
+            });
+          })
+          .then(function(pay) {
+            if (pay.checkoutUrl) {
+              window.location.href = pay.checkoutUrl;
+              return;
+            }
+            throw new Error('Stripe Checkout is not available. Check payment settings.');
+          })
+          .catch(function(err) {
+            setWizardCampaignSubmitting(false);
+            showStartCampaignWizardError(err.message || 'Something went wrong.');
+          });
       }
 
       document.getElementById('startCampaignWizardForm')?.addEventListener('submit', function(e) {
@@ -717,10 +869,10 @@
       });
       document.getElementById('wzPostsPerDay')?.addEventListener('input', updateModalWizardPrice);
 
-      document.getElementById('startCampaignBtn')?.addEventListener('click', function() { openStartCampaignModal(null); });
+      document.getElementById('startCampaignBtn')?.addEventListener('click', function() { openStartCampaignModal(); });
       document.getElementById('newCampaignQuickLink')?.addEventListener('click', function(e) {
         e.preventDefault();
-        openStartCampaignModal(null);
+        openStartCampaignModal();
       });
       document.getElementById('startCampaignModalCancel')?.addEventListener('click', closeStartCampaignModal);
       document.getElementById('startCampaignWizardNext')?.addEventListener('click', function() {
@@ -736,7 +888,7 @@
           syncStartCampaignWizard();
         }
       });
-      document.getElementById('startCampaignModalFinish')?.addEventListener('click', continueToNewCampaign);
+      document.getElementById('startCampaignModalFinish')?.addEventListener('click', submitCampaignWithStripe);
       document.getElementById('startCampaignModal')?.addEventListener('click', function(e) {
         if (e.target.id === 'startCampaignModal') closeStartCampaignModal();
       });
@@ -747,14 +899,14 @@
       document.getElementById('calendarGrid')?.addEventListener('click', function(e) {
         if (campaignsList.length > 0) return;
         const el = e.target.closest('[data-start-date]');
-        if (el) openStartCampaignModal(el.getAttribute('data-start-date'));
+        if (el) openStartCampaignModal();
       });
       document.getElementById('calendarGrid')?.addEventListener('keydown', function(e) {
         if (campaignsList.length > 0 || (e.key !== 'Enter' && e.key !== ' ')) return;
         const el = e.target.closest('[data-start-date]');
         if (el) {
           e.preventDefault();
-          openStartCampaignModal(el.getAttribute('data-start-date'));
+          openStartCampaignModal();
         }
       });
 
