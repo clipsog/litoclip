@@ -41,6 +41,18 @@
     .start-campaign-modal .btn-secondary:hover { background: rgba(255,255,255,0.15); }
     .start-campaign-modal .btn-primary { flex: 1; min-width: 120px; padding: 12px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; background: linear-gradient(180deg, #2563eb, #1d4ed8); border: none; color: white; font-family: inherit; }
     .start-campaign-modal .btn-primary:hover { opacity: 0.95; }
+    .start-campaign-wizard-progress { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .start-campaign-wizard-progress span { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500; }
+    .start-campaign-dots { display: flex; gap: 6px; }
+    .start-campaign-dots b { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.2s, transform 0.2s; }
+    .start-campaign-dots b.on { background: #60a5fa; transform: scale(1.15); }
+    .start-campaign-step { display: none; }
+    .start-campaign-step.active { display: block; }
+    .start-campaign-step h4 { font-size: 16px; color: white; margin: 0 0 12px 0; line-height: 1.35; }
+    .start-campaign-step p { color: rgba(255,255,255,0.78); font-size: 14px; line-height: 1.65; margin: 0 0 12px 0; }
+    .start-campaign-step ul { margin: 0 0 8px 0; padding-left: 20px; color: rgba(255,255,255,0.78); font-size: 14px; line-height: 1.6; }
+    .start-campaign-step li { margin-bottom: 8px; }
+    .start-campaign-step .tip { margin-top: 14px; padding: 12px 14px; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(96, 165, 250, 0.35); border-radius: 10px; font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.5; }
     .campaign-list { display: flex; flex-direction: column; gap: 12px; }
     .campaign-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
     .campaign-card h4 { font-size: 16px; color: #0f172a; margin-bottom: 4px; }
@@ -167,17 +179,67 @@
 
   <div class="start-campaign-modal-overlay" id="startCampaignModal" role="dialog" aria-modal="true" aria-labelledby="startCampaignModalTitle">
     <div class="start-campaign-modal">
-      <h3 id="startCampaignModalTitle">What will happen</h3>
-      <p class="lead">Before you create your campaign, here’s what to expect next.</p>
-      <ul>
-        <li><strong>You’ll set it up:</strong> Add a link to your content, choose platforms (TikTok, YouTube, Instagram, X), and describe the angle or narrative you want for your clips.</li>
-        <li><strong>We take it from there:</strong> We create branded accounts and post clips for you. You’ll see everything on your campaign calendar.</li>
-        <li><strong>Days 1–2:</strong> Warming up—we engage with your niche so posts land with better reach. <strong>Day 3+:</strong> Your posts and views show up in the calendar.</li>
-        <li><strong>After week one:</strong> You pay to keep going, or turn on auto-charge so it continues without interruption.</li>
-      </ul>
+      <div class="start-campaign-wizard-progress">
+        <span id="startCampaignStepLabel">Step 1 of 6</span>
+        <div class="start-campaign-dots" id="startCampaignDots" aria-hidden="true"></div>
+      </div>
+      <h3 id="startCampaignModalTitle">Create a campaign</h3>
+
+      <div class="start-campaign-step active" data-wizard-step="0">
+        <h4>Let’s walk through it together</h4>
+        <p>In a few short steps you’ll see exactly what you’ll do on the next screen and what we do for you. Nothing is saved until you finish the campaign form.</p>
+        <div class="tip">Use <strong>Next</strong> to move forward, or <strong>Not now</strong> to close anytime.</div>
+      </div>
+
+      <div class="start-campaign-step" data-wizard-step="1">
+        <h4>What you’ll enter</h4>
+        <p>On the campaign form you’ll:</p>
+        <ul>
+          <li><strong>Name</strong> your campaign</li>
+          <li>Paste a <strong>link to your content</strong> (YouTube, Drive, Dropbox, etc.)</li>
+          <li>Pick <strong>platforms</strong> — TikTok, Instagram, X, YouTube — and how many accounts you want</li>
+          <li>Add a <strong>narrative or angle</strong> so we know how to frame your clips</li>
+        </ul>
+        <p>Optional: you can allow <strong>sponsors</strong> to discover and offer on this campaign.</p>
+      </div>
+
+      <div class="start-campaign-step" data-wizard-step="2">
+        <h4>What we do</h4>
+        <p>After you submit:</p>
+        <ul>
+          <li>We <strong>create branded accounts</strong> for the platforms you chose</li>
+          <li>We <strong>cut and post clips</strong> aligned with your angle</li>
+          <li>Everything shows on your <strong>campaign calendar</strong> so you can track posts and views</li>
+        </ul>
+        <div class="tip">You stay in control of the brief; we handle execution and posting.</div>
+      </div>
+
+      <div class="start-campaign-step" data-wizard-step="3">
+        <h4>How timing works</h4>
+        <ul>
+          <li><strong>Days 1–2:</strong> Warm-up — we engage in your niche so when posting starts, reach is stronger.</li>
+          <li><strong>Day 3 onward:</strong> Posts go live; views and activity appear on your calendar.</li>
+          <li><strong>First month:</strong> 1 post per day per account. <strong>Month 2+:</strong> 3 posts per day per account (with options to scale).</li>
+        </ul>
+      </div>
+
+      <div class="start-campaign-step" data-wizard-step="4">
+        <h4>Pricing &amp; week one</h4>
+        <p>Pricing is shown on the form (per account per week). After your <strong>first week</strong> of value, you pay to continue or turn on <strong>auto-charge</strong> so campaigns keep running without interruption.</p>
+        <div class="tip">You’ll see the full pricing breakdown and can adjust platforms and account counts before you submit.</div>
+      </div>
+
+      <div class="start-campaign-step" data-wizard-step="5">
+        <h4>You’re ready</h4>
+        <p>Next screen: the full <strong>Create your campaign</strong> form. Take your time filling it in — we’ve already covered what each part is for.</p>
+        <div class="tip">Questions later? Check <strong>FAQ</strong> from the top nav anytime.</div>
+      </div>
+
       <div class="start-campaign-modal-actions">
         <button type="button" class="btn-secondary" id="startCampaignModalCancel">Not now</button>
-        <button type="button" class="btn-primary" id="startCampaignModalContinue">Continue to create campaign</button>
+        <button type="button" class="btn-secondary" id="startCampaignWizardBack" style="display:none;">Back</button>
+        <button type="button" class="btn-primary" id="startCampaignWizardNext">Next</button>
+        <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Open campaign form</button>
       </div>
     </div>
   </div>
@@ -324,11 +386,46 @@
       let campaignsList = [];
       const newCampaignUrl = 'new-campaign.html';
       let startCampaignPendingDate = null;
+      const START_CAMPAIGN_WIZARD_STEPS = 6;
+      let startCampaignWizardStep = 0;
+
+      function syncStartCampaignWizard() {
+        const modal = document.getElementById('startCampaignModal');
+        if (!modal) return;
+        modal.querySelectorAll('.start-campaign-step').forEach(function(el, i) {
+          el.classList.toggle('active', i === startCampaignWizardStep);
+        });
+        var labelEl = document.getElementById('startCampaignStepLabel');
+        if (labelEl) {
+          labelEl.textContent = 'Step ' + (startCampaignWizardStep + 1) + ' of ' + START_CAMPAIGN_WIZARD_STEPS;
+        }
+        var dotsWrap = document.getElementById('startCampaignDots');
+        if (dotsWrap) {
+          if (dotsWrap.children.length !== START_CAMPAIGN_WIZARD_STEPS) {
+            dotsWrap.innerHTML = '';
+            for (var d = 0; d < START_CAMPAIGN_WIZARD_STEPS; d++) {
+              dotsWrap.appendChild(document.createElement('b'));
+            }
+          }
+          Array.prototype.forEach.call(dotsWrap.querySelectorAll('b'), function(b, i) {
+            b.classList.toggle('on', i === startCampaignWizardStep);
+          });
+        }
+        var last = startCampaignWizardStep >= START_CAMPAIGN_WIZARD_STEPS - 1;
+        var backBtn = document.getElementById('startCampaignWizardBack');
+        var nextBtn = document.getElementById('startCampaignWizardNext');
+        var finishBtn = document.getElementById('startCampaignModalFinish');
+        if (backBtn) backBtn.style.display = startCampaignWizardStep > 0 ? '' : 'none';
+        if (nextBtn) nextBtn.style.display = last ? 'none' : '';
+        if (finishBtn) finishBtn.style.display = last ? '' : 'none';
+      }
 
       function openStartCampaignModal(startDate) {
         startCampaignPendingDate = startDate || null;
+        startCampaignWizardStep = 0;
         document.getElementById('startCampaignModal').classList.add('open');
         document.body.style.overflow = 'hidden';
+        syncStartCampaignWizard();
       }
       function closeStartCampaignModal() {
         document.getElementById('startCampaignModal').classList.remove('open');
@@ -349,7 +446,19 @@
         openStartCampaignModal(null);
       });
       document.getElementById('startCampaignModalCancel')?.addEventListener('click', closeStartCampaignModal);
-      document.getElementById('startCampaignModalContinue')?.addEventListener('click', continueToNewCampaign);
+      document.getElementById('startCampaignWizardNext')?.addEventListener('click', function() {
+        if (startCampaignWizardStep < START_CAMPAIGN_WIZARD_STEPS - 1) {
+          startCampaignWizardStep++;
+          syncStartCampaignWizard();
+        }
+      });
+      document.getElementById('startCampaignWizardBack')?.addEventListener('click', function() {
+        if (startCampaignWizardStep > 0) {
+          startCampaignWizardStep--;
+          syncStartCampaignWizard();
+        }
+      });
+      document.getElementById('startCampaignModalFinish')?.addEventListener('click', continueToNewCampaign);
       document.getElementById('startCampaignModal')?.addEventListener('click', function(e) {
         if (e.target.id === 'startCampaignModal') closeStartCampaignModal();
       });
