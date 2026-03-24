@@ -408,6 +408,39 @@
         updateRowPrice(row);
       });
 
+      (function applyCampaignDraftFromDashboard() {
+        var DRAFT_KEY = 'litoclips_campaign_draft';
+        var raw = sessionStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        try {
+          var d = JSON.parse(raw);
+          sessionStorage.removeItem(DRAFT_KEY);
+          var titleEl = document.getElementById('campaignTitle');
+          if (titleEl && d.title) titleEl.value = d.title;
+          var sponsorEl = document.getElementById('acceptSponsorOffers');
+          if (sponsorEl) sponsorEl.checked = !!d.acceptSponsorOffers;
+          var row = document.querySelector('.platform-row');
+          var r0 = d.rows && d.rows[0];
+          if (row && r0) {
+            var ps = row.querySelector('select[name^="platform_"]');
+            if (ps && r0.platform) ps.value = r0.platform;
+            var ci = row.querySelector('input[name^="content_"]');
+            if (ci && r0.content) ci.value = r0.content;
+            var ni = row.querySelector('input[name^="narrative_"]');
+            if (ni && r0.narrative != null) ni.value = r0.narrative;
+            var gs = row.querySelector('select[name^="goal_"]');
+            if (gs && r0.goal) gs.value = r0.goal;
+            var na = row.querySelector('input[name^="num_accounts_"]');
+            if (na && r0.num_accounts != null) na.value = String(r0.num_accounts);
+            var pd = row.querySelector('input[name^="posts_per_day_"]');
+            if (pd && r0.posts_per_day != null) pd.value = String(r0.posts_per_day);
+            updateRowPrice(row);
+          }
+        } catch (err) {
+          sessionStorage.removeItem(DRAFT_KEY);
+        }
+      })();
+
       function doPay(row) {
         const form = document.getElementById('campaignForm');
         const formError = document.getElementById('formError');

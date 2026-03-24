@@ -31,11 +31,27 @@
     .btn-start-campaign:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35); color: white; }
     .start-campaign-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .start-campaign-modal-overlay.open { display: flex; }
-    .start-campaign-modal { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 480px; width: 100%; padding: 28px; max-height: 90vh; overflow-y: auto; }
-    .start-campaign-modal h3 { font-size: 18px; color: white; margin: 0 0 8px 0; }
-    .start-campaign-modal .lead { color: rgba(255,255,255,0.7); font-size: 14px; margin: 0 0 20px 0; line-height: 1.5; }
-    .start-campaign-modal ul { margin: 0 0 24px 0; padding-left: 20px; color: rgba(255,255,255,0.85); font-size: 14px; line-height: 1.65; }
-    .start-campaign-modal li { margin-bottom: 10px; }
+    .start-campaign-modal { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 540px; width: 100%; padding: 28px; max-height: 90vh; overflow-y: auto; }
+    .start-campaign-modal h3 { font-size: 18px; color: white; margin: 0 0 16px 0; }
+    .start-campaign-modal h4 { font-size: 15px; color: rgba(255,255,255,0.95); margin: 0 0 14px 0; font-weight: 600; }
+    .start-campaign-wiz-field { margin-bottom: 14px; }
+    .start-campaign-wiz-field label { display: block; font-size: 12px; color: rgba(255,255,255,0.65); margin-bottom: 6px; font-weight: 600; }
+    .start-campaign-wiz-field input,
+    .start-campaign-wiz-field select,
+    .start-campaign-wiz-field textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.22); background: rgba(15,23,42,0.55); color: #f8fafc; font-size: 14px; font-family: inherit; box-sizing: border-box; }
+    .start-campaign-wiz-field input::placeholder,
+    .start-campaign-wiz-field textarea::placeholder { color: rgba(248,250,252,0.4); }
+    .start-campaign-wiz-field input:focus,
+    .start-campaign-wiz-field select:focus,
+    .start-campaign-wiz-field textarea:focus { outline: none; border-color: #60a5fa; background: rgba(15,23,42,0.75); }
+    .start-campaign-wiz-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 8px; cursor: pointer; }
+    .start-campaign-wiz-check input { width: auto; margin-top: 3px; accent-color: #60a5fa; }
+    .start-campaign-wiz-check span { font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.45; }
+    .start-campaign-wiz-hint { font-size: 12px; color: rgba(255,255,255,0.5); margin: 6px 0 0 0; line-height: 1.45; }
+    .start-campaign-wiz-pricing { margin-top: 8px; padding: 14px 16px; background: rgba(37, 99, 235, 0.12); border: 1px solid rgba(96, 165, 250, 0.35); border-radius: 10px; font-size: 13px; color: rgba(255,255,255,0.88); line-height: 1.55; }
+    .start-campaign-wiz-pricing strong { color: #93c5fd; }
+    .start-campaign-wiz-price-line { font-size: 15px; font-weight: 600; color: white; margin-bottom: 8px; }
+    .start-campaign-wiz-price-line .muted { display: block; font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.55); margin-top: 4px; }
     .start-campaign-modal-actions { display: flex; gap: 12px; flex-wrap: wrap; }
     .start-campaign-modal .btn-secondary { flex: 1; min-width: 120px; padding: 12px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-family: inherit; }
     .start-campaign-modal .btn-secondary:hover { background: rgba(255,255,255,0.15); }
@@ -48,11 +64,6 @@
     .start-campaign-dots b.on { background: #60a5fa; transform: scale(1.15); }
     .start-campaign-step { display: none; }
     .start-campaign-step.active { display: block; }
-    .start-campaign-step h4 { font-size: 16px; color: white; margin: 0 0 12px 0; line-height: 1.35; }
-    .start-campaign-step p { color: rgba(255,255,255,0.78); font-size: 14px; line-height: 1.65; margin: 0 0 12px 0; }
-    .start-campaign-step ul { margin: 0 0 8px 0; padding-left: 20px; color: rgba(255,255,255,0.78); font-size: 14px; line-height: 1.6; }
-    .start-campaign-step li { margin-bottom: 8px; }
-    .start-campaign-step .tip { margin-top: 14px; padding: 12px 14px; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(96, 165, 250, 0.35); border-radius: 10px; font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.5; }
     .campaign-list { display: flex; flex-direction: column; gap: 12px; }
     .campaign-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
     .campaign-card h4 { font-size: 16px; color: #0f172a; margin-bottom: 4px; }
@@ -179,67 +190,85 @@
 
   <div class="start-campaign-modal-overlay" id="startCampaignModal" role="dialog" aria-modal="true" aria-labelledby="startCampaignModalTitle">
     <div class="start-campaign-modal">
-      <div class="start-campaign-wizard-progress">
-        <span id="startCampaignStepLabel">Step 1 of 6</span>
-        <div class="start-campaign-dots" id="startCampaignDots" aria-hidden="true"></div>
-      </div>
-      <h3 id="startCampaignModalTitle">Create a campaign</h3>
+      <form id="startCampaignWizardForm" novalidate>
+        <div class="start-campaign-wizard-progress">
+          <span id="startCampaignStepLabel">Step 1 of 3</span>
+          <div class="start-campaign-dots" id="startCampaignDots" aria-hidden="true"></div>
+        </div>
+        <h3 id="startCampaignModalTitle">Create your campaign</h3>
 
-      <div class="start-campaign-step active" data-wizard-step="0">
-        <h4>Let’s walk through it together</h4>
-        <p>In a few short steps you’ll see exactly what you’ll do on the next screen and what we do for you. Nothing is saved until you finish the campaign form.</p>
-        <div class="tip">Use <strong>Next</strong> to move forward, or <strong>Not now</strong> to close anytime.</div>
-      </div>
+        <div class="start-campaign-step active" data-wizard-step="0">
+          <h4>Campaign name</h4>
+          <div class="start-campaign-wiz-field">
+            <label for="wzTitle">Name</label>
+            <input type="text" id="wzTitle" name="wzTitle" required autocomplete="off" placeholder="e.g. Spring product launch">
+          </div>
+          <label class="start-campaign-wiz-check">
+            <input type="checkbox" id="wzSponsor" name="wzSponsor">
+            <span>Allow sponsors to view and offer on this campaign</span>
+          </label>
+          <p class="start-campaign-wiz-hint">You can add more platforms and adjust everything on the next screen before anything is saved.</p>
+        </div>
 
-      <div class="start-campaign-step" data-wizard-step="1">
-        <h4>What you’ll enter</h4>
-        <p>On the campaign form you’ll:</p>
-        <ul>
-          <li><strong>Name</strong> your campaign</li>
-          <li>Paste a <strong>link to your content</strong> (YouTube, Drive, Dropbox, etc.)</li>
-          <li>Pick <strong>platforms</strong> — TikTok, Instagram, X, YouTube — and how many accounts you want</li>
-          <li>Add a <strong>narrative or angle</strong> so we know how to frame your clips</li>
-        </ul>
-        <p>Optional: you can allow <strong>sponsors</strong> to discover and offer on this campaign.</p>
-      </div>
+        <div class="start-campaign-step" data-wizard-step="1">
+          <h4>Platform &amp; content</h4>
+          <div class="start-campaign-wiz-field">
+            <label for="wzPlatform">Platform</label>
+            <select id="wzPlatform" name="wzPlatform" required>
+              <option value="">Select…</option>
+              <option value="tiktok">TikTok</option>
+              <option value="instagram">Instagram</option>
+              <option value="x">X (Twitter)</option>
+              <option value="youtube">YouTube</option>
+            </select>
+          </div>
+          <div class="start-campaign-wiz-field">
+            <label for="wzContent">Content link</label>
+            <input type="url" id="wzContent" name="wzContent" required placeholder="https://…" inputmode="url">
+            <p class="start-campaign-wiz-hint">YouTube, Google Drive, Dropbox, or any public URL.</p>
+          </div>
+          <div class="start-campaign-wiz-field">
+            <label for="wzNarrative">Narrative / angle</label>
+            <input type="text" id="wzNarrative" name="wzNarrative" placeholder="How should we frame your clips?" autocomplete="off">
+          </div>
+          <div class="start-campaign-wiz-field">
+            <label for="wzGoal">Goal</label>
+            <select id="wzGoal" name="wzGoal">
+              <option value="">Select…</option>
+              <option value="awareness">Awareness</option>
+              <option value="brand_deals">Brand deals</option>
+              <option value="sales">Sales / traffic</option>
+              <option value="narrative">Narrative</option>
+              <option value="pr">PR</option>
+            </select>
+          </div>
+        </div>
 
-      <div class="start-campaign-step" data-wizard-step="2">
-        <h4>What we do</h4>
-        <p>After you submit:</p>
-        <ul>
-          <li>We <strong>create branded accounts</strong> for the platforms you chose</li>
-          <li>We <strong>cut and post clips</strong> aligned with your angle</li>
-          <li>Everything shows on your <strong>campaign calendar</strong> so you can track posts and views</li>
-        </ul>
-        <div class="tip">You stay in control of the brief; we handle execution and posting.</div>
-      </div>
-
-      <div class="start-campaign-step" data-wizard-step="3">
-        <h4>How timing works</h4>
-        <ul>
-          <li><strong>Days 1–2:</strong> Warm-up — we engage in your niche so when posting starts, reach is stronger.</li>
-          <li><strong>Day 3 onward:</strong> Posts go live; views and activity appear on your calendar.</li>
-          <li><strong>First month:</strong> 1 post per day per account. <strong>Month 2+:</strong> 3 posts per day per account (with options to scale).</li>
-        </ul>
-      </div>
-
-      <div class="start-campaign-step" data-wizard-step="4">
-        <h4>Pricing &amp; week one</h4>
-        <p>Pricing is shown on the form (per account per week). After your <strong>first week</strong> of value, you pay to continue or turn on <strong>auto-charge</strong> so campaigns keep running without interruption.</p>
-        <div class="tip">You’ll see the full pricing breakdown and can adjust platforms and account counts before you submit.</div>
-      </div>
-
-      <div class="start-campaign-step" data-wizard-step="5">
-        <h4>You’re ready</h4>
-        <p>Next screen: the full <strong>Create your campaign</strong> form. Take your time filling it in — we’ve already covered what each part is for.</p>
-        <div class="tip">Questions later? Check <strong>FAQ</strong> from the top nav anytime.</div>
-      </div>
+        <div class="start-campaign-step" data-wizard-step="2">
+          <h4>Accounts &amp; posting</h4>
+          <div class="start-campaign-wiz-field" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label for="wzNumAccounts"># Accounts</label>
+              <input type="number" id="wzNumAccounts" name="wzNumAccounts" min="1" max="50" value="1" required>
+            </div>
+            <div>
+              <label for="wzPostsPerDay" title="Month 2+">Posts/day (mo. 2+)</label>
+              <input type="number" id="wzPostsPerDay" name="wzPostsPerDay" min="3" max="10" value="3" required>
+            </div>
+          </div>
+          <div class="start-campaign-wiz-pricing">
+            <div class="start-campaign-wiz-price-line" id="wzPriceLine"></div>
+            <div class="muted" id="wzPriceNote" style="font-size:12px;color:rgba(255,255,255,0.55);margin:6px 0 10px 0;line-height:1.45;"></div>
+            <strong>Pricing</strong> — First month: <strong>$7.99</strong> per account per week (1 post/day). Month 2+: <strong>$12.99</strong> per account per week (3 posts/day); +$2 per extra post/day.
+          </div>
+        </div>
+      </form>
 
       <div class="start-campaign-modal-actions">
         <button type="button" class="btn-secondary" id="startCampaignModalCancel">Not now</button>
         <button type="button" class="btn-secondary" id="startCampaignWizardBack" style="display:none;">Back</button>
         <button type="button" class="btn-primary" id="startCampaignWizardNext">Next</button>
-        <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Open campaign form</button>
+        <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Continue to campaign form</button>
       </div>
     </div>
   </div>
@@ -385,12 +414,77 @@
 
       let campaignsList = [];
       const newCampaignUrl = 'new-campaign.html';
+      const CAMPAIGN_DRAFT_KEY = 'litoclips_campaign_draft';
       let startCampaignPendingDate = null;
-      const START_CAMPAIGN_WIZARD_STEPS = 6;
+      const START_CAMPAIGN_WIZARD_STEPS = 3;
       let startCampaignWizardStep = 0;
 
+      const WZ_FEE_FIRST_MONTH = 7.99;
+      const WZ_FEE_MONTH2_BASE = 12.99;
+      const WZ_FEE_EXTRA_POST = 2;
+
+      function calcWzMonth2Total(numAccounts, postsPerDay) {
+        var n = parseInt(numAccounts, 10) || 0;
+        var posts = Math.max(3, parseInt(postsPerDay, 10) || 3);
+        var extra = Math.max(0, posts - 3);
+        var perAccount = WZ_FEE_MONTH2_BASE + extra * WZ_FEE_EXTRA_POST;
+        return (n * perAccount).toFixed(2);
+      }
+
+      function updateModalWizardPrice() {
+        var numEl = document.getElementById('wzNumAccounts');
+        var postsEl = document.getElementById('wzPostsPerDay');
+        var lineEl = document.getElementById('wzPriceLine');
+        var noteEl = document.getElementById('wzPriceNote');
+        if (!numEl || !postsEl || !lineEl) return;
+        var num = parseInt(numEl.value, 10) || 0;
+        var posts = parseInt(postsEl.value, 10) || 3;
+        var firstMonth = (num * WZ_FEE_FIRST_MONTH).toFixed(2);
+        var month2 = calcWzMonth2Total(num, posts);
+        lineEl.textContent = '$' + firstMonth + '/wk — 1st month (1 post/day per account)';
+        if (noteEl) {
+          noteEl.textContent = 'Month 2+: $' + month2 + '/wk' + (posts > 3 ? ' (' + posts + ' posts/day)' : ' (3 posts/day)');
+        }
+      }
+
+      function resetStartCampaignWizardForm() {
+        var t = document.getElementById('wzTitle');
+        if (t) t.value = '';
+        var s = document.getElementById('wzSponsor');
+        if (s) s.checked = false;
+        var p = document.getElementById('wzPlatform');
+        if (p) p.value = '';
+        var c = document.getElementById('wzContent');
+        if (c) c.value = '';
+        var n = document.getElementById('wzNarrative');
+        if (n) n.value = '';
+        var g = document.getElementById('wzGoal');
+        if (g) g.value = '';
+        var na = document.getElementById('wzNumAccounts');
+        if (na) na.value = '1';
+        var pd = document.getElementById('wzPostsPerDay');
+        if (pd) pd.value = '3';
+        updateModalWizardPrice();
+      }
+
+      function validateStartCampaignWizardStep(stepIndex) {
+        var modal = document.getElementById('startCampaignModal');
+        if (!modal) return true;
+        var steps = modal.querySelectorAll('.start-campaign-step');
+        var step = steps[stepIndex];
+        if (!step) return true;
+        var fields = step.querySelectorAll('input[required], select[required]');
+        for (var i = 0; i < fields.length; i++) {
+          if (!fields[i].checkValidity()) {
+            fields[i].reportValidity();
+            return false;
+          }
+        }
+        return true;
+      }
+
       function syncStartCampaignWizard() {
-        const modal = document.getElementById('startCampaignModal');
+        var modal = document.getElementById('startCampaignModal');
         if (!modal) return;
         modal.querySelectorAll('.start-campaign-step').forEach(function(el, i) {
           el.classList.toggle('active', i === startCampaignWizardStep);
@@ -411,6 +505,9 @@
             b.classList.toggle('on', i === startCampaignWizardStep);
           });
         }
+        if (startCampaignWizardStep === START_CAMPAIGN_WIZARD_STEPS - 1) {
+          updateModalWizardPrice();
+        }
         var last = startCampaignWizardStep >= START_CAMPAIGN_WIZARD_STEPS - 1;
         var backBtn = document.getElementById('startCampaignWizardBack');
         var nextBtn = document.getElementById('startCampaignWizardNext');
@@ -423,6 +520,7 @@
       function openStartCampaignModal(startDate) {
         startCampaignPendingDate = startDate || null;
         startCampaignWizardStep = 0;
+        resetStartCampaignWizardForm();
         document.getElementById('startCampaignModal').classList.add('open');
         document.body.style.overflow = 'hidden';
         syncStartCampaignWizard();
@@ -433,12 +531,34 @@
         startCampaignPendingDate = null;
       }
       function continueToNewCampaign() {
-        let url = newCampaignUrl;
-        if (startCampaignPendingDate) {
-          url += '?start=' + encodeURIComponent(startCampaignPendingDate);
-        }
+        if (!validateStartCampaignWizardStep(startCampaignWizardStep)) return;
+        var draft = {
+          title: (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '',
+          acceptSponsorOffers: document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked,
+          rows: [{
+            platform: document.getElementById('wzPlatform') && document.getElementById('wzPlatform').value,
+            content: document.getElementById('wzContent') && document.getElementById('wzContent').value.trim(),
+            narrative: document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim(),
+            goal: document.getElementById('wzGoal') && document.getElementById('wzGoal').value,
+            num_accounts: parseInt(document.getElementById('wzNumAccounts') && document.getElementById('wzNumAccounts').value, 10) || 1,
+            posts_per_day: parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3
+          }]
+        };
+        try {
+          sessionStorage.setItem(CAMPAIGN_DRAFT_KEY, JSON.stringify(draft));
+        } catch (err) {}
+        var url = newCampaignUrl;
+        var qs = [];
+        if (startCampaignPendingDate) qs.push('start=' + encodeURIComponent(startCampaignPendingDate));
+        if (qs.length) url += '?' + qs.join('&');
         window.location.href = url;
       }
+
+      document.getElementById('startCampaignWizardForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+      });
+      document.getElementById('wzNumAccounts')?.addEventListener('input', updateModalWizardPrice);
+      document.getElementById('wzPostsPerDay')?.addEventListener('input', updateModalWizardPrice);
 
       document.getElementById('startCampaignBtn')?.addEventListener('click', function() { openStartCampaignModal(null); });
       document.getElementById('newCampaignQuickLink')?.addEventListener('click', function(e) {
@@ -447,6 +567,7 @@
       });
       document.getElementById('startCampaignModalCancel')?.addEventListener('click', closeStartCampaignModal);
       document.getElementById('startCampaignWizardNext')?.addEventListener('click', function() {
+        if (!validateStartCampaignWizardStep(startCampaignWizardStep)) return;
         if (startCampaignWizardStep < START_CAMPAIGN_WIZARD_STEPS - 1) {
           startCampaignWizardStep++;
           syncStartCampaignWizard();
