@@ -30,6 +30,25 @@ function getFrontendOriginRoot(frontendOrigin) {
   }
 }
 
+function forceTopRedirect(res, redirectUrl) {
+  // If the OAuth flow occurs inside a hidden iframe (e.g. prompt=none),
+  // a normal HTTP 302 only navigates the iframe. This forces top-level navigation.
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!doctype html>
+<html>
+  <head><meta charset="utf-8"></head>
+  <body>
+    <script>
+      try {
+        window.top.location.replace(${JSON.stringify(redirectUrl)});
+      } catch (e) {
+        window.location.replace(${JSON.stringify(redirectUrl)});
+      }
+    </script>
+  </body>
+</html>`);
+}
+
 function generateReferralCode() {
   return 'REF' + Math.random().toString(36).slice(2, 10).toUpperCase();
 }
@@ -128,7 +147,8 @@ router.get('/discord/callback', (req, res, next) => {
     }
     const token = jwt.sign({ userId: user.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
     const userType = user.userType || 'creator';
-    res.redirect(`${baseOrigin}/index.html?token=${token}&userType=${userType}`);
+    const redirectUrl = `${baseOrigin}/index.html?token=${token}&userType=${userType}`;
+    forceTopRedirect(res, redirectUrl);
   })(req, res, next);
 });
 
@@ -173,7 +193,7 @@ router.get('/google/callback', (req, res, next) => {
     const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
     const redirectUrl = `${baseOrigin}/index.html?token=${token}&userType=${userType}`;
     console.log('[oauth] /google/callback redirecting to', redirectUrl);
-    res.redirect(redirectUrl);
+    forceTopRedirect(res, redirectUrl);
   })(req, res, next);
 });
 
