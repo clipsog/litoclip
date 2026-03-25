@@ -8,47 +8,6 @@ const { db } = require('../db');
 
 const router = express.Router();
 
-function normalizeCallbackURL(url) {
-  if (!url) return url;
-  const s = String(url);
-  // If it's already using the proxied path, don't rewrite it (avoid `/api/api/...`).
-  if (s.includes('/api/auth/')) return url;
-
-  // If a deployment only proxies `/api/*`, `/auth/.../callback` will 404.
-  // Transparently switch to `/api/auth/.../callback` to match available routes.
-  return s.replace(/\/auth\/(google|discord)\/callback\/?$/, '/api/auth/$1/callback');
-}
-
-function getFrontendOriginRoot(frontendOrigin) {
-  // Make callback redirects resilient if FRONTEND_ORIGIN is mis-set with a path.
-  // Example: "https://litoclips.com/signup.html" should still redirect to the origin root.
-  try {
-    return new URL(frontendOrigin).origin;
-  } catch (e) {
-    if (!frontendOrigin) return '';
-    return String(frontendOrigin).replace(/\/$/, '').replace(/\/.*$/, '');
-  }
-}
-
-function forceTopRedirect(res, redirectUrl) {
-  // If the OAuth flow occurs inside a hidden iframe (e.g. prompt=none),
-  // a normal HTTP 302 only navigates the iframe. This forces top-level navigation.
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(`<!doctype html>
-<html>
-  <head><meta charset="utf-8"></head>
-  <body>
-    <script>
-      try {
-        window.top.location.replace(${JSON.stringify(redirectUrl)});
-      } catch (e) {
-        window.location.replace(${JSON.stringify(redirectUrl)});
-      }
-    </script>
-  </body>
-</html>`);
-}
-
 function generateReferralCode() {
   return 'REF' + Math.random().toString(36).slice(2, 10).toUpperCase();
 }
@@ -77,7 +36,7 @@ if (config.discord.clientID && config.discord.clientSecret) {
     {
       clientID: config.discord.clientID,
       clientSecret: config.discord.clientSecret,
-      callbackURL: normalizeCallbackURL(config.discord.callbackURL),
+      callbackURL: config.discord.callbackURL,
       scope: ['identify', 'email'],
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -104,7 +63,7 @@ if (config.google.clientID && config.google.clientSecret) {
     {
       clientID: config.google.clientID,
       clientSecret: config.google.clientSecret,
-      callbackURL: normalizeCallbackURL(config.google.callbackURL),
+      callbackURL: config.google.callbackURL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -130,52 +89,38 @@ passport.deserializeUser((user, done) => done(null, user));
 router.use(passport.initialize());
 
 router.get('/discord', (req, res, next) => {
-  const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
-  if (!config.discord.clientID) return res.redirect(`${baseOrigin}?error=discord_not_configured`);
+  if (!config.discord.clientID) return res.redirect(`${config.frontendOrigin}?error=discord_not_configured`);
   passport.authenticate('discord')(req, res, next);
 });
 
 router.get('/discord/callback', (req, res, next) => {
-  const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
-  if (!config.discord.clientID) return res.redirect(`${baseOrigin}?error=discord_not_configured`);
+  if (!config.discord.clientID) return res.redirect(`${config.frontendOrigin}?error=discord_not_configured`);
   passport.authenticate('discord', (err, user, info) => {
-    const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
-    if (err) return res.redirect(`${baseOrigin}?error=discord_failed`);
+    if (err) return res.redirect(`${config.frontendOrigin}?error=discord_failed`);
     if (!user) {
       const msg = (info && info.message) || 'discord_failed';
-      return res.redirect(`${baseOrigin}?error=${msg}`);
+      return res.redirect(`${config.frontendOrigin}?error=${msg}`);
     }
     const token = jwt.sign({ userId: user.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
     const userType = user.userType || 'creator';
-    const redirectUrl = `${baseOrigin}/index.html?token=${token}&userType=${userType}`;
-    forceTopRedirect(res, redirectUrl);
+    const base = (config.frontendOrigin || '').replace(/\/$/, '');
+    res.redirect(`${base}/index.html?token=${token}&userType=${userType}`);
   })(req, res, next);
 });
 
 router.get('/google', (req, res, next) => {
-  const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
-  if (!config.google.clientID) return res.redirect(`${baseOrigin}?error=google_not_configured`);
+  if (!config.google.clientID) return res.redirect(`${config.frontendOrigin}?error=google_not_configured`);
   const state = ['creator', 'brand', 'sponsor'].includes(req.query.state) ? req.query.state : 'creator';
-  // Prevent Google from using prompt=none (silent auth) which may trigger hidden iframe flows
-  // that browsers block from performing top-level navigation on redirects.
-  if (req.query && typeof req.query.prompt !== 'undefined') delete req.query.prompt;
-  passport.authenticate('google', { scope: ['profile', 'email'], state, prompt: 'select_account' })(req, res, next);
+  passport.authenticate('google', { scope: ['profile', 'email'], state })(req, res, next);
 });
 
 router.get('/google/callback', (req, res, next) => {
-  const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
-  if (!config.google.clientID) return res.redirect(`${baseOrigin}?error=google_not_configured`);
+  if (!config.google.clientID) return res.redirect(`${config.frontendOrigin}?error=google_not_configured`);
   passport.authenticate('google', async (err, user, info) => {
-    console.log('[oauth] /google/callback hit', {
-      err: err ? String(err) : null,
-      hasUser: !!user,
-      frontendOrigin: config.frontendOrigin,
-      baseOrigin
-    });
-    if (err) return res.redirect(`${baseOrigin}?error=google_failed`);
+    if (err) return res.redirect(`${config.frontendOrigin}?error=google_failed`);
     if (!user) {
       const msg = (info && info.message) || 'google_failed';
-      return res.redirect(`${baseOrigin}?error=${msg}`);
+      return res.redirect(`${config.frontendOrigin}?error=${msg}`);
     }
     const state = ['creator', 'brand', 'sponsor'].includes(req.query.state) ? req.query.state : null;
     if (state) {
@@ -192,9 +137,8 @@ router.get('/google/callback', (req, res, next) => {
     }
     const token = jwt.sign({ userId: user.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
     const userType = user.userType || 'creator';
-    const redirectUrl = `${baseOrigin}/index.html?token=${token}&userType=${userType}`;
-    console.log('[oauth] /google/callback redirecting to', redirectUrl);
-    forceTopRedirect(res, redirectUrl);
+    const base = (config.frontendOrigin || '').replace(/\/$/, '');
+    res.redirect(`${base}/index.html?token=${token}&userType=${userType}`);
   })(req, res, next);
 });
 

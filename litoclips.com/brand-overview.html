@@ -31,80 +31,9 @@
     .btn-start-campaign:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35); color: white; }
     .start-campaign-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .start-campaign-modal-overlay.open { display: flex; }
-    .start-campaign-modal {
-      background: #1e293b;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 16px;
-      max-width: 540px;
-      width: 100%;
-      max-height: min(90vh, 720px);
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .start-campaign-modal-toolbar {
-      flex-shrink: 0;
-      padding: 18px 24px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      background: #1e293b;
-    }
-    .start-campaign-modal-toolbar .start-campaign-wizard-progress {
-      margin-bottom: 14px;
-    }
-    .start-campaign-modal-toolbar-actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-    }
-    .start-campaign-modal-toolbar-actions .wiz-toolbar-grow {
-      flex: 1 1 80px;
-      min-width: 0;
-    }
-    .start-campaign-modal-toolbar-actions .btn-secondary {
-      flex: 0 1 auto;
-      min-width: 88px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: white;
-      font-family: inherit;
-    }
-    .start-campaign-modal-toolbar-actions .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.15); }
-    .start-campaign-modal-toolbar-actions .btn-primary {
-      flex: 0 1 auto;
-      min-width: 88px;
-      padding: 10px 16px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      background: linear-gradient(180deg, #2563eb, #1d4ed8);
-      border: none;
-      color: white;
-      font-family: inherit;
-    }
-    .start-campaign-modal-toolbar-actions .btn-primary:hover:not(:disabled) { opacity: 0.95; }
-    .start-campaign-modal-toolbar-actions .btn-secondary:disabled,
-    .start-campaign-modal-toolbar-actions .btn-primary:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-    #startCampaignModalFinish { min-width: 120px; }
-    .start-campaign-modal-body {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      padding: 20px 24px 24px;
-      -webkit-overflow-scrolling: touch;
-    }
+    .start-campaign-modal { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 540px; width: 100%; padding: 28px 28px 26px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
     .start-campaign-modal #startCampaignWizardForm { margin: 0; }
-    .start-campaign-step > h3 { font-size: 19px; color: white; margin: 0 0 16px 0; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; }
+    .start-campaign-modal h3 { font-size: 19px; color: white; margin: 0 0 22px 0; font-weight: 600; letter-spacing: -0.02em; }
     .start-campaign-step h4 { font-size: 15px; color: rgba(255,255,255,0.95); margin: 0 0 16px 0; font-weight: 600; line-height: 1.3; }
     .start-campaign-wiz-field { margin-bottom: 18px; }
     .start-campaign-wiz-field:last-child { margin-bottom: 0; }
@@ -176,19 +105,55 @@
     }
     .start-campaign-wiz-posts-block { margin-top: 20px; margin-bottom: 0; }
     .start-campaign-wiz-posts-block .start-campaign-wiz-hint { margin-top: 8px; }
-    .start-campaign-wiz-error {
-      display: none;
-      margin-top: 16px;
+    .start-campaign-modal-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: stretch;
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .start-campaign-modal-actions-top {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      margin-top: 0;
+      padding-top: 16px;
+      padding-bottom: 16px;
+      border-top: none !important;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: #1e293b;
+    }
+    .start-campaign-modal .btn-secondary {
+      flex: 1 1 100px;
+      min-width: 0;
       padding: 12px 14px;
       border-radius: 10px;
-      font-size: 13px;
-      line-height: 1.45;
-      color: #fecaca;
-      background: rgba(127, 29, 29, 0.35);
-      border: 1px solid rgba(248, 113, 113, 0.45);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      font-family: inherit;
     }
-    .start-campaign-wiz-error.visible { display: block; }
-    .start-campaign-wizard-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 0; flex-wrap: wrap; }
+    .start-campaign-modal .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .start-campaign-modal .btn-primary {
+      flex: 2 1 168px;
+      min-width: 120px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      background: linear-gradient(180deg, #2563eb, #1d4ed8);
+      border: none;
+      color: white;
+      font-family: inherit;
+    }
+    .start-campaign-modal .btn-primary:hover { opacity: 0.95; }
+    .start-campaign-wizard-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
     .start-campaign-wizard-progress span { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500; }
     .start-campaign-dots { display: flex; gap: 6px; }
     .start-campaign-dots b { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.2s, transform 0.2s; }
@@ -319,25 +284,23 @@
     </div>
   </main>
 
-  <div class="start-campaign-modal-overlay" id="startCampaignModal" role="dialog" aria-modal="true" aria-labelledby="startCampaignStepLabel">
+  <div class="start-campaign-modal-overlay" id="startCampaignModal" role="dialog" aria-modal="true" aria-labelledby="startCampaignModalTitle">
     <div class="start-campaign-modal">
-      <div class="start-campaign-modal-toolbar">
+      <form id="startCampaignWizardForm" novalidate>
         <div class="start-campaign-wizard-progress">
           <span id="startCampaignStepLabel">Step 1 of 3</span>
           <div class="start-campaign-dots" id="startCampaignDots" aria-hidden="true"></div>
         </div>
-        <div class="start-campaign-modal-toolbar-actions">
-          <button type="button" class="btn-secondary" id="startCampaignModalCancel">Save for later</button>
-          <span class="wiz-toolbar-grow" aria-hidden="true"></span>
+        <h3 id="startCampaignModalTitle">Create your campaign</h3>
+
+        <div class="start-campaign-modal-actions start-campaign-modal-actions-top">
+          <button type="button" class="btn-secondary" id="startCampaignModalCancel">Not now</button>
           <button type="button" class="btn-secondary" id="startCampaignWizardBack" style="display:none;">Back</button>
           <button type="button" class="btn-primary" id="startCampaignWizardNext">Next</button>
           <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Start campaign</button>
         </div>
-      </div>
-      <div class="start-campaign-modal-body">
-      <form id="startCampaignWizardForm" novalidate>
+
         <div class="start-campaign-step active" data-wizard-step="0">
-          <h3 id="startCampaignModalTitle">Create your campaign</h3>
           <h4>Campaign name</h4>
           <div class="start-campaign-wiz-field">
             <label for="wzTitle">Name</label>
@@ -347,7 +310,7 @@
             <input type="checkbox" id="wzSponsor" name="wzSponsor">
             <span>Allow sponsors to view and offer on this campaign</span>
           </label>
-          <p class="start-campaign-wiz-hint">Finish the steps, then pay securely with Stripe to start your campaign.</p>
+          <p class="start-campaign-wiz-hint">You can add more platforms and adjust everything on the next screen before anything is saved.</p>
         </div>
 
         <div class="start-campaign-step" data-wizard-step="1">
@@ -390,9 +353,7 @@
             <strong>Pricing</strong> — First month: <strong>$7.99</strong> per account per week (1 post/day). Month 2+: <strong>$12.99</strong> per account per week (3 posts/day); +$2 per extra post/day.
           </div>
         </div>
-        <div class="start-campaign-wiz-error" id="startCampaignWizardError" role="alert"></div>
       </form>
-      </div>
     </div>
   </div>
 
@@ -411,7 +372,7 @@
       }
 
       if (!token || !user) {
-        window.location.href = 'login.html';
+        window.location.href = 'signup.html';
         return;
       }
 
@@ -451,18 +412,6 @@
 
       const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:37373/api' : (window.location.origin + '/api');
-
-      function redirectIfUnauthorized(res) {
-        if (res && res.status === 401) {
-          try {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-          } catch (e) {}
-          window.location.href = 'login.html';
-          return true;
-        }
-        return false;
-      }
 
       function loadAccountBalance() {
         const linkEl = document.getElementById('accountBalanceLink');
@@ -544,87 +493,17 @@
       if (!bypass) {
         fetch(API_URL + '/campaigns/my-sponsor-offers', {
           headers: { 'Authorization': 'Bearer ' + token }
-        }).then(r => {
-          if (redirectIfUnauthorized(r)) return [];
-          return r.ok ? r.json() : [];
-        }).catch(() => []).then(renderSponsorOffers);
+        }).then(r => r.ok ? r.json() : []).catch(() => []).then(renderSponsorOffers);
       }
 
       let campaignsList = [];
+      let startCampaignPendingDate = null;
       const START_CAMPAIGN_WIZARD_STEPS = 3;
       let startCampaignWizardStep = 0;
-      let wizardCampaignSubmitting = false;
 
       const WZ_FEE_FIRST_MONTH = 7.99;
       const WZ_FEE_MONTH2_BASE = 12.99;
       const WZ_FEE_EXTRA_POST = 2;
-      const WZ_ONBOARDING_STORAGE_PREFIX = 'litoclips_campaign_onboarding_v1_';
-
-      function getOnboardingStorageKey() {
-        var uid = (user && user.id) ? String(user.id) : 'anon';
-        return WZ_ONBOARDING_STORAGE_PREFIX + uid;
-      }
-      function clearCampaignOnboardingDraft() {
-        try {
-          localStorage.removeItem(getOnboardingStorageKey());
-        } catch (e) {}
-      }
-      function saveCampaignOnboardingDraft() {
-        var rowEls = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
-        var platformRows = [];
-        for (var i = 0; i < rowEls.length; i++) {
-          var sel = rowEls[i].querySelector('select[data-wz-platform]');
-          var numInp = rowEls[i].querySelector('input[data-wz-accounts]');
-          platformRows.push({
-            platform: sel ? sel.value : '',
-            num_accounts: numInp ? numInp.value : '1'
-          });
-        }
-        var draft = {
-          v: 1,
-          step: startCampaignWizardStep,
-          title: document.getElementById('wzTitle') ? document.getElementById('wzTitle').value : '',
-          acceptSponsorOffers: !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked),
-          content: document.getElementById('wzContent') ? document.getElementById('wzContent').value : '',
-          narrative: document.getElementById('wzNarrative') ? document.getElementById('wzNarrative').value : '',
-          goal: document.getElementById('wzGoal') ? document.getElementById('wzGoal').value : '',
-          postsPerDay: document.getElementById('wzPostsPerDay') ? document.getElementById('wzPostsPerDay').value : '3',
-          platformRows: platformRows
-        };
-        try {
-          localStorage.setItem(getOnboardingStorageKey(), JSON.stringify(draft));
-        } catch (err) {}
-      }
-      function applyCampaignOnboardingDraft(d) {
-        if (!d || d.v !== 1) return;
-        var t = document.getElementById('wzTitle');
-        if (t && d.title != null) t.value = d.title;
-        var s = document.getElementById('wzSponsor');
-        if (s) s.checked = !!d.acceptSponsorOffers;
-        var c = document.getElementById('wzContent');
-        if (c && d.content != null) c.value = d.content;
-        var n = document.getElementById('wzNarrative');
-        if (n && d.narrative != null) n.value = d.narrative;
-        var g = document.getElementById('wzGoal');
-        if (g && d.goal != null) g.value = d.goal;
-        var pd = document.getElementById('wzPostsPerDay');
-        if (pd && d.postsPerDay != null) pd.value = String(d.postsPerDay);
-        var wrap = document.getElementById('wzPlatformRows');
-        if (wrap && d.platformRows && d.platformRows.length > 0) {
-          wrap.innerHTML = '';
-          for (var p = 0; p < d.platformRows.length; p++) {
-            var row = createWzPlatformRow();
-            var pr = d.platformRows[p];
-            var sel = row.querySelector('select[data-wz-platform]');
-            var numInp = row.querySelector('input[data-wz-accounts]');
-            if (sel && pr.platform) sel.value = pr.platform;
-            if (numInp && pr.num_accounts != null) numInp.value = String(pr.num_accounts);
-            wrap.appendChild(row);
-          }
-          syncWzRemoveButtons();
-        }
-        updateModalWizardPrice();
-      }
 
       function calcWzMonth2Total(numAccounts, postsPerDay) {
         var n = parseInt(numAccounts, 10) || 0;
@@ -750,41 +629,7 @@
         return true;
       }
 
-      function clearStartCampaignWizardError() {
-        var el = document.getElementById('startCampaignWizardError');
-        if (el) {
-          el.textContent = '';
-          el.classList.remove('visible');
-        }
-      }
-      function showStartCampaignWizardError(msg) {
-        var el = document.getElementById('startCampaignWizardError');
-        if (el) {
-          el.textContent = msg;
-          el.classList.add('visible');
-        }
-      }
-      function setWizardCampaignSubmitting(loading) {
-        wizardCampaignSubmitting = !!loading;
-        var finish = document.getElementById('startCampaignModalFinish');
-        var next = document.getElementById('startCampaignWizardNext');
-        var back = document.getElementById('startCampaignWizardBack');
-        var cancel = document.getElementById('startCampaignModalCancel');
-        if (finish) {
-          finish.disabled = loading;
-          finish.textContent = loading ? 'Redirecting…' : 'Start campaign';
-        }
-        if (next) next.disabled = loading;
-        if (back) back.disabled = loading;
-        if (cancel) cancel.disabled = loading;
-      }
-      function wzPlatformLabel(slug) {
-        var map = { tiktok: 'TikTok', instagram: 'Instagram', x: 'X (Twitter)', youtube: 'YouTube' };
-        return map[slug] || slug;
-      }
-
       function syncStartCampaignWizard() {
-        clearStartCampaignWizardError();
         var modal = document.getElementById('startCampaignModal');
         if (!modal) return;
         modal.querySelectorAll('.start-campaign-step').forEach(function(el, i) {
@@ -818,26 +663,10 @@
         if (finishBtn) finishBtn.style.display = last ? '' : 'none';
       }
 
-      function openStartCampaignModal() {
-        clearStartCampaignWizardError();
-        setWizardCampaignSubmitting(false);
+      function openStartCampaignModal(startDate) {
+        startCampaignPendingDate = startDate || null;
         startCampaignWizardStep = 0;
         resetStartCampaignWizardForm();
-        var raw = null;
-        try {
-          raw = localStorage.getItem(getOnboardingStorageKey());
-        } catch (e) {}
-        if (raw) {
-          try {
-            var parsed = JSON.parse(raw);
-            if (parsed && parsed.v === 1) {
-              applyCampaignOnboardingDraft(parsed);
-              if (typeof parsed.step === 'number') {
-                startCampaignWizardStep = Math.max(0, Math.min(START_CAMPAIGN_WIZARD_STEPS - 1, parsed.step));
-              }
-            }
-          } catch (err) {}
-        }
         document.getElementById('startCampaignModal').classList.add('open');
         document.body.style.overflow = 'hidden';
         syncStartCampaignWizard();
@@ -845,119 +674,92 @@
       function closeStartCampaignModal() {
         document.getElementById('startCampaignModal').classList.remove('open');
         document.body.style.overflow = '';
-        clearStartCampaignWizardError();
-        setWizardCampaignSubmitting(false);
+        startCampaignPendingDate = null;
       }
-      function submitCampaignWithStripe() {
-        if (wizardCampaignSubmitting) return;
+      async function startCampaignAndPayWithStripe() {
         if (!validateStartCampaignWizardStep(startCampaignWizardStep)) return;
-        clearStartCampaignWizardError();
+
         var title = (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '';
         var content = (document.getElementById('wzContent') && document.getElementById('wzContent').value.trim()) || '';
         var narrative = (document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim()) || '';
         var goal = (document.getElementById('wzGoal') && document.getElementById('wzGoal').value) || '';
         var posts = parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3;
         var acceptSponsor = !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked);
+
         var rowEls = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
-        var platformsList = [];
-        var mixParts = [];
-        var totalAccounts = 0;
-        var totalFirstWeekUsd = 0;
+        var rows = [];
         for (var r = 0; r < rowEls.length; r++) {
           var sel = rowEls[r].querySelector('select[data-wz-platform]');
           var numInp = rowEls[r].querySelector('input[data-wz-accounts]');
           if (!sel || !numInp || !sel.value) continue;
-          var n = parseInt(numInp.value, 10) || 0;
-          if (n < 1) continue;
-          platformsList.push(sel.value);
-          mixParts.push(wzPlatformLabel(sel.value) + ' ×' + n);
-          totalAccounts += n;
-          totalFirstWeekUsd += n * WZ_FEE_FIRST_MONTH;
-        }
-        if (!platformsList.length) {
-          showStartCampaignWizardError('Add at least one platform and number of accounts.');
-          return;
-        }
-        var descParts = [];
-        if (narrative) descParts.push(narrative);
-        if (mixParts.length) descParts.push('Account mix: ' + mixParts.join(', '));
-        var description = descParts.length ? descParts.join('\n\n') : undefined;
-
-        if (bypass) {
-          clearCampaignOnboardingDraft();
-          localStorage.setItem('lastCampaign', JSON.stringify({
-            id: 'bypass-' + Date.now(),
-            title: title,
-            platform: platformsList[0],
-            goal: goal,
-            num_accounts: totalAccounts
-          }));
-          window.location.href = 'campaign-track.html?name=' + encodeURIComponent(title);
-          return;
-        }
-
-        var amountCents = Math.max(100, Math.round(totalFirstWeekUsd * 100));
-        var campaignBody = {
-          title: title,
-          description: description,
-          platform: platformsList[0],
-          content_link: content,
-          goal: goal || undefined,
-          num_accounts: totalAccounts,
-          posts_per_day: posts,
-          budget: parseFloat(totalFirstWeekUsd.toFixed(2)),
-          platforms: platformsList,
-          requirePayment: true,
-          acceptSponsorOffers: acceptSponsor
-        };
-
-        setWizardCampaignSubmitting(true);
-        fetch(API_URL + '/campaigns', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify(campaignBody)
-        })
-          .then(function(res) {
-            if (redirectIfUnauthorized(res)) {
-              throw new Error('Session expired. Sign in again.');
-            }
-            return res.ok ? res.json() : res.json().then(function(d) {
-              throw new Error((d && d.error) || 'Could not create campaign');
-            });
-          })
-          .then(function(data) {
-            return fetch(API_URL + '/payments/create', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-              body: JSON.stringify({
-                campaignId: data.id,
-                amountCents: amountCents,
-                currency: 'usd',
-                paymentMethod: 'stripe'
-              })
-            });
-          })
-          .then(function(pres) {
-            if (redirectIfUnauthorized(pres)) {
-              throw new Error('Session expired. Sign in again.');
-            }
-            return pres.json().then(function(pd) {
-              if (!pres.ok) throw new Error((pd && pd.error) || 'Could not start checkout');
-              return pd;
-            });
-          })
-          .then(function(pay) {
-            if (pay.checkoutUrl) {
-              clearCampaignOnboardingDraft();
-              window.location.href = pay.checkoutUrl;
-              return;
-            }
-            throw new Error('Stripe Checkout is not available. Check payment settings.');
-          })
-          .catch(function(err) {
-            setWizardCampaignSubmitting(false);
-            showStartCampaignWizardError(err.message || 'Something went wrong.');
+          rows.push({
+            platform: sel.value,
+            num_accounts: parseInt(numInp.value, 10) || 1
           });
+        }
+        if (!rows.length) return;
+
+        // For pricing + billing we use the total accounts across selected platforms.
+        var totalAccounts = rows.reduce(function(sum, r) { return sum + (r.num_accounts || 0); }, 0);
+        if (!totalAccounts) return;
+        var platforms = rows.map(function(r) { return r.platform; });
+        var primaryPlatform = platforms[0] || null;
+
+        var budgetDollars = parseFloat((totalAccounts * WZ_FEE_FIRST_MONTH).toFixed(2));
+        var amountCents = Math.max(100, Math.round(budgetDollars * 100));
+
+        try {
+          // 1) Create the campaign in `pending_payment` status.
+          var createRes = await fetch(API_URL + '/campaigns', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+              title: title,
+              content_link: content,
+              description: narrative || undefined,
+              goal: goal,
+              platform: primaryPlatform,
+              platforms: platforms,
+              num_accounts: totalAccounts,
+              requirePayment: true,
+              posts_per_day: posts,
+              budget: budgetDollars,
+              acceptSponsorOffers: acceptSponsor
+            })
+          });
+
+          var createData = createRes && createRes.ok ? await createRes.json() : null;
+          if (!createData || !createData.id) {
+            throw new Error((createData && createData.error) ? createData.error : 'Failed to create campaign.');
+          }
+
+          // 2) Immediately create a Stripe Checkout session and redirect the user.
+          if (bypass) {
+            var trackName = createData.title || title;
+            window.location.href = 'campaign-track.html?id=' + encodeURIComponent(createData.id) + '&name=' + encodeURIComponent(trackName);
+            return;
+          }
+
+          var payRes = await fetch(API_URL + '/payments/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+              campaignId: createData.id,
+              amountCents: amountCents,
+              currency: 'usd',
+              paymentMethod: 'stripe'
+            })
+          });
+          var payData = payRes && payRes.ok ? await payRes.json() : null;
+          if (!payData || !payData.checkoutUrl) {
+            throw new Error((payData && payData.error) ? payData.error : 'Failed to start Stripe checkout.');
+          }
+
+          // Stripe will take them to the hosted checkout.
+          window.location.href = payData.checkoutUrl;
+        } catch (err) {
+          alert(err && err.message ? err.message : 'Something went wrong while starting your campaign.');
+        }
       }
 
       document.getElementById('startCampaignWizardForm')?.addEventListener('submit', function(e) {
@@ -973,15 +775,12 @@
       });
       document.getElementById('wzPostsPerDay')?.addEventListener('input', updateModalWizardPrice);
 
-      document.getElementById('startCampaignBtn')?.addEventListener('click', function() { openStartCampaignModal(); });
+      document.getElementById('startCampaignBtn')?.addEventListener('click', function() { openStartCampaignModal(null); });
       document.getElementById('newCampaignQuickLink')?.addEventListener('click', function(e) {
         e.preventDefault();
-        openStartCampaignModal();
+        openStartCampaignModal(null);
       });
-      document.getElementById('startCampaignModalCancel')?.addEventListener('click', function() {
-        saveCampaignOnboardingDraft();
-        closeStartCampaignModal();
-      });
+      document.getElementById('startCampaignModalCancel')?.addEventListener('click', closeStartCampaignModal);
       document.getElementById('startCampaignWizardNext')?.addEventListener('click', function() {
         if (!validateStartCampaignWizardStep(startCampaignWizardStep)) return;
         if (startCampaignWizardStep < START_CAMPAIGN_WIZARD_STEPS - 1) {
@@ -995,7 +794,7 @@
           syncStartCampaignWizard();
         }
       });
-      document.getElementById('startCampaignModalFinish')?.addEventListener('click', submitCampaignWithStripe);
+      document.getElementById('startCampaignModalFinish')?.addEventListener('click', startCampaignAndPayWithStripe);
       document.getElementById('startCampaignModal')?.addEventListener('click', function(e) {
         if (e.target.id === 'startCampaignModal') closeStartCampaignModal();
       });
@@ -1006,14 +805,14 @@
       document.getElementById('calendarGrid')?.addEventListener('click', function(e) {
         if (campaignsList.length > 0) return;
         const el = e.target.closest('[data-start-date]');
-        if (el) openStartCampaignModal();
+        if (el) openStartCampaignModal(el.getAttribute('data-start-date'));
       });
       document.getElementById('calendarGrid')?.addEventListener('keydown', function(e) {
         if (campaignsList.length > 0 || (e.key !== 'Enter' && e.key !== ' ')) return;
         const el = e.target.closest('[data-start-date]');
         if (el) {
           e.preventDefault();
-          openStartCampaignModal();
+          openStartCampaignModal(el.getAttribute('data-start-date'));
         }
       });
 
@@ -1088,10 +887,7 @@
           return;
         }
         fetch(API_URL + '/campaigns/created', { headers: { 'Authorization': 'Bearer ' + token } })
-          .then(r => {
-            if (redirectIfUnauthorized(r)) return [];
-            return r.ok ? r.json() : [];
-          })
+          .then(r => r.ok ? r.json() : [])
           .catch(() => [])
           .then(campaigns => {
             campaignsList = campaigns || [];
@@ -1099,10 +895,7 @@
             if (campaignsList.length > 0) {
               const first = campaignsList[0];
               return fetch(API_URL + '/campaigns/' + first.id + '/posts', { headers: { 'Authorization': 'Bearer ' + token } })
-                .then(r => {
-                  if (redirectIfUnauthorized(r)) return [];
-                  return r.ok ? r.json() : [];
-                })
+                .then(r => r.ok ? r.json() : [])
                 .catch(() => [])
                 .then(posts => ({ posts: posts || [], campaignId: first.id }));
             }

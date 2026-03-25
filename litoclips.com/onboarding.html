@@ -125,64 +125,38 @@
       const positionOtherInput = document.getElementById('positionOther');
       const passwordGroup = document.getElementById('passwordGroup');
 
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      if (fromGoogle && token && user) {
+        document.getElementById('onboardingCard').classList.add('google-only');
+        document.getElementById('onboardingTitle').textContent = 'One more step';
+        document.getElementById('onboardingSubtitle').textContent = 'Hi ' + (user.name || user.firstName || 'there') + '! What best describes you?';
+        document.getElementById('firstName').value = user.firstName || (user.name ? user.name.split(' ')[0] : '') || '';
+        document.getElementById('lastName').value = user.lastName || (user.name ? user.name.split(' ').slice(1).join(' ') : '') || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('firstName').required = false;
+        document.getElementById('lastName').required = false;
+        document.getElementById('email').required = false;
+        document.getElementById('password').required = false;
+        passwordGroup.style.display = 'none';
+      }
+
       if (bypass) {
-        const u = { id: 'bypass-' + Date.now(), name: 'Demo User', email: 'demo@litoclips.com', userType: 'creator', position: 'content_creator' };
+        const user = { id: 'bypass-' + Date.now(), name: 'Demo User', email: 'demo@litoclips.com', userType: 'creator', position: 'content_creator' };
         localStorage.setItem('token', 'demo-bypass-token');
-        localStorage.setItem('user', JSON.stringify(u));
+        localStorage.setItem('user', JSON.stringify(user));
         window.location.href = 'brand-overview.html?welcome=1';
         return;
       }
 
-      function parseStoredUser() {
-        try {
-          const userStr = localStorage.getItem('user');
-          return userStr ? JSON.parse(userStr) : null;
-        } catch (e) {
-          return null;
-        }
+      if (fromGoogle && (!token || !user)) {
+        window.location.href = 'signup.html';
+        return;
       }
 
-      function isUsableUser(u) {
-        // Protect against corrupt/partial localStorage values (e.g. "null", "{}", etc).
-        return !!u && typeof u === 'object' && (u.id || u._id || u.email || u.userType || u.needsOnboarding);
-      }
-
-      (async function initOnboarding() {
-        let token = localStorage.getItem('token');
-        let user = parseStoredUser();
-
-        if (fromGoogle && token && !isUsableUser(user)) {
-          try {
-            const r = await fetch(API_URL + '/me', { headers: { 'Authorization': 'Bearer ' + token } });
-            if (r.ok) {
-              const u = await r.json();
-              localStorage.setItem('user', JSON.stringify(u));
-              localStorage.setItem('userType', u.userType || 'creator');
-              user = u;
-            }
-          } catch (e) {}
-        }
-
-        if (fromGoogle && (!token || !isUsableUser(user))) {
-          window.location.href = 'login.html';
-          return;
-        }
-
-        if (fromGoogle && token && isUsableUser(user)) {
-          document.getElementById('onboardingCard').classList.add('google-only');
-          document.getElementById('onboardingTitle').textContent = 'One more step';
-          document.getElementById('onboardingSubtitle').textContent = 'Hi ' + (user.name || user.firstName || 'there') + '! What best describes you?';
-          document.getElementById('firstName').value = user.firstName || (user.name ? user.name.split(' ')[0] : '') || '';
-          document.getElementById('lastName').value = user.lastName || (user.name ? user.name.split(' ').slice(1).join(' ') : '') || '';
-          document.getElementById('email').value = user.email || '';
-          document.getElementById('firstName').required = false;
-          document.getElementById('lastName').required = false;
-          document.getElementById('email').required = false;
-          document.getElementById('password').required = false;
-          passwordGroup.style.display = 'none';
-        }
-
-        positionSelect.addEventListener('change', function() {
+      positionSelect.addEventListener('change', function() {
         if (this.value === 'other') {
           positionOtherWrap.classList.add('visible');
           positionOtherInput.required = true;
@@ -231,7 +205,7 @@
               formError.textContent = 'Session expired. Redirecting to sign in...';
               localStorage.removeItem('token');
               localStorage.removeItem('user');
-              setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+              setTimeout(() => { window.location.href = 'signup.html'; }, 1500);
             } else {
               const data = (() => { try { return JSON.parse(resText); } catch (_) { return {}; } })();
               formError.textContent = data.error || 'Something went wrong. Please try again.';

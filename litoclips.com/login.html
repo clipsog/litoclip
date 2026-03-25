@@ -56,11 +56,11 @@
     (function() {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const API_URL = isLocal ? 'http://localhost:37373/api/auth' : (window.location.origin + '/api/auth');
+      const AUTH_BASE = isLocal ? 'http://localhost:37373' : window.location.origin;
       const form = document.getElementById('loginForm');
       const formError = document.getElementById('formError');
       const googleBtn = document.getElementById('googleLoginBtn');
-      // OAuth start endpoint (works even if `/auth/*` is not proxied)
-      if (googleBtn) googleBtn.href = API_URL + '/google';
+      if (googleBtn) googleBtn.href = AUTH_BASE + '/auth/google';
 
       function getDashboardHref(userType) {
         if (userType === 'sponsor') return 'sponsor-dashboard.html';
@@ -102,26 +102,16 @@
       const token = params.get('token');
       if (token) {
         localStorage.setItem('token', token);
-        fetch(API_URL + '/me', { headers: { 'Authorization': 'Bearer ' + token } })
+        fetch(API_URL.replace('/auth', '') + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
           .then(function(r) { return r.ok ? r.json() : null; })
           .then(function(user) {
-            window.history.replaceState({}, '', 'login.html');
             if (user) {
               localStorage.setItem('user', JSON.stringify(user));
               localStorage.setItem('userType', user.userType || 'creator');
-              if (user.needsOnboarding) {
-                window.location.replace('onboarding.html?from=google');
-              } else {
-                window.location.replace(getDashboardHref(user.userType));
-              }
-            } else {
-              localStorage.removeItem('token');
-            }
+              window.location.replace(getDashboardHref(user.userType));
+            } else { window.history.replaceState({}, '', 'login.html'); }
           })
-          .catch(function() {
-            localStorage.removeItem('token');
-            window.history.replaceState({}, '', 'login.html');
-          });
+          .catch(function() { window.history.replaceState({}, '', 'login.html'); });
       }
     })();
   </script>

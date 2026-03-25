@@ -217,15 +217,14 @@ function initAuthHandlers() {
   // Initialize custom dropdown
   initCustomDropdown();
 
-  // Use our backend OAuth URLs.
-  // Some deployments only proxy `/api/*`, so use `/api/auth/*` which we know exists.
-  var oauthBase = (typeof window.AUTH_API_URL !== 'undefined' ? window.AUTH_API_URL : '');
+  // Use our backend OAuth URLs when using API (localhost or same origin)
+  var oauthBase = (typeof window.AUTH_API_URL !== 'undefined' ? window.AUTH_API_URL : '').replace(/\/api\/auth\/?$/, '');
   if (oauthBase) {
     document.querySelectorAll('a.oauth-btn.discord').forEach(function (a) {
-      a.href = oauthBase + '/discord';
+      a.href = oauthBase + '/auth/discord';
     });
     document.querySelectorAll('a.oauth-btn.google').forEach(function (a) {
-      a.href = oauthBase + '/google';
+      a.href = oauthBase + '/auth/google';
     });
   }
 
@@ -465,11 +464,7 @@ async function checkAuthStatus() {
       const path = window.location.pathname || '';
       const isHome = path === '/' || path === '/index.html' || path.endsWith('index.html');
       if (isHome) {
-        if (user.needsOnboarding) {
-          window.location.replace('onboarding.html?from=google');
-        } else {
-          window.location.replace(getDashboardHref(user.userType));
-        }
+        window.location.replace(getDashboardHref(user.userType));
         return;
       }
       updateUI(user);

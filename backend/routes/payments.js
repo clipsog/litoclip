@@ -47,7 +47,7 @@ async function createPayPalOrder(amountUsd, currency, campaignTitle, paymentId) 
       }],
       application_context: {
         return_url: `${config.frontendOrigin}/campaign-track.html?payment=paypal&payment_id=${paymentId}`,
-        cancel_url: `${config.frontendOrigin}/brand-overview.html?payment=cancelled`,
+        cancel_url: `${config.frontendOrigin}/new-campaign.html?payment=cancelled`,
       },
     }),
   });
@@ -93,7 +93,7 @@ router.post('/create', requireAuth, async (req, res) => {
         }],
         mode: 'payment',
         success_url: `${config.frontendOrigin}/campaign-track.html?id=${campaignId}&name=${encodeURIComponent(campaign.title)}&payment=success&payment_id=${paymentId}`,
-        cancel_url: `${config.frontendOrigin}/brand-overview.html?payment=cancelled`,
+        cancel_url: `${config.frontendOrigin}/new-campaign.html?payment=cancelled`,
         client_reference_id: paymentId,
         metadata: { campaign_id: campaignId, payment_id: paymentId },
       });

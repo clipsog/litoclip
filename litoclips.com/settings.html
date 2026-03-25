@@ -63,8 +63,8 @@
     <div class="header-container">
       <a href="index.html" class="logo">
         <img src="assets/logo.png" alt="Logo">
-        <span class="logo-text">LitoClips</span>
-      </a>
+      <span class="logo-text">LitoClips</span>
+    </a>
       <nav class="nav-links">
         <a href="faq.html">FAQ</a>
         <a href="#" id="navDashboard">Dashboard</a>
@@ -93,69 +93,69 @@
 
     <div class="settings-section" id="profile">
       <h3>Account Information</h3>
-      <div class="settings-item">
-        <div class="settings-item-content">
+          <div class="settings-item">
+            <div class="settings-item-content">
           <div class="settings-item-label">Email</div>
-          <div class="settings-item-value" id="userEmail">Loading...</div>
-        </div>
+              <div class="settings-item-value" id="userEmail">Loading...</div>
+            </div>
         <button type="button" class="btn-settings btn-settings-secondary" onclick="openEditEmailModal()">Change</button>
-      </div>
-      <div class="settings-item">
-        <div class="settings-item-content">
-          <div class="settings-item-label">Display Name</div>
-          <div class="settings-item-value" id="displayName">Loading...</div>
-        </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-content">
+              <div class="settings-item-label">Display Name</div>
+              <div class="settings-item-value" id="displayName">Loading...</div>
+            </div>
         <button type="button" class="btn-settings btn-settings-secondary" onclick="openEditNameModal()">Edit</button>
-      </div>
-      <div class="settings-item">
-        <div class="settings-item-content">
-          <div class="settings-item-label">Password</div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-content">
+              <div class="settings-item-label">Password</div>
           <div class="settings-item-value">••••••••</div>
         </div>
         <button type="button" class="btn-settings btn-settings-secondary" onclick="openChangePasswordModal()">Change</button>
-      </div>
-    </div>
-
+            </div>
+          </div>
+          
     <div class="settings-section" id="notifications">
       <h3>Notifications</h3>
-      <div class="settings-item">
-        <div class="settings-item-content">
-          <div class="settings-item-label">Email Notifications</div>
+          <div class="settings-item">
+            <div class="settings-item-content">
+              <div class="settings-item-label">Email Notifications</div>
           <div class="settings-item-value">Updates about campaigns and earnings</div>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="emailNotifications" onchange="saveNotificationPrefs()">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-      <div class="settings-item">
-        <div class="settings-item-content">
-          <div class="settings-item-label">Push Notifications</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="emailNotifications" onchange="saveNotificationPrefs()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-content">
+              <div class="settings-item-label">Push Notifications</div>
           <div class="settings-item-value">Alerts for approvals and payments</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pushNotifications" onchange="saveNotificationPrefs()">
+              <span class="toggle-slider"></span>
+            </label>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="pushNotifications" onchange="saveNotificationPrefs()">
-          <span class="toggle-slider"></span>
-        </label>
       </div>
-    </div>
 
     <div class="settings-section danger-section">
       <h3>Danger Zone</h3>
-      <div class="settings-item">
-        <div class="settings-item-content">
-          <div class="settings-item-label">Delete Account</div>
-          <div class="settings-item-value">Permanently delete your account and all data</div>
-        </div>
+          <div class="settings-item">
+            <div class="settings-item-content">
+              <div class="settings-item-label">Delete Account</div>
+              <div class="settings-item-value">Permanently delete your account and all data</div>
+            </div>
         <button type="button" class="btn-settings btn-settings-danger" onclick="openDeleteAccountModal()">Delete</button>
       </div>
-    </div>
-  </main>
+      </div>
+    </main>
 
   <div class="modal-overlay" id="editNameModal">
     <div class="modal">
-      <h2>Edit Display Name</h2>
-      <p>Change your display name</p>
+        <h2>Edit Display Name</h2>
+        <p>Change your display name</p>
       <form id="editNameForm">
         <div class="form-group">
           <label>Display Name</label>
@@ -172,7 +172,7 @@
   <div class="modal-overlay" id="editEmailModal">
     <div class="modal">
       <h2>Change Email</h2>
-      <p>Update your email address</p>
+        <p>Update your email address</p>
       <form id="editEmailForm">
         <div class="form-group">
           <label>New Email</label>
@@ -188,8 +188,8 @@
 
   <div class="modal-overlay" id="changePasswordModal">
     <div class="modal">
-      <h2>Change Password</h2>
-      <p>Update your account password</p>
+        <h2>Change Password</h2>
+        <p>Update your account password</p>
       <form id="changePasswordForm">
         <div class="form-group">
           <label>Current Password</label>
@@ -311,7 +311,7 @@
           document.getElementById('emailNotifications').checked = (p.email_notifications || 1) !== 0;
           document.getElementById('pushNotifications').checked = (p.push_notifications || 0) === 1;
         }
-      } catch (e) {
+      } catch (e) { 
         document.getElementById('emailNotifications').checked = true;
         document.getElementById('pushNotifications').checked = false;
       }
@@ -331,11 +331,11 @@
       } catch (e) { showToast('Failed to save', 'error'); }
     }
 
-    document.getElementById('editNameForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
+      document.getElementById('editNameForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
         const r = await fetch(API_URL + '/auth/profile', {
-          method: 'PUT',
+            method: 'PUT',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: document.getElementById('newName').value.trim() })
         });
@@ -344,11 +344,11 @@
       } catch (e) { showToast('Failed', 'error'); }
     });
 
-    document.getElementById('editEmailForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
+      document.getElementById('editEmailForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
         const r = await fetch(API_URL + '/auth/email', {
-          method: 'PUT',
+            method: 'PUT',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: document.getElementById('newEmail').value.trim() })
         });
@@ -357,12 +357,12 @@
       } catch (e) { showToast('Failed', 'error'); }
     });
 
-    document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+      document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
       const np = document.getElementById('newPassword').value;
       if (np !== document.getElementById('confirmPassword').value) {
         showToast('Passwords do not match', 'error');
-        return;
+          return;
       }
       try {
         const r = await fetch(API_URL + '/auth/password', {
