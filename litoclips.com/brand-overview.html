@@ -114,20 +114,28 @@
       padding-top: 22px;
       border-top: 1px solid rgba(255,255,255,0.1);
     }
-    .start-campaign-modal-actions-top {
+    .start-campaign-modal-toprow {
       position: sticky;
       top: 8px;
-      z-index: 3;
-      margin-top: 0 !important;
-      padding-top: 10px;
-      padding-bottom: 10px;
-      border-top: none !important;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0 10px;
+      margin-bottom: 14px;
       background: #1e293b;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .start-campaign-modal-actions-top {
+      margin: 0 !important;
+      padding: 0;
+      border: none !important;
+      background: transparent;
       justify-content: flex-end;
       gap: 8px;
-      padding-left: 0;
-      padding-right: 0;
+      flex: 0 0 auto;
+      width: auto;
     }
     .start-campaign-modal-actions-top .btn-secondary { flex: 0 0 auto !important; }
     .start-campaign-modal-actions-top .btn-primary { flex: 0 0 auto !important; }
@@ -159,7 +167,7 @@
       font-family: inherit;
     }
     .start-campaign-modal .btn-primary:hover { opacity: 0.95; }
-    .start-campaign-wizard-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+    .start-campaign-wizard-progress { display: flex; align-items: center; gap: 10px; margin: 0; flex-wrap: wrap; }
     .start-campaign-wizard-progress span { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500; }
     .start-campaign-dots { display: flex; gap: 6px; }
     .start-campaign-dots b { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.2s, transform 0.2s; }
@@ -192,9 +200,14 @@
     .calendar-cta { margin-top: 16px; font-size: 14px; color: #64748b; }
     .calendar-cta a { color: #2563eb; text-decoration: none; font-weight: 500; }
     .calendar-cta a:hover { text-decoration: underline; }
-    .calendar-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+    .calendar-toolbar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: nowrap; gap: 16px; margin-bottom: 16px; }
     .calendar-toolbar .btn-start-campaign { margin: 0; }
-    .calendar-toolbar-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end; }
+    .calendar-toolbar > div:first-child { flex: 1 1 auto; min-width: 0; }
+    .calendar-toolbar-actions { display:flex; align-items:center; gap:12px; flex-wrap:nowrap; justify-content:flex-end; margin-left: auto; }
+    @media (max-width: 740px) {
+      .calendar-toolbar { flex-wrap: wrap; }
+      .calendar-toolbar-actions { width: 100%; justify-content: flex-start; }
+    }
     .btn-saved-campaigns {
       padding: 14px 20px;
       border-radius: 12px;
@@ -414,18 +427,19 @@
   <div class="start-campaign-modal-overlay" id="startCampaignModal" role="dialog" aria-modal="true" aria-labelledby="startCampaignModalTitle">
     <div class="start-campaign-modal">
       <form id="startCampaignWizardForm" novalidate>
-        <div class="start-campaign-wizard-progress">
-          <span id="startCampaignStepLabel">Step 1 of 3</span>
-          <div class="start-campaign-dots" id="startCampaignDots" aria-hidden="true"></div>
+        <div class="start-campaign-modal-toprow">
+          <div class="start-campaign-wizard-progress">
+            <span id="startCampaignStepLabel">Step 1 of 3</span>
+            <div class="start-campaign-dots" id="startCampaignDots" aria-hidden="true"></div>
+          </div>
+          <div class="start-campaign-modal-actions start-campaign-modal-actions-top">
+            <button type="button" class="btn-secondary" id="startCampaignModalCancel">Save for later</button>
+            <button type="button" class="btn-secondary" id="startCampaignWizardBack" style="display:none;">Back</button>
+            <button type="button" class="btn-primary" id="startCampaignWizardNext">Next</button>
+            <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Start campaign</button>
+          </div>
         </div>
         <h3 id="startCampaignModalTitle">Create your campaign</h3>
-
-        <div class="start-campaign-modal-actions start-campaign-modal-actions-top">
-          <button type="button" class="btn-secondary" id="startCampaignModalCancel">Save for later</button>
-          <button type="button" class="btn-secondary" id="startCampaignWizardBack" style="display:none;">Back</button>
-          <button type="button" class="btn-primary" id="startCampaignWizardNext">Next</button>
-          <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Start campaign</button>
-        </div>
 
         <div class="start-campaign-step active" data-wizard-step="0">
           <h4>Campaign name</h4>
