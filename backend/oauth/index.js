@@ -10,12 +10,13 @@ const router = express.Router();
 
 function normalizeCallbackURL(url) {
   if (!url) return url;
+  const s = String(url);
+  // If it's already using the proxied path, don't rewrite it (avoid `/api/api/...`).
+  if (s.includes('/api/auth/')) return url;
+
   // If a deployment only proxies `/api/*`, `/auth/.../callback` will 404.
   // Transparently switch to `/api/auth/.../callback` to match available routes.
-  return String(url).replace(
-    /\/auth\/(google|discord)\/callback\/?$/,
-    '/api/auth/$1/callback'
-  );
+  return s.replace(/\/auth\/(google|discord)\/callback\/?$/, '/api/auth/$1/callback');
 }
 
 function getFrontendOriginRoot(frontendOrigin) {
