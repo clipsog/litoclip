@@ -77,12 +77,12 @@
     (function() {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const API_URL = isLocal ? 'http://localhost:37373/api/auth' : (window.location.origin + '/api/auth');
-      const AUTH_BASE = API_URL.replace(/\/api\/auth\/?$/, '');
       const form = document.getElementById('signupForm');
       const googleBtn = document.getElementById('googleSignupBtn');
       function updateGoogleHref() {
         const role = (form.querySelector('input[name="userType"]:checked') || {}).value || 'creator';
-        if (googleBtn) googleBtn.href = AUTH_BASE + '/auth/google?state=' + encodeURIComponent(role);
+        // OAuth start endpoint (works even if `/auth/*` is not proxied)
+        if (googleBtn) googleBtn.href = API_URL + '/google?state=' + encodeURIComponent(role);
       }
       updateGoogleHref();
       const formError = document.getElementById('formError');

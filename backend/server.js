@@ -91,10 +91,15 @@ if (config.stripe.secretKey && config.stripe.webhookSecret) {
 
 app.use(express.json());
 
-// OAuth callback routes at /auth/discord, /auth/google (must be before /api so redirects work)
+// OAuth callback routes.
+// Some deployments only proxy `/api/*` to the backend, so we expose OAuth under both:
+// - `/auth/...` (original)
+// - `/api/auth/...` (fallback when `/auth` isn't reachable)
+// Both must be registered before /api so redirects work.
 try {
   const oauth = require('./oauth');
   app.use('/auth', oauth);
+  app.use('/api/auth', oauth);
 } catch (e) {
   console.warn('OAuth not loaded (missing env?):', e.message);
 }

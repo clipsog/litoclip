@@ -56,11 +56,11 @@
     (function() {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const API_URL = isLocal ? 'http://localhost:37373/api/auth' : (window.location.origin + '/api/auth');
-      const AUTH_BASE = API_URL.replace(/\/api\/auth\/?$/, '');
       const form = document.getElementById('loginForm');
       const formError = document.getElementById('formError');
       const googleBtn = document.getElementById('googleLoginBtn');
-      if (googleBtn) googleBtn.href = AUTH_BASE + '/auth/google';
+      // OAuth start endpoint (works even if `/auth/*` is not proxied)
+      if (googleBtn) googleBtn.href = API_URL + '/google';
 
       function getDashboardHref(userType) {
         if (userType === 'sponsor') return 'sponsor-dashboard.html';

@@ -8,6 +8,16 @@ const { db } = require('../db');
 
 const router = express.Router();
 
+function normalizeCallbackURL(url) {
+  if (!url) return url;
+  // If a deployment only proxies `/api/*`, `/auth/.../callback` will 404.
+  // Transparently switch to `/api/auth/.../callback` to match available routes.
+  return String(url).replace(
+    /\/auth\/(google|discord)\/callback\/?$/,
+    '/api/auth/$1/callback'
+  );
+}
+
 function getFrontendOriginRoot(frontendOrigin) {
   // Make callback redirects resilient if FRONTEND_ORIGIN is mis-set with a path.
   // Example: "https://litoclips.com/signup.html" should still redirect to the origin root.
@@ -47,7 +57,7 @@ if (config.discord.clientID && config.discord.clientSecret) {
     {
       clientID: config.discord.clientID,
       clientSecret: config.discord.clientSecret,
-      callbackURL: config.discord.callbackURL,
+      callbackURL: normalizeCallbackURL(config.discord.callbackURL),
       scope: ['identify', 'email'],
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -74,7 +84,7 @@ if (config.google.clientID && config.google.clientSecret) {
     {
       clientID: config.google.clientID,
       clientSecret: config.google.clientSecret,
-      callbackURL: config.google.callbackURL,
+      callbackURL: normalizeCallbackURL(config.google.callbackURL),
     },
     async (accessToken, refreshToken, profile, done) => {
       try {

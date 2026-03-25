@@ -217,14 +217,15 @@ function initAuthHandlers() {
   // Initialize custom dropdown
   initCustomDropdown();
 
-  // Use our backend OAuth URLs when using API (localhost or same origin)
-  var oauthBase = (typeof window.AUTH_API_URL !== 'undefined' ? window.AUTH_API_URL : '').replace(/\/api\/auth\/?$/, '');
+  // Use our backend OAuth URLs.
+  // Some deployments only proxy `/api/*`, so use `/api/auth/*` which we know exists.
+  var oauthBase = (typeof window.AUTH_API_URL !== 'undefined' ? window.AUTH_API_URL : '');
   if (oauthBase) {
     document.querySelectorAll('a.oauth-btn.discord').forEach(function (a) {
-      a.href = oauthBase + '/auth/discord';
+      a.href = oauthBase + '/discord';
     });
     document.querySelectorAll('a.oauth-btn.google').forEach(function (a) {
-      a.href = oauthBase + '/auth/google';
+      a.href = oauthBase + '/google';
     });
   }
 
