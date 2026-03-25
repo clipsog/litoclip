@@ -156,7 +156,10 @@ router.get('/google', (req, res, next) => {
   const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
   if (!config.google.clientID) return res.redirect(`${baseOrigin}?error=google_not_configured`);
   const state = ['creator', 'brand', 'sponsor'].includes(req.query.state) ? req.query.state : 'creator';
-  passport.authenticate('google', { scope: ['profile', 'email'], state })(req, res, next);
+  // Prevent Google from using prompt=none (silent auth) which may trigger hidden iframe flows
+  // that browsers block from performing top-level navigation on redirects.
+  if (req.query && typeof req.query.prompt !== 'undefined') delete req.query.prompt;
+  passport.authenticate('google', { scope: ['profile', 'email'], state, prompt: 'select_account' })(req, res, next);
 });
 
 router.get('/google/callback', (req, res, next) => {
