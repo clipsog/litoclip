@@ -175,7 +175,6 @@ router.get('/google/callback', (req, res, next) => {
     if (err) return res.redirect(`${baseOrigin}?error=google_failed`);
     if (!user) {
       const msg = (info && info.message) || 'google_failed';
-      const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
       return res.redirect(`${baseOrigin}?error=${msg}`);
     }
     const state = ['creator', 'brand', 'sponsor'].includes(req.query.state) ? req.query.state : null;
@@ -193,7 +192,6 @@ router.get('/google/callback', (req, res, next) => {
     }
     const token = jwt.sign({ userId: user.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
     const userType = user.userType || 'creator';
-    const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
     const redirectUrl = `${baseOrigin}/index.html?token=${token}&userType=${userType}`;
     console.log('[oauth] /google/callback redirecting to', redirectUrl);
     forceTopRedirect(res, redirectUrl);
