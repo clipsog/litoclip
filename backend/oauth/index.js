@@ -123,12 +123,10 @@ router.get('/discord/callback', (req, res, next) => {
     if (err) return res.redirect(`${baseOrigin}?error=discord_failed`);
     if (!user) {
       const msg = (info && info.message) || 'discord_failed';
-      const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
       return res.redirect(`${baseOrigin}?error=${msg}`);
     }
     const token = jwt.sign({ userId: user.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
     const userType = user.userType || 'creator';
-    const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
     res.redirect(`${baseOrigin}/index.html?token=${token}&userType=${userType}`);
   })(req, res, next);
 });
@@ -144,7 +142,6 @@ router.get('/google/callback', (req, res, next) => {
   const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
   if (!config.google.clientID) return res.redirect(`${baseOrigin}?error=google_not_configured`);
   passport.authenticate('google', async (err, user, info) => {
-    const baseOrigin = getFrontendOriginRoot(config.frontendOrigin);
     console.log('[oauth] /google/callback hit', {
       err: err ? String(err) : null,
       hasUser: !!user,
