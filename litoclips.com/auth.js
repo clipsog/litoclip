@@ -464,7 +464,11 @@ async function checkAuthStatus() {
       const path = window.location.pathname || '';
       const isHome = path === '/' || path === '/index.html' || path.endsWith('index.html');
       if (isHome) {
-        window.location.replace(getDashboardHref(user.userType));
+        if (user.needsOnboarding) {
+          window.location.replace('onboarding.html?from=google');
+        } else {
+          window.location.replace(getDashboardHref(user.userType));
+        }
         return;
       }
       updateUI(user);

@@ -77,7 +77,7 @@
     (function() {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const API_URL = isLocal ? 'http://localhost:37373/api/auth' : (window.location.origin + '/api/auth');
-      const AUTH_BASE = isLocal ? 'http://localhost:37373' : window.location.origin;
+      const AUTH_BASE = API_URL.replace(/\/api\/auth\/?$/, '');
       const form = document.getElementById('signupForm');
       const googleBtn = document.getElementById('googleSignupBtn');
       function updateGoogleHref() {
@@ -90,6 +90,34 @@
       if (params.get('error')) {
         formError.textContent = 'Sign-in failed. Please try again.';
         window.history.replaceState({}, '', 'signup.html');
+      }
+
+      // If OAuth redirected here with ?token=..., complete sign-in and continue.
+      const token = params.get('token');
+      if (token) {
+        localStorage.setItem('token', token);
+        fetch(API_URL + '/me', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(user) {
+            window.history.replaceState({}, '', 'signup.html');
+            if (user) {
+              localStorage.setItem('user', JSON.stringify(user));
+              localStorage.setItem('userType', user.userType || 'creator');
+              if (user.needsOnboarding) {
+                window.location.replace('onboarding.html?from=google');
+              } else {
+                window.location.replace(getDashboardHref(user.userType || 'creator'));
+              }
+            } else {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+            }
+          })
+          .catch(function() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          });
+        return;
       }
       const tabs = document.querySelectorAll('.role-tab');
 
@@ -144,6 +172,32 @@
           formError.textContent = 'Network error. Please try again.';
         }
       });
+
+      async function hydrateFromToken(token) {
+        if (!token) return;
+        try {
+          const user = await fetch(API_URL + '/me', { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(function(r) { return r.ok ? r.json() : null; });
+          if (!user) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            return;
+          }
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('userType', user.userType || 'creator');
+          if (user.needsOnboarding) {
+            window.location.replace('onboarding.html?from=google');
+          } else {
+            window.location.replace(getDashboardHref(user.userType || 'creator'));
+          }
+        } catch (e) {
+          // Silent fail; user can still sign up normally.
+        }
+      }
+
+      // Extra resilience: if we land on signup with an already-present token in localStorage,
+      // redirect them to onboarding/dashboard instead of forcing manual sign-up.
+      hydrateFromToken(localStorage.getItem('token'));
     })();
   </script>
 </body>
