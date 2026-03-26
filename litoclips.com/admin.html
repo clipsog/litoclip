@@ -114,6 +114,7 @@
     .admin-cal .cal-day .day-num { font-weight: 600; color: var(--text-muted); font-size: 10px; margin-bottom: 4px; }
     .admin-cal .cal-day .day-badge { font-size: 9px; padding: 2px 4px; border-radius: 4px; }
     .admin-cal .cal-day .day-action { font-size: 10px; margin-top: 4px; color: var(--teal); }
+    .admin-cal .day-future { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
     .task-ping {
       display: inline-flex;
       align-items: center;
@@ -233,6 +234,8 @@
     let isDemoMode = false;
     let isMockMode = false;
     const MOCK_KEY = 'litoclips_admin_mock_mode';
+    const PREP_KEY = 'litoclips_admin_prep_links_v1';
+    const ACCOUNT_CREDS_KEY = 'litoclips_admin_account_creds_v1';
     const campaignRuntime = {};
     const mockData = {
       alerts: [
@@ -275,6 +278,35 @@
       const list = normalizePlatformList(c);
       return list[0] || 'tiktok';
     }
+    function getPrepStore() {
+      try { return JSON.parse(localStorage.getItem(PREP_KEY) || '{}') || {}; } catch (_) { return {}; }
+    }
+    function setPrepStore(v) {
+      localStorage.setItem(PREP_KEY, JSON.stringify(v || {}));
+    }
+    function getPrepLinks(campaignId, dateKey, accountRef) {
+      const store = getPrepStore();
+      return (((store[campaignId] || {})[dateKey] || {})[accountRef]) || [];
+    }
+    function savePrepLinks(campaignId, dateKey, accountRef, links) {
+      const store = getPrepStore();
+      store[campaignId] = store[campaignId] || {};
+      store[campaignId][dateKey] = store[campaignId][dateKey] || {};
+      store[campaignId][dateKey][accountRef] = links;
+      setPrepStore(store);
+    }
+    function getCredStore() {
+      try { return JSON.parse(localStorage.getItem(ACCOUNT_CREDS_KEY) || '{}') || {}; } catch (_) { return {}; }
+    }
+    function saveCredStore(v) {
+      localStorage.setItem(ACCOUNT_CREDS_KEY, JSON.stringify(v || {}));
+    }
+    function saveAccountCred(campaignId, handle, cred) {
+      const store = getCredStore();
+      store[campaignId] = store[campaignId] || {};
+      store[campaignId][String(handle || '').replace(/^@/, '')] = cred;
+      saveCredStore(store);
+    }
     async function loadCampaignRuntime(campaignId) {
       if (isMockMode) {
         if (campaignRuntime[campaignId]) return campaignRuntime[campaignId];
@@ -295,20 +327,24 @@
       const requiredAccounts = Math.max(parseInt(campaign.numAccounts, 10) || 1, 1);
       const accounts = asArray(runtime && runtime.accounts);
       const posts = asArray(runtime && runtime.posts);
+      const todayKey = formatDateKey(new Date());
+      const isFuture = dateKey > todayKey;
+      const isToday = dateKey === todayKey;
       if (dayIndex === 0) {
         const missing = Math.max(0, requiredAccounts - accounts.length);
-        if (missing > 0) return { state: 'action', count: missing, label: 'Add account' };
+        if (missing > 0) return isToday ? { state: 'action', count: missing, label: 'Add account' } : { state: isFuture ? 'future' : 'pending', label: '-' };
         return { state: 'done', label: 'Accounts ready' };
       }
-      if (dayIndex === 1) return { state: 'warmup', label: 'Warmup' };
-      if (accountIndex >= accounts.length) return { state: 'action', count: 1, label: 'Add account first' };
+      if (dayIndex === 1) return isFuture ? { state: 'future', label: '-' } : { state: 'warmup', label: 'Warmup' };
+      if (accountIndex >= accounts.length) return isToday ? { state: 'action', count: 1, label: 'Add account first' } : { state: isFuture ? 'future' : 'pending', label: '-' };
       const handle = (accounts[accountIndex]?.handle || '').replace(/^@/, '');
       const hasPost = posts.some(p => {
         const pd = (p.postDate || '').slice(0, 10);
         const ph = (p.accountHandle || '').replace(/^@/, '');
         return pd === dateKey && ph === handle;
       });
-      return hasPost ? { state: 'done', label: 'Posted' } : { state: 'action', count: 1, label: 'Upload post' };
+      if (hasPost) return { state: 'done', label: 'Posted' };
+      return isToday ? { state: 'action', count: 1, label: 'Upload post' } : { state: isFuture ? 'future' : 'pending', label: '-' };
     }
     function userActionCount(userObj) {
       let total = 0;
@@ -636,6 +672,7 @@
                       if (st.state === 'action') action = '<span class="day-action">' + st.label + '</span><span class="task-ping">' + (st.count || 1) + '</span>';
                       else if (st.state === 'warmup') action = '<span class="day-badge" style="background:rgba(234,179,8,0.3);color:#92400e;">Warmup</span>';
                       else if (st.state === 'done') action = '<span class="task-check">✓</span>';
+                      else action = '<span class="day-future">-</span>';
                       calHtml += '<div class="' + cls + '" data-campaign-id="' + c.id + '" data-day-index="' + i + '" data-date-key="' + dateKey + '" data-account-index="' + row + '"><div class="day-num">' + dayNum + ' ' + monthNames[d.getMonth()] + '</div>' + action + '</div>';
                     }
                     calHtml += '</div>';
@@ -760,18 +797,30 @@
       const linksHtml = links.length
         ? '<ul class="content-links-list">' + links.map(link => '<li><a href="' + link.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener" style="color:var(--teal);">' + link + '</a></li>').join('') + '</ul>'
         : '<p style="font-size:12px;color:var(--text-muted);margin:8px 0 0;">No content links uploaded yet.</p>';
+      const accRef = String(accountIndex >= 0 ? accountIndex : 0);
+      const existingPrep = getPrepLinks(campaignId, dateKey || formatDateKey(new Date()), accRef);
       if (dayIndex === 0) {
-        bodyEl.innerHTML = '<p style="margin-bottom:8px;font-size:13px;color:var(--text-secondary);">Action needed: create account(s) for this campaign based on platform.</p><p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><strong>Platform:</strong> ' + platformHint + '</p><p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;"><strong>Content links:</strong></p>' + linksHtml + '<div class="form-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><input type="text" id="modal-acc-platform" placeholder="Platform (tiktok, instagram)" value="' + platformHint + '" style="flex:1;min-width:120px;"><input type="text" id="modal-acc-handle" placeholder="Handle (@username)" style="flex:1;min-width:120px;"><button type="button" class="btn-sm btn-primary-sm" id="modal-add-account">Add account</button></div>';
+        bodyEl.innerHTML = '<p style="margin-bottom:8px;font-size:13px;color:var(--text-secondary);">Action needed: create account(s) for this campaign based on platform.</p><p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><strong>Platform:</strong> ' + platformHint + '</p><p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;"><strong>Content links:</strong></p>' + linksHtml + '<div class="form-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><input type="text" id="modal-acc-platform" placeholder="Platform (tiktok, instagram)" value="' + platformHint + '" style="flex:1;min-width:120px;"><input type="text" id="modal-acc-handle" placeholder="Handle (@username)" style="flex:1;min-width:120px;"><input type="email" id="modal-acc-email" placeholder="Account email" style="flex:1;min-width:160px;"><input type="text" id="modal-acc-password" placeholder="Account password" style="flex:1;min-width:160px;"><button type="button" class="btn-sm btn-primary-sm" id="modal-add-account">Add account</button></div>';
         bodyEl.querySelector('#modal-add-account').onclick = async () => {
           const platform = document.getElementById('modal-acc-platform')?.value?.trim();
           const handle = document.getElementById('modal-acc-handle')?.value?.trim();
+          const email = document.getElementById('modal-acc-email')?.value?.trim();
+          const password = document.getElementById('modal-acc-password')?.value?.trim();
           if (!platform || !handle) { alert('Platform and handle required'); return; }
           const res = await fetch(API + '/admin/campaigns/' + campaignId + '/accounts', { method: 'POST', headers: headers(), body: JSON.stringify({ platform, handle }) });
-          if (res.ok) { document.getElementById('modal-acc-handle').value = ''; await loadAll(); } else { alert((await res.json()).error || 'Failed'); }
+          if (res.ok) {
+            if (email || password) saveAccountCred(campaignId, handle, { email: email || '', password: password || '' });
+            document.getElementById('modal-acc-handle').value = '';
+            document.getElementById('modal-acc-email').value = '';
+            document.getElementById('modal-acc-password').value = '';
+            await loadAll();
+          } else { alert((await res.json()).error || 'Failed'); }
         };
       } else if (dayIndex === 1) {
         bodyEl.innerHTML = '<p style="color:var(--text-secondary);font-size:14px;">Day 2: Warming up — we interact with their niche so when we start posting we have more reach.</p>';
       } else {
+        const todayKey = formatDateKey(new Date());
+        const isFutureDay = (dateKey || '') > todayKey;
         let accountsOpts = '<option value="">— Account —</option>';
         try {
           const accs = runtime.accounts && runtime.accounts.length ? runtime.accounts : await fetch(API + '/admin/campaigns/' + campaignId + '/accounts', { headers: headers() }).then(r => r.json());
@@ -780,7 +829,13 @@
             accountsOpts += '<option value="' + a.id + '"' + sel + '>@' + a.handle + '</option>';
           });
         } catch (_) {}
-        bodyEl.innerHTML = '<p style="margin-bottom:8px;font-size:13px;color:var(--text-secondary);">Action needed: upload today’s post for this account.</p><p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><strong>Platform:</strong> ' + platformHint + '</p><p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;"><strong>Content links:</strong></p>' + linksHtml + '<div class="form-row" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"><div style="display:flex;gap:8px;flex-wrap:wrap;"><input type="text" id="modal-post-platform" placeholder="Platform" value="' + platformHint + '" style="flex:1;min-width:80px;"><input type="url" id="modal-post-url" placeholder="Post URL" style="flex:2;min-width:160px;"><input type="number" id="modal-post-views" placeholder="Views" style="width:80px;"></div><div style="display:flex;gap:8px;align-items:center;"><input type="date" id="modal-post-date" value="' + (dateKey || new Date().toISOString().slice(0,10)) + '" style="flex:1;"><select id="modal-post-account" style="min-width:120px;">' + accountsOpts + '</select><button type="button" class="btn-sm btn-primary-sm" id="modal-add-post">Add post</button></div></div>';
+        bodyEl.innerHTML = '<p style="margin-bottom:8px;font-size:13px;color:var(--text-secondary);">' + (isFutureDay ? 'Upcoming day: prep links now so posting is faster when the day arrives.' : 'Action needed: upload today’s post for this account.') + '</p><p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><strong>Platform:</strong> ' + platformHint + '</p><p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;"><strong>Content links:</strong></p>' + linksHtml + '<p style="font-size:12px;color:var(--text-muted);margin:10px 0 4px;"><strong>Prep links (for upcoming days):</strong></p><textarea id="modal-prep-links" placeholder="One link per line (Google Drive, Dropbox, etc)" style="width:100%;min-height:70px;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--bg-elevated);color:var(--text);">' + existingPrep.join('\n') + '</textarea><div style="margin-top:8px;"><button type="button" class="btn-sm btn-soft" id="modal-save-prep">Save prep links</button></div><div class="form-row" style="display:flex;flex-direction:column;gap:10px;margin-top:12px;"><div style="display:flex;gap:8px;flex-wrap:wrap;"><input type="text" id="modal-post-platform" placeholder="Platform" value="' + platformHint + '" style="flex:1;min-width:80px;"><input type="url" id="modal-post-url" placeholder="Post URL" style="flex:2;min-width:160px;"><input type="number" id="modal-post-views" placeholder="Views" style="width:80px;"></div><div style="display:flex;gap:8px;align-items:center;"><input type="date" id="modal-post-date" value="' + (dateKey || new Date().toISOString().slice(0,10)) + '" style="flex:1;"><select id="modal-post-account" style="min-width:120px;">' + accountsOpts + '</select><button type="button" class="btn-sm btn-primary-sm" id="modal-add-post">Add post</button></div></div>';
+        bodyEl.querySelector('#modal-save-prep').onclick = () => {
+          const raw = (document.getElementById('modal-prep-links')?.value || '');
+          const lines = raw.split(/\n+/).map(x => x.trim()).filter(Boolean);
+          savePrepLinks(campaignId, dateKey || formatDateKey(new Date()), accRef, lines);
+          alert('Prep links saved.');
+        };
         bodyEl.querySelector('#modal-add-post').onclick = async () => {
           const platform = document.getElementById('modal-post-platform')?.value?.trim() || 'tiktok';
           const url = document.getElementById('modal-post-url')?.value?.trim();
