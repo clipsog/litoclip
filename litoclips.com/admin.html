@@ -12,26 +12,34 @@
   <link rel="stylesheet" href="litoclips-theme.css">
   <style>
     :root {
-      --bg-card: #ffffff;
-      --bg-elevated: #f8fafc;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --text-secondary: #334155;
-      --text-muted: #64748b;
-      --teal: #2563eb;
+      --bg-card: rgba(30, 41, 59, 0.72);
+      --bg-elevated: rgba(30, 41, 59, 0.9);
+      --border: rgba(148, 163, 184, 0.28);
+      --text: #f8fafc;
+      --text-secondary: rgba(226, 232, 240, 0.9);
+      --text-muted: rgba(148, 163, 184, 0.95);
+      --teal: #60a5fa;
       --success: #22c55e;
       --danger: #ef4444;
       --warning: #f59e0b;
     }
-    body { background: #f8fafc; color: var(--text); font-family: 'Inter', sans-serif; }
-    .header { background: #ffffff; border-bottom: 1px solid var(--border); }
+    body {
+      background:
+        linear-gradient(180deg, rgba(37,99,235,0.22) 0%, rgba(15,23,42,0.95) 62%, rgba(2,6,23,1) 100%),
+        repeating-linear-gradient(to right, rgba(148,163,184,0.08) 0, rgba(148,163,184,0.08) 1px, transparent 1px, transparent 112px),
+        #0b1220;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+    .header { background: rgba(15, 23, 42, 0.88); border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); }
     .header-container { max-width: 1100px; margin: 0 auto; padding: 10px 24px; display:flex; align-items:center; justify-content:space-between; }
     .header-right { display: flex; align-items: center; gap: 14px; }
     .header-link { color: var(--text-secondary); text-decoration: none; font-size: 14px; }
     .header-link:hover { color: var(--teal); }
     .logout-btn { padding: 8px 14px; border-radius: 10px; border: none; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; font-weight: 600; cursor: pointer; }
     .admin-wrap { min-height: calc(100vh - 64px); padding: 24px; }
-    .alerts-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #1e3a8a; }
+    .alerts-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: rgba(96, 165, 250, 0.14); border: 1px solid rgba(147, 197, 253, 0.35); border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #dbeafe; }
     .admin-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
     .admin-card h2 { font-family: 'Manrope', sans-serif; font-size: 20px; margin-bottom: 16px; color: var(--teal); }
     .admin-panel { max-width: 1000px; margin: 0 auto; }
@@ -47,8 +55,8 @@
     .admin-hero p { margin: 0; opacity: 0.95; font-size: 14px; }
     .admin-tools { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
     .admin-tools .btn-sm { border-radius: 8px; }
-    .btn-soft { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
-    .btn-soft:hover { background: #dbeafe; }
+    .btn-soft { background: rgba(148, 163, 184, 0.2); color: #dbeafe; border: 1px solid rgba(148, 163, 184, 0.35); }
+    .btn-soft:hover { background: rgba(148, 163, 184, 0.28); }
     .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .admin-table th, .admin-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
     .admin-table th { color: var(--text-muted); font-weight: 600; }
@@ -87,7 +95,7 @@
     .user-section { margin-bottom: 16px; }
     .user-section:last-child { margin-bottom: 0; }
     .user-section strong { display: block; margin-bottom: 8px; font-size: 13px; }
-    .demo-banner { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px 20px; margin: 0 32px 16px; border-radius: 10px; font-size: 14px; text-align: center; }
+    .demo-banner { background: rgba(96, 165, 250, 0.14); border: 1px solid rgba(147, 197, 253, 0.35); color: #bfdbfe; padding: 10px 20px; margin: 0 32px 16px; border-radius: 10px; font-size: 14px; text-align: center; }
     .admin-cal { margin-top: 12px; }
     .admin-cal .accounts-pills { margin-bottom: 12px; font-size: 13px; }
     .admin-cal .account-pill { display: inline-block; padding: 4px 10px; background: rgba(176,101,255,0.15); border-radius: 6px; font-size: 12px; margin: 2px; }
@@ -106,6 +114,36 @@
     .admin-cal .cal-day .day-num { font-weight: 600; color: var(--text-muted); font-size: 10px; margin-bottom: 4px; }
     .admin-cal .cal-day .day-badge { font-size: 9px; padding: 2px 4px; border-radius: 4px; }
     .admin-cal .cal-day .day-action { font-size: 10px; margin-top: 4px; color: var(--teal); }
+    .task-ping {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: #dc2626;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .task-check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.18);
+      color: #22c55e;
+      font-size: 11px;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+    .user-meta-row { display: inline-flex; align-items: center; gap: 6px; }
+    .content-links-list { margin: 8px 0 0 0; padding-left: 16px; }
+    .content-links-list li { margin: 2px 0; font-size: 12px; }
     .day-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .day-modal-overlay.active { display: flex; }
     .day-modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; max-width: 420px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -195,6 +233,7 @@
     let isDemoMode = false;
     let isMockMode = false;
     const MOCK_KEY = 'litoclips_admin_mock_mode';
+    const campaignRuntime = {};
     const mockData = {
       alerts: [
         { id: 'a1', read: false, title: 'New campaign', message: 'Two new campaigns need account linking.' },
@@ -219,6 +258,80 @@
         { id: 'p1', userId: 'u1', amount: 120, paymentMethod: 'PayPal', status: 'pending' }
       ]
     };
+    function splitContentLinks(v) {
+      if (!v) return [];
+      return String(v).split(/\n+/).map(x => x.trim()).filter(Boolean);
+    }
+    function normalizePlatformList(c) {
+      if (!c) return [];
+      if (Array.isArray(c.platforms)) return c.platforms.filter(Boolean);
+      if (typeof c.platforms === 'string' && c.platforms.trim()) {
+        return c.platforms.split(',').map(x => x.trim()).filter(Boolean);
+      }
+      if (c.platform) return [String(c.platform).trim()];
+      return [];
+    }
+    function getPrimaryPlatform(c) {
+      const list = normalizePlatformList(c);
+      return list[0] || 'tiktok';
+    }
+    async function loadCampaignRuntime(campaignId) {
+      if (isMockMode) {
+        if (campaignRuntime[campaignId]) return campaignRuntime[campaignId];
+        campaignRuntime[campaignId] = {
+          accounts: [{ handle: 'launch_one', platform: 'tiktok' }],
+          posts: [{ postDate: new Date().toISOString().slice(0, 10), accountHandle: 'launch_one', views: 4200, postUrl: '#', platform: 'tiktok' }]
+        };
+        return campaignRuntime[campaignId];
+      }
+      const [accounts, posts] = await Promise.all([
+        asArray(await fetchJson('/admin/campaigns/' + campaignId + '/accounts')),
+        asArray(await fetchJson('/admin/campaigns/' + campaignId + '/posts'))
+      ]);
+      campaignRuntime[campaignId] = { accounts, posts };
+      return campaignRuntime[campaignId];
+    }
+    function taskStateForDay(campaign, runtime, dayIndex, accountIndex, dateKey) {
+      const requiredAccounts = Math.max(parseInt(campaign.numAccounts, 10) || 1, 1);
+      const accounts = asArray(runtime && runtime.accounts);
+      const posts = asArray(runtime && runtime.posts);
+      if (dayIndex === 0) {
+        const missing = Math.max(0, requiredAccounts - accounts.length);
+        if (missing > 0) return { state: 'action', count: missing, label: 'Add account' };
+        return { state: 'done', label: 'Accounts ready' };
+      }
+      if (dayIndex === 1) return { state: 'warmup', label: 'Warmup' };
+      if (accountIndex >= accounts.length) return { state: 'action', count: 1, label: 'Add account first' };
+      const handle = (accounts[accountIndex]?.handle || '').replace(/^@/, '');
+      const hasPost = posts.some(p => {
+        const pd = (p.postDate || '').slice(0, 10);
+        const ph = (p.accountHandle || '').replace(/^@/, '');
+        return pd === dateKey && ph === handle;
+      });
+      return hasPost ? { state: 'done', label: 'Posted' } : { state: 'action', count: 1, label: 'Upload post' };
+    }
+    function userActionCount(userObj) {
+      let total = 0;
+      const campaigns = asArray(userObj.campaigns);
+      campaigns.forEach(c => {
+        const rt = campaignRuntime[c.id] || { accounts: [], posts: [] };
+        const requiredAccounts = Math.max(parseInt(c.numAccounts, 10) || 1, 1);
+        total += Math.max(0, requiredAccounts - asArray(rt.accounts).length);
+        const start = c.startedAt ? new Date(c.startedAt) : new Date(c.createdAt || Date.now());
+        const todayKey = formatDateKey(new Date());
+        for (let i = 2; i < 14; i++) {
+          const d = new Date(start);
+          d.setDate(d.getDate() + i);
+          const key = formatDateKey(d);
+          if (key > todayKey) break;
+          for (let a = 0; a < requiredAccounts; a++) {
+            const st = taskStateForDay(c, rt, i, a, key);
+            if (st.state === 'action') total += (st.count || 1);
+          }
+        }
+      });
+      return total;
+    }
 
     function headers() {
       const t = localStorage.getItem('token');
@@ -431,11 +544,17 @@
         const campaignsByUser = {};
         asArray(withCampaigns).forEach(u => { campaignsByUser[u.id] = asArray(u.campaigns); });
         const merged = asArray(users).map(u => ({ ...u, campaigns: campaignsByUser[u.id] || [] }));
+        window.__adminCampaignMap = {};
+        merged.forEach(u => asArray(u.campaigns).forEach(c => { window.__adminCampaignMap[c.id] = c; }));
         if (!merged.length && !isMockMode) {
           isMockMode = true;
           updateDataModeUI();
           return loadUsers();
         }
+        const allCampaigns = merged.flatMap(u => asArray(u.campaigns));
+        await Promise.all(allCampaigns.map(c => loadCampaignRuntime(c.id).catch(() => {
+          campaignRuntime[c.id] = campaignRuntime[c.id] || { accounts: [], posts: [] };
+        })));
         el.innerHTML = merged.map(u => {
           const uSubs = asArray(submissions).filter(s => s.userId === u.id);
           const uPayouts = asArray(payouts).filter(p => p.userId === u.id);
@@ -462,12 +581,13 @@
     function renderUserCard(u, submissions, payouts) {
       const campaigns = u.campaigns || [];
       const hasContent = campaigns.length || submissions.length || payouts.length;
+      const actionCount = userActionCount(u);
       const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       return `
         <details class="user-card" ${hasContent ? '' : ''}>
           <summary class="user-summary">
             <span class="user-name">${u.name || u.email}</span>
-            <span class="user-meta">${u.email} · ${campaigns.length} campaign${campaigns.length !== 1 ? 's' : ''}</span>
+            <span class="user-meta user-meta-row">${u.email} · ${campaigns.length} campaign${campaigns.length !== 1 ? 's' : ''}${actionCount > 0 ? '<span class="task-ping" title="Actions needed">' + actionCount + '</span>' : ''}</span>
             ${!u.isAdmin ? '<button type="button" class="btn-sm btn-primary-sm make-admin" data-id="' + u.id + '" onclick="event.preventDefault();event.stopPropagation();">Make admin</button>' : '<span class="badge approved">Admin</span>'}
           </summary>
           <div class="user-detail">
@@ -477,6 +597,8 @@
                 ${campaigns.map(c => {
                   const numAccts = Math.max(c.numAccounts || 1, 1);
                   const startDate = c.startedAt ? new Date(c.startedAt) : new Date(c.createdAt || Date.now());
+                  const rt = campaignRuntime[c.id] || { accounts: [], posts: [] };
+                  const contentLinks = splitContentLinks(c.contentLink);
                   const infoParts = [];
                   if (c.platforms) infoParts.push('Platforms: ' + c.platforms);
                   if (c.numAccounts) infoParts.push(numAccts + ' account' + (numAccts !== 1 ? 's' : ''));
@@ -497,28 +619,32 @@
                   calHtml += '</div>';
                   for (let row = 0; row < numAccts; row++) {
                     calHtml += '<div class="cal-account-row" data-campaign-id="' + c.id + '" data-account-index="' + row + '">';
-                    calHtml += '<div class="cal-account-label cal-account-label-' + c.id + '-' + row + '">Acct ' + (row + 1) + '</div>';
+                    const accountName = (rt.accounts[row] && rt.accounts[row].handle) ? ('@' + String(rt.accounts[row].handle).replace(/^@/, '')) : ('Acct ' + (row + 1));
+                    calHtml += '<div class="cal-account-label cal-account-label-' + c.id + '-' + row + '">' + accountName + '</div>';
                     for (let i = 0; i < 14; i++) {
                       const d = new Date(startDate);
                       d.setDate(d.getDate() + i);
                       const dayNum = d.getDate();
                       const dateKey = formatDateKey(d);
-                      const isDay1 = i === 0;
-                      const isWarmup = i === 1;
+                      const st = taskStateForDay(c, rt, i, row, dateKey);
+                      const isWarmup = st.state === 'warmup';
                       const isPost = i >= 2;
                       let cls = 'cal-day';
                       if (isWarmup) cls += ' warmup';
                       if (isPost) cls += ' post';
                       let action = '';
-                      if (isDay1) action = '<span class="day-action">+ Add account</span>';
-                      else if (isWarmup) action = '<span class="day-badge" style="background:rgba(234,179,8,0.3);color:#92400e;">Warmup</span>';
-                      else action = '<span class="day-action">+ Upload</span>';
+                      if (st.state === 'action') action = '<span class="day-action">' + st.label + '</span><span class="task-ping">' + (st.count || 1) + '</span>';
+                      else if (st.state === 'warmup') action = '<span class="day-badge" style="background:rgba(234,179,8,0.3);color:#92400e;">Warmup</span>';
+                      else if (st.state === 'done') action = '<span class="task-check">✓</span>';
                       calHtml += '<div class="' + cls + '" data-campaign-id="' + c.id + '" data-day-index="' + i + '" data-date-key="' + dateKey + '" data-account-index="' + row + '"><div class="day-num">' + dayNum + ' ' + monthNames[d.getMonth()] + '</div>' + action + '</div>';
                     }
                     calHtml += '</div>';
                   }
                   calHtml += '</div></div>';
-                  return '<div class="campaign-block" style="margin-bottom:20px;"><div class="campaign-row" style="margin-bottom:8px;"><strong>' + c.title + '</strong></div>' + calHtml + '</div>';
+                  const linksHtml = contentLinks.length
+                    ? '<ul class="content-links-list">' + contentLinks.map(link => '<li><a href="' + link.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener" style="color:var(--teal);">' + link.replace(/</g, '&lt;') + '</a></li>').join('') + '</ul>'
+                    : '<p style="font-size:12px;color:var(--text-muted);margin:8px 0 0;">No content links uploaded yet.</p>';
+                  return '<div class="campaign-block" style="margin-bottom:20px;"><div class="campaign-row" style="margin-bottom:8px;"><strong>' + c.title + '</strong></div><div style="font-size:12px;color:var(--text-secondary);margin:4px 0 10px;"><strong>Platform:</strong> ' + getPrimaryPlatform(c) + ' · <strong>Content links:</strong>' + linksHtml + '</div>' + calHtml + '</div>';
                 }).join('')}
               </div>
             ` : ''}
@@ -609,31 +735,52 @@
       const modal = document.getElementById('dayModal');
       const titleEl = document.getElementById('dayModalTitle');
       const bodyEl = document.getElementById('dayModalBody');
+      const allUsers = Array.from(document.querySelectorAll('details.user-card'));
+      let campaignData = null;
+      allUsers.some(function(card) {
+        const blocks = card.querySelectorAll('.campaign-block');
+        for (const block of blocks) {
+          const cal = block.querySelector('.admin-cal');
+          if (cal && cal.id === ('cal-' + campaignId)) {
+            const title = block.querySelector('.campaign-row strong')?.textContent || 'Campaign';
+            campaignData = { title };
+            return true;
+          }
+        }
+        return false;
+      });
       const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       const d = dateKey ? new Date(dateKey) : new Date();
       const dayLabel = 'Day ' + (dayIndex + 1) + ' · ' + d.getDate() + ' ' + monthNames[d.getMonth()];
       titleEl.textContent = dayLabel;
+      const runtime = campaignRuntime[campaignId] || { accounts: [], posts: [] };
+      const matchingCampaign = Object.values(window.__adminCampaignMap || {}).find(c => c.id === campaignId) || null;
+      const platformHint = matchingCampaign ? getPrimaryPlatform(matchingCampaign) : 'tiktok';
+      const links = matchingCampaign ? splitContentLinks(matchingCampaign.contentLink) : [];
+      const linksHtml = links.length
+        ? '<ul class="content-links-list">' + links.map(link => '<li><a href="' + link.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener" style="color:var(--teal);">' + link + '</a></li>').join('') + '</ul>'
+        : '<p style="font-size:12px;color:var(--text-muted);margin:8px 0 0;">No content links uploaded yet.</p>';
       if (dayIndex === 0) {
-        bodyEl.innerHTML = '<p style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">Add the account(s) we created for this campaign.</p><div class="form-row" style="display:flex;gap:8px;flex-wrap:wrap;"><input type="text" id="modal-acc-platform" placeholder="Platform (tiktok, instagram)" style="flex:1;min-width:120px;"><input type="text" id="modal-acc-handle" placeholder="Handle (@username)" style="flex:1;min-width:120px;"><button type="button" class="btn-sm btn-primary-sm" id="modal-add-account">Add account</button></div>';
+        bodyEl.innerHTML = '<p style="margin-bottom:8px;font-size:13px;color:var(--text-secondary);">Action needed: create account(s) for this campaign based on platform.</p><p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><strong>Platform:</strong> ' + platformHint + '</p><p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;"><strong>Content links:</strong></p>' + linksHtml + '<div class="form-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><input type="text" id="modal-acc-platform" placeholder="Platform (tiktok, instagram)" value="' + platformHint + '" style="flex:1;min-width:120px;"><input type="text" id="modal-acc-handle" placeholder="Handle (@username)" style="flex:1;min-width:120px;"><button type="button" class="btn-sm btn-primary-sm" id="modal-add-account">Add account</button></div>';
         bodyEl.querySelector('#modal-add-account').onclick = async () => {
           const platform = document.getElementById('modal-acc-platform')?.value?.trim();
           const handle = document.getElementById('modal-acc-handle')?.value?.trim();
           if (!platform || !handle) { alert('Platform and handle required'); return; }
           const res = await fetch(API + '/admin/campaigns/' + campaignId + '/accounts', { method: 'POST', headers: headers(), body: JSON.stringify({ platform, handle }) });
-          if (res.ok) { document.getElementById('modal-acc-platform').value = ''; document.getElementById('modal-acc-handle').value = ''; loadCampaignAccounts(campaignId); } else { alert((await res.json()).error || 'Failed'); }
+          if (res.ok) { document.getElementById('modal-acc-handle').value = ''; await loadAll(); } else { alert((await res.json()).error || 'Failed'); }
         };
       } else if (dayIndex === 1) {
         bodyEl.innerHTML = '<p style="color:var(--text-secondary);font-size:14px;">Day 2: Warming up — we interact with their niche so when we start posting we have more reach.</p>';
       } else {
         let accountsOpts = '<option value="">— Account —</option>';
         try {
-          const accs = await fetch(API + '/admin/campaigns/' + campaignId + '/accounts', { headers: headers() }).then(r => r.json());
+          const accs = runtime.accounts && runtime.accounts.length ? runtime.accounts : await fetch(API + '/admin/campaigns/' + campaignId + '/accounts', { headers: headers() }).then(r => r.json());
           accs.forEach((a, i) => {
             const sel = (accountIndex >= 0 && i === accountIndex) ? ' selected' : '';
             accountsOpts += '<option value="' + a.id + '"' + sel + '>@' + a.handle + '</option>';
           });
         } catch (_) {}
-        bodyEl.innerHTML = '<p style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">Add the post/video link and views for this account.</p><div class="form-row" style="display:flex;flex-direction:column;gap:10px;"><div style="display:flex;gap:8px;flex-wrap:wrap;"><input type="text" id="modal-post-platform" placeholder="Platform" value="tiktok" style="flex:1;min-width:80px;"><input type="url" id="modal-post-url" placeholder="Post URL" style="flex:2;min-width:160px;"><input type="number" id="modal-post-views" placeholder="Views" style="width:80px;"></div><div style="display:flex;gap:8px;align-items:center;"><input type="date" id="modal-post-date" value="' + (dateKey || new Date().toISOString().slice(0,10)) + '" style="flex:1;"><select id="modal-post-account" style="min-width:120px;">' + accountsOpts + '</select><button type="button" class="btn-sm btn-primary-sm" id="modal-add-post">Add post</button></div></div>';
+        bodyEl.innerHTML = '<p style="margin-bottom:8px;font-size:13px;color:var(--text-secondary);">Action needed: upload today’s post for this account.</p><p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"><strong>Platform:</strong> ' + platformHint + '</p><p style="font-size:12px;color:var(--text-muted);margin:0 0 4px;"><strong>Content links:</strong></p>' + linksHtml + '<div class="form-row" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"><div style="display:flex;gap:8px;flex-wrap:wrap;"><input type="text" id="modal-post-platform" placeholder="Platform" value="' + platformHint + '" style="flex:1;min-width:80px;"><input type="url" id="modal-post-url" placeholder="Post URL" style="flex:2;min-width:160px;"><input type="number" id="modal-post-views" placeholder="Views" style="width:80px;"></div><div style="display:flex;gap:8px;align-items:center;"><input type="date" id="modal-post-date" value="' + (dateKey || new Date().toISOString().slice(0,10)) + '" style="flex:1;"><select id="modal-post-account" style="min-width:120px;">' + accountsOpts + '</select><button type="button" class="btn-sm btn-primary-sm" id="modal-add-post">Add post</button></div></div>';
         bodyEl.querySelector('#modal-add-post').onclick = async () => {
           const platform = document.getElementById('modal-post-platform')?.value?.trim() || 'tiktok';
           const url = document.getElementById('modal-post-url')?.value?.trim();
@@ -644,7 +791,7 @@
           const body = { platform, post_url: url, views, post_date: date };
           if (account) body.campaign_account_id = account;
           const res = await fetch(API + '/admin/campaigns/' + campaignId + '/posts', { method: 'POST', headers: headers(), body: JSON.stringify(body) });
-          if (res.ok) { modal.classList.remove('active'); loadAll(); } else { alert((await res.json()).error || 'Failed'); }
+          if (res.ok) { modal.classList.remove('active'); await loadAll(); } else { alert((await res.json()).error || 'Failed'); }
         };
       }
       modal.classList.add('active');
