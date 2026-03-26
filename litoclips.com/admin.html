@@ -416,8 +416,72 @@
       font-size: 12px; color: rgba(226,232,240,0.75);
       border-top: 1px solid rgba(148,163,184,0.16);
     }
-    .support-chat-quick a { color: #93c5fd; text-decoration: none; font-weight: 600; }
-    .support-chat-quick a:hover { text-decoration: underline; }
+    .support-chat-quick button {
+      border: none;
+      background: rgba(147,197,253,0.14);
+      color: #93c5fd;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .support-chat-quick button:hover { background: rgba(147,197,253,0.22); color: #bfdbfe; }
+    .support-contact-popup {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(2,6,23,0.96);
+      z-index: 6;
+      padding: 14px;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .support-contact-popup.open { display: flex; }
+    .support-contact-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(148,163,184,0.18);
+    }
+    .support-contact-title { font-weight: 900; color: #f8fafc; }
+    .support-contact-close {
+      border: none;
+      background: transparent;
+      color: rgba(226,232,240,0.9);
+      cursor: pointer;
+      font-size: 22px;
+      line-height: 1;
+      padding: 0 6px;
+    }
+    .support-contact-field label {
+      display: block;
+      font-size: 12px;
+      color: rgba(226,232,240,0.75);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .support-contact-field input,
+    .support-contact-field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid rgba(148,163,184,0.22);
+      background: rgba(15,23,42,0.6);
+      color: #e2e8f0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      resize: vertical;
+    }
+    .support-contact-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: auto;
+    }
   </style>
   <div id="supportChatWidget" aria-live="polite">
     <button type="button" class="support-chat-toggle" id="supportChatToggle" aria-expanded="false" aria-controls="supportChatPanel" title="Customer support">
@@ -425,7 +489,7 @@
         <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
       </svg>
     </button>
-    <div class="support-chat-panel" id="supportChatPanel" role="dialog" aria-label="Customer support">
+    <div class="support-chat-panel" id="supportChatPanel" role="dialog" aria-label="Customer support" style="position:relative;">
       <div class="support-chat-header">
         <div class="support-chat-title">Customer Service</div>
         <button type="button" class="support-chat-close" id="supportChatClose" aria-label="Close chat">&times;</button>
@@ -436,7 +500,25 @@
         <button type="button" class="support-chat-send" id="supportChatSend">Send</button>
       </div>
       <div class="support-chat-quick">
-        Need help now? <a href="mailto:support@litoclips.com?subject=Support%20request" target="_blank" rel="noopener">Email support</a>
+        Need help now? <button type="button" id="supportContactOpen">contact support</button>
+      </div>
+      <div class="support-contact-popup" id="supportContactPopup" role="dialog" aria-label="Contact support">
+        <div class="support-contact-top">
+          <div class="support-contact-title">contact support</div>
+          <button type="button" class="support-contact-close" id="supportContactClose" aria-label="Close contact form">&times;</button>
+        </div>
+        <div class="support-contact-field">
+          <label for="supportContactSubject">Subject</label>
+          <input id="supportContactSubject" type="text" placeholder="Short summary (e.g., Payment issue)" maxlength="120">
+        </div>
+        <div class="support-contact-field">
+          <label for="supportContactMessage">What is your problem?</label>
+          <textarea id="supportContactMessage" placeholder="Describe the issue so support can respond..." maxlength="2000"></textarea>
+        </div>
+        <div class="support-contact-actions">
+          <button type="button" class="btn-sm btn-soft" id="supportContactCancel">Cancel</button>
+          <button type="button" class="btn-sm btn-primary-sm" id="supportContactSend">Send</button>
+        </div>
       </div>
     </div>
   </div>
@@ -448,6 +530,13 @@
       var messagesEl = document.getElementById('supportChatMessages');
       var inputEl = document.getElementById('supportChatInput');
       var sendBtn = document.getElementById('supportChatSend');
+      var contactOpenBtn = document.getElementById('supportContactOpen');
+      var contactPopupEl = document.getElementById('supportContactPopup');
+      var contactCloseBtn = document.getElementById('supportContactClose');
+      var contactCancelBtn = document.getElementById('supportContactCancel');
+      var contactSendBtn = document.getElementById('supportContactSend');
+      var contactSubjectEl = document.getElementById('supportContactSubject');
+      var contactMessageEl = document.getElementById('supportContactMessage');
       if (!toggleBtn || !panel || !messagesEl || !inputEl || !sendBtn) return;
 
       var CHAT_KEY = 'litoclips_support_chat_v1';
@@ -553,13 +642,63 @@
         inputEl.value = '';
 
         var reply = getAutoReply(text);
-        if (!reply) reply = 'Thanks! We received your message. A support agent will respond soon.';
+        if (!reply) reply = 'If you need human help, click contact support.';
         window.setTimeout(function() {
           msgs.push({ role: 'bot', text: reply });
           saveChat(msgs);
           addBubble('bot', reply);
         }, 450);
       }
+
+      function postSupportRequestWithSubject(subject, text) {
+        try {
+          var pathname = window.location.pathname || '';
+          var apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:37373/api'
+            : (window.location.origin + '/api');
+          var token = localStorage.getItem('token');
+
+          var headers = { 'Content-Type': 'application/json' };
+          if (token) headers['Authorization'] = 'Bearer ' + token;
+
+          fetch(apiBase + '/support/requests', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ message: text, subject: subject, page: pathname + window.location.search })
+          }).catch(function() {});
+        } catch (_) {}
+      }
+
+      function openContactForm() {
+        if (!contactPopupEl) return;
+        contactPopupEl.classList.add('open');
+        window.setTimeout(function() {
+          if (contactSubjectEl) contactSubjectEl.focus();
+        }, 50);
+      }
+      function closeContactForm() {
+        if (!contactPopupEl) return;
+        contactPopupEl.classList.remove('open');
+      }
+
+      contactOpenBtn && contactOpenBtn.addEventListener('click', function() { openContactForm(); });
+      contactCloseBtn && contactCloseBtn.addEventListener('click', function() { closeContactForm(); });
+      contactCancelBtn && contactCancelBtn.addEventListener('click', function() { closeContactForm(); });
+
+      contactSendBtn && contactSendBtn.addEventListener('click', function() {
+        if (!contactSubjectEl || !contactMessageEl) return;
+        var subject = String(contactSubjectEl.value || '').trim().slice(0, 120);
+        var text = String(contactMessageEl.value || '').trim().slice(0, 2000);
+        if (!text) {
+          addBubble('bot', 'Please write a message for support.');
+          return;
+        }
+        postSupportRequestWithSubject(subject || 'Support request', text);
+        contactSubjectEl.value = '';
+        contactMessageEl.value = '';
+        closeContactForm();
+        addBubble('bot', 'Support request sent. We will respond soon.');
+      });
 
       sendBtn.addEventListener('click', function() { sendMessage(); });
       inputEl.addEventListener('keydown', function(e) {

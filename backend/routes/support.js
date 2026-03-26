@@ -7,10 +7,10 @@ const router = express.Router();
 router.use(requireAuth);
 
 // POST /api/support/requests
-// Records a support request (for admin notification + email workflow).
 router.post('/requests', async (req, res) => {
-  const { message, page } = req.body || {};
+  const { message, subject, page } = req.body || {};
   const msg = String(message || '').trim();
+  const subj = subject != null ? String(subject || '').trim() : '';
 
   if (!msg) return res.status(400).json({ error: 'message required' });
 
@@ -20,7 +20,7 @@ router.post('/requests', async (req, res) => {
   const id = uuid();
   const pageStr = page ? String(page).slice(0, 300) : null;
   const snippet = msg.length > 900 ? msg.slice(0, 900) + '...' : msg;
-  const title = (req.user.email ? ('Support request from ' + req.user.email) : 'Support request');
+  const title = subj || (req.user.email ? ('Support request from ' + req.user.email) : 'Support request');
   const body = pageStr ? (snippet + ' (Page: ' + pageStr + ')') : snippet;
 
   await db.prepare(`
