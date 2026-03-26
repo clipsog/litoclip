@@ -7,7 +7,12 @@ const router = express.Router();
 
 // POST /api/campaigns – create a new campaign (authenticated)
 router.post('/', requireAuth, async (req, res) => {
-  const { title, description, niche, platform, budget, rpm, content_link, platforms, num_accounts, goal, payment_schedule, requirePayment, posts_per_day, acceptSponsorOffers } = req.body || {};
+  const { title, description, niche, platform, budget, rpm, content_link, content_links, platforms, num_accounts, goal, payment_schedule, requirePayment, posts_per_day, acceptSponsorOffers } = req.body || {};
+  let contentLinkStored = (content_link || '').trim();
+  if (Array.isArray(content_links) && content_links.length) {
+    const merged = content_links.map((u) => String(u || '').trim()).filter(Boolean);
+    if (merged.length) contentLinkStored = merged.join('\n');
+  }
   if (!title || !title.trim()) {
     return res.status(400).json({ error: 'Campaign title is required' });
   }
@@ -35,7 +40,7 @@ router.post('/', requireAuth, async (req, res) => {
         rpm != null ? parseFloat(rpm) : 0,
         status,
         ownerId,
-        (content_link || '').trim() || null,
+        contentLinkStored || null,
         platformsStr,
         num_accounts != null ? parseInt(num_accounts, 10) : null,
         (goal || '').trim() || null,
@@ -57,8 +62,9 @@ router.post('/', requireAuth, async (req, res) => {
           (platform || '').trim() || null,
           budget != null ? parseFloat(budget) : 0,
           rpm != null ? parseFloat(rpm) : 0,
+          status,
           ownerId,
-          (content_link || '').trim() || null,
+          contentLinkStored || null,
           platformsStr,
           num_accounts != null ? parseInt(num_accounts, 10) : null,
           (goal || '').trim() || null,
@@ -83,13 +89,13 @@ router.post('/', requireAuth, async (req, res) => {
           (platform || '').trim() || null,
           budget != null ? parseFloat(budget) : 0,
           rpm != null ? parseFloat(rpm) : 0,
+          status,
           ownerId,
-          (content_link || '').trim() || null,
+          contentLinkStored || null,
           platformsStr,
           num_accounts != null ? parseInt(num_accounts, 10) : null,
           (goal || '').trim() || null,
-          (payment_schedule || '').trim() || null,
-          status
+          (payment_schedule || '').trim() || null
         );
       } catch (e2) {
         await db.prepare(`

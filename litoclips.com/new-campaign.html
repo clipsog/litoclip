@@ -69,6 +69,19 @@
     .btn-remove-row:hover { color: #dc2626; }
     .btn-platform-guide { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: transparent; border: 1px solid #cbd5e1; border-radius: 50%; color: #64748b; font-size: 14px; font-weight: 600; cursor: pointer; font-style: italic; }
     .btn-platform-guide:hover { background: #f0f9ff; border-color: #2563eb; color: #2563eb; }
+    .content-links-list { display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 0; }
+    .content-link-row { display: flex; align-items: center; gap: 8px; }
+    .content-link-row .content-link-input { flex: 1; min-width: 0; }
+    .btn-remove-content-link {
+      flex-shrink: 0; width: 34px; height: 34px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff;
+      color: #94a3b8; font-size: 18px; line-height: 1; cursor: pointer; font-family: inherit; padding: 0;
+    }
+    .btn-remove-content-link:hover { color: #dc2626; border-color: #fecaca; background: #fff1f2; }
+    .btn-add-content-link {
+      align-self: flex-start; margin-top: 2px; padding: 6px 12px; border-radius: 8px; border: 1px dashed #cbd5e1;
+      background: transparent; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .btn-add-content-link:hover { border-color: #2563eb; color: #2563eb; }
     .platform-guide-wrap { display: none; margin-top: 16px; }
     .platform-guide-wrap.visible { display: block; }
     .nav-right { display: flex; align-items: center; gap: 12px; }
@@ -190,7 +203,13 @@
             </div>
             <div class="field content-field">
               <label style="display:flex;align-items:center;gap:6px;">Content (add links) <button type="button" class="btn-platform-guide content-guide-btn" data-content-guide title="YouTube, Google Drive, Dropbox, etc.">i</button></label>
-              <input type="url" name="content_0" placeholder="https://..." required>
+              <div class="content-links-list" data-content-links>
+                <div class="content-link-row">
+                  <input type="url" class="content-link-input" placeholder="https://..." />
+                  <button type="button" class="btn-remove-content-link" data-remove-content-link hidden aria-label="Remove link">&times;</button>
+                </div>
+              </div>
+              <button type="button" class="btn-add-content-link" data-add-content-link>+ Add another link</button>
               <label class="narrative-label">Narrative / angle</label>
               <input type="text" name="narrative_0" placeholder="e.g. The angle or story for your clips..." class="narrative-input">
               <div class="content-guide-wrap" id="contentGuideWrap" style="display:none;">
@@ -378,15 +397,62 @@
         if (noteEl) noteEl.textContent = '1st month: $' + firstMonth + ' (1 post/day) · Month 2+: $' + month2 + '/wk' + (postsPerDay > 3 ? ' (' + postsPerDay + ' posts/day)' : ' (3 posts/day)');
       }
 
+      function getRowContentLinks(row) {
+        const inputs = row.querySelectorAll('.content-link-input');
+        const urls = [];
+        for (let i = 0; i < inputs.length; i++) {
+          const v = (inputs[i].value || '').trim();
+          if (v) urls.push(v);
+        }
+        return urls;
+      }
+
+      function initContentLinksForRow(row) {
+        const list = row.querySelector('[data-content-links]');
+        const addBtn = row.querySelector('[data-add-content-link]');
+        if (!list || !addBtn) return;
+        function syncRemove() {
+          const rows = list.querySelectorAll('.content-link-row');
+          rows.forEach(function(r) {
+            const rm = r.querySelector('[data-remove-content-link]');
+            if (rm) rm.hidden = rows.length <= 1;
+          });
+        }
+        function bindRemove(r) {
+          const rm = r.querySelector('[data-remove-content-link]');
+          if (!rm || rm.dataset.bound === '1') return;
+          rm.dataset.bound = '1';
+          rm.addEventListener('click', function() {
+            if (list.querySelectorAll('.content-link-row').length <= 1) return;
+            r.remove();
+            syncRemove();
+          });
+        }
+        if (addBtn.dataset.bound !== '1') {
+          addBtn.dataset.bound = '1';
+          addBtn.addEventListener('click', function() {
+            const wrap = document.createElement('div');
+            wrap.className = 'content-link-row';
+            wrap.innerHTML = '<input type="url" class="content-link-input" placeholder="https://..." /><button type="button" class="btn-remove-content-link" data-remove-content-link aria-label="Remove link">&times;</button>';
+            list.appendChild(wrap);
+            bindRemove(wrap);
+            syncRemove();
+          });
+        }
+        list.querySelectorAll('.content-link-row').forEach(bindRemove);
+        syncRemove();
+      }
+
       function createRow(index) {
         const row = document.createElement('div');
         row.className = 'platform-row';
         row.dataset.row = index;
-        row.innerHTML = '<div class="field"><label>Platform</label><select name="platform_' + index + '" required><option value="">Select...</option><option value="tiktok">TikTok</option><option value="instagram">Instagram</option><option value="x">X (Twitter)</option><option value="youtube">YouTube</option></select></div><div class="field content-field"><label style="display:flex;align-items:center;gap:6px;">Content (add links) <button type="button" class="btn-platform-guide content-guide-btn" data-content-guide title="YouTube, Google Drive, Dropbox, etc.">i</button></label><input type="url" name="content_' + index + '" placeholder="https://..." required><label class="narrative-label">Narrative / angle</label><input type="text" name="narrative_' + index + '" placeholder="e.g. The angle or story for your clips..." class="narrative-input"><div class="content-guide-wrap" style="display:none;"><p>Add a link to your content. We accept: <strong>YouTube</strong>, <strong>Google Drive</strong>, <strong>Dropbox</strong>, or any publicly accessible URL.</p></div></div><div class="field"><label>Goal</label><select name="goal_' + index + '"><option value="">Select...</option><option value="awareness">Awareness</option><option value="brand_deals">Brand deals</option><option value="sales">Sales / traffic</option><option value="narrative">Narrative</option><option value="pr">PR</option></select></div><div class="field"><label># accounts</label><input type="number" name="num_accounts_' + index + '" min="1" max="50" value="1" data-price-target></div><div class="field"><label title="Month 2+">Posts/day (mo. 2+)</label><input type="number" name="posts_per_day_' + index + '" min="3" max="10" value="3" data-posts-per-day style="width:70px;"></div><div class="field price-display"><label>&nbsp;</label><span class="price-value" data-price="' + index + '">$0</span><span class="muted" data-price-note></span></div><div class="field"><label>&nbsp;</label><div style="display:flex;align-items:center;gap:8px;"><button type="button" class="btn-generate" data-generate>Generate accounts</button><button type="button" class="btn-remove-row" data-remove title="Remove row" style="font-size:18px;line-height:1;">&times;</button></div></div>';
+        row.innerHTML = '<div class="field"><label>Platform</label><select name="platform_' + index + '" required><option value="">Select...</option><option value="tiktok">TikTok</option><option value="instagram">Instagram</option><option value="x">X (Twitter)</option><option value="youtube">YouTube</option></select></div><div class="field content-field"><label style="display:flex;align-items:center;gap:6px;">Content (add links) <button type="button" class="btn-platform-guide content-guide-btn" data-content-guide title="YouTube, Google Drive, Dropbox, etc.">i</button></label><div class="content-links-list" data-content-links><div class="content-link-row"><input type="url" class="content-link-input" placeholder="https://..." /><button type="button" class="btn-remove-content-link" data-remove-content-link hidden aria-label="Remove link">&times;</button></div></div><button type="button" class="btn-add-content-link" data-add-content-link>+ Add another link</button><label class="narrative-label">Narrative / angle</label><input type="text" name="narrative_' + index + '" placeholder="e.g. The angle or story for your clips..." class="narrative-input"><div class="content-guide-wrap" style="display:none;"><p>Add a link to your content. We accept: <strong>YouTube</strong>, <strong>Google Drive</strong>, <strong>Dropbox</strong>, or any publicly accessible URL.</p></div></div><div class="field"><label>Goal</label><select name="goal_' + index + '"><option value="">Select...</option><option value="awareness">Awareness</option><option value="brand_deals">Brand deals</option><option value="sales">Sales / traffic</option><option value="narrative">Narrative</option><option value="pr">PR</option></select></div><div class="field"><label># accounts</label><input type="number" name="num_accounts_' + index + '" min="1" max="50" value="1" data-price-target></div><div class="field"><label title="Month 2+">Posts/day (mo. 2+)</label><input type="number" name="posts_per_day_' + index + '" min="3" max="10" value="3" data-posts-per-day style="width:70px;"></div><div class="field price-display"><label>&nbsp;</label><span class="price-value" data-price="' + index + '">$0</span><span class="muted" data-price-note></span></div><div class="field"><label>&nbsp;</label><div style="display:flex;align-items:center;gap:8px;"><button type="button" class="btn-generate" data-generate>Generate accounts</button><button type="button" class="btn-remove-row" data-remove title="Remove row" style="font-size:18px;line-height:1;">&times;</button></div></div>';
         row.querySelector('input[data-price-target]').addEventListener('input', function() { updateRowPrice(row); });
         row.querySelector('input[data-posts-per-day]').addEventListener('input', function() { updateRowPrice(row); });
         row.querySelector('[data-generate]').addEventListener('click', function() { doPay(row); });
         row.querySelector('[data-remove]').addEventListener('click', function() { if (document.querySelectorAll('.platform-row').length > 1) row.remove(); });
+        initContentLinksForRow(row);
         updateRowPrice(row);
         return row;
       }
@@ -405,6 +471,7 @@
         row.querySelector('[data-remove]')?.addEventListener('click', function() {
           if (document.querySelectorAll('.platform-row').length > 1) row.remove();
         });
+        initContentLinksForRow(row);
         updateRowPrice(row);
       });
 
@@ -431,8 +498,33 @@
             if (!row || !r0) return;
             var ps = row.querySelector('select[name^="platform_"]');
             if (ps && r0.platform) ps.value = r0.platform;
-            var ci = row.querySelector('input[name^="content_"]');
-            if (ci && r0.content != null) ci.value = r0.content;
+            var linkList = Array.isArray(r0.contentLinks) ? r0.contentLinks.slice() : [];
+            if (!linkList.length && r0.content) {
+              linkList = String(r0.content).split(/\n+/).map(function(x) { return x.trim(); }).filter(Boolean);
+            }
+            var block = row.querySelector('[data-content-links]');
+            if (block && linkList.length) {
+              block.innerHTML = '';
+              linkList.forEach(function(url) {
+                var wrap = document.createElement('div');
+                wrap.className = 'content-link-row';
+                var inp = document.createElement('input');
+                inp.type = 'url';
+                inp.className = 'content-link-input';
+                inp.placeholder = 'https://...';
+                inp.value = url || '';
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn-remove-content-link';
+                btn.setAttribute('data-remove-content-link', '');
+                btn.setAttribute('aria-label', 'Remove link');
+                btn.innerHTML = '&times;';
+                wrap.appendChild(inp);
+                wrap.appendChild(btn);
+                block.appendChild(wrap);
+              });
+              initContentLinksForRow(row);
+            }
             var ni = row.querySelector('input[name^="narrative_"]');
             if (ni && r0.narrative != null) ni.value = r0.narrative;
             var gs = row.querySelector('select[name^="goal_"]');
@@ -458,20 +550,30 @@
           return;
         }
         const platform = row.querySelector('select[name^="platform_"]')?.value;
-        const content = row.querySelector('input[name^="content_"]')?.value?.trim();
+        const contentUrls = getRowContentLinks(row);
         const narrative = row.querySelector('input[name^="narrative_"]')?.value?.trim();
         const goal = row.querySelector('select[name^="goal_"]')?.value;
         const numAccounts = parseInt(row.querySelector('input[name^="num_accounts_"]')?.value, 10) || 0;
-        if (!platform || !content) {
-          formError.textContent = 'Please fill in platform and content link for this row.';
+        if (!platform || !contentUrls.length) {
+          formError.textContent = 'Please fill in platform and at least one content link for this row.';
           return;
         }
+        const linkInputs = row.querySelectorAll('.content-link-input');
+        for (let li = 0; li < linkInputs.length; li++) {
+          const v = (linkInputs[li].value || '').trim();
+          if (v && !linkInputs[li].checkValidity()) {
+            linkInputs[li].reportValidity();
+            return;
+          }
+        }
+        const content = contentUrls.join('\n');
         const postsPerDay = parseInt(row.querySelector('input[name^="posts_per_day_"]')?.value, 10) || 3;
         const acceptSponsor = document.getElementById('acceptSponsorOffers')?.checked || false;
         const body = {
           title,
           platform,
           content_link: content,
+          content_links: contentUrls,
           description: narrative || undefined,
           goal,
           num_accounts: numAccounts,

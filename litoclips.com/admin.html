@@ -99,9 +99,10 @@
   <div class="admin-wrap">
     <div id="loginPrompt" class="login-prompt">
       <h1>Admin access required</h1>
-      <p>Log in on the main site with an admin account, then return here. Your session will be used to load the admin dashboard.</p>
-      <p><a href="index.html">Go to LitoClips →</a></p>
-      <p id="loginPromptHint" style="font-size: 13px; color: var(--text-muted); margin-top: 24px;">To make a user admin, run in terminal:<br><code>sqlite3 backend/data.db "UPDATE users SET is_admin = 1 WHERE email = 'your@email.com';"</code></p>
+      <p>Sign in with an admin account. After login you’ll be sent back to this dashboard automatically.</p>
+      <p><a href="login.html?next=admin" style="color: var(--teal); font-weight: 600;">Admin login →</a></p>
+      <p><a href="index.html">Go to LitoClips home →</a></p>
+      <p id="loginPromptHint" style="font-size: 13px; color: var(--text-muted); margin-top: 24px;">Grant admin in your database (e.g. Supabase → SQL Editor):<br><code style="display:block;margin-top:8px;word-break:break-all;">UPDATE users SET is_admin = 1 WHERE lower(email) = lower('you@email.com');</code>Then use <strong>Admin login</strong> again so your session refreshes.</p>
     </div>
 
     <div id="adminContent" class="admin-content-hidden">
@@ -175,21 +176,50 @@
       }
 
       if (!token) {
+        if (hintEl) hintEl.innerHTML = 'You’re not signed in on this site yet. Click <a href="login.html?next=admin" style="color: var(--teal);">Admin login</a>, sign in with Google (same email that has <code>is_admin = 1</code> in your database), and you’ll land back here. Or <a href="admin.html?demo=1" style="color: var(--teal);">demo mode</a> to preview the UI.';
         show(loginPrompt);
         return;
       }
       let me = null;
+      let meStatus = 0;
       try {
         const r = await fetch(API + '/auth/me', { headers: headers() });
+        meStatus = r.status;
         me = r.ok ? await r.json() : null;
       } catch (err) {
-        if (hintEl) hintEl.innerHTML = 'Could not reach the backend. Start it with: <code>cd backend && npm start</code><br><br>Or <a href="admin.html?demo=1" style="color: var(--teal);">view admin in demo mode</a> to see the layout.';
+        if (hintEl) hintEl.innerHTML = 'Could not reach <code>' + API + '/auth/me</code>. If you’re on production, your host must serve the API (e.g. <code>/api</code> → Node). Local: <code>cd backend && npm start</code>. Or <a href="admin.html?demo=1" style="color: var(--teal);">demo mode</a>.';
         show(loginPrompt);
         return;
       }
-      if (!me || !me.isAdmin) {
-        if (hintEl) hintEl.innerHTML = 'Log in with an admin account on the main site, or <a href="admin.html?demo=1" style="color: var(--teal);">view admin in demo mode</a> to see the layout.';
+      if (!me && meStatus >= 500) {
+        if (hintEl) hintEl.innerHTML = 'The API returned an error (' + meStatus + ') for <code>/auth/me</code>. Check server logs (often a missing table or DB connection).';
         show(loginPrompt);
+        return;
+      }
+      if (meStatus === 401 || meStatus === 403) {
+        if (hintEl) hintEl.innerHTML = 'Your session expired or is invalid. <a href="#" id="adminClearSession" style="color: var(--teal);">Sign out and try again</a>, then <a href="login.html?next=admin" style="color: var(--teal);">Admin login</a>.';
+        show(loginPrompt);
+        document.getElementById('adminClearSession')?.addEventListener('click', function(e) {
+          e.preventDefault();
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('userType');
+          window.location.href = 'login.html?next=admin';
+        });
+        return;
+      }
+      if (!me || !me.isAdmin) {
+        const who = me && me.email ? 'Signed in as <strong>' + me.email + '</strong> — ' : '';
+        if (hintEl) hintEl.innerHTML = who + 'this account is not an admin (<code>is_admin</code> in your DB), or the live API is using a different database than the one you updated. Fix the row in Supabase, then <a href="#" id="adminReloadAfterAdmin" style="color: var(--teal);">reload this page</a>. Wrong account? <a href="#" id="adminSwitchUser" style="color: var(--teal);">Sign out</a>. <a href="admin.html?demo=1" style="color: var(--teal);">Demo mode</a>.';
+        show(loginPrompt);
+        document.getElementById('adminReloadAfterAdmin')?.addEventListener('click', function(e) { e.preventDefault(); window.location.reload(); });
+        document.getElementById('adminSwitchUser')?.addEventListener('click', function(e) {
+          e.preventDefault();
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('userType');
+          window.location.href = 'login.html?next=admin';
+        });
         return;
       }
       hide(loginPrompt);

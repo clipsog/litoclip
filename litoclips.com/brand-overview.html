@@ -27,7 +27,8 @@
     .empty-state-icon { width: 64px; height: 64px; margin: 0 auto 16px; background: #f1f5f9; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #94a3b8; }
     .empty-state h3 { font-size: 18px; color: #0f172a; margin-bottom: 8px; }
     .empty-state p { color: #64748b; font-size: 14px; margin-bottom: 24px; max-width: 360px; margin-left: auto; margin-right: auto; }
-    .btn-start-campaign { display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 12px; font-weight: 600; text-decoration: none; font-size: 15px; font-family: inherit; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+    .btn-start-campaign { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 13px; font-family: inherit; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; line-height: 1.25; }
+    .btn-start-campaign svg { width: 16px; height: 16px; flex-shrink: 0; }
     .btn-start-campaign:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35); color: white; }
     .start-campaign-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .start-campaign-modal-overlay.open { display: flex; }
@@ -200,7 +201,7 @@
     .calendar-cta { margin-top: 16px; font-size: 14px; color: #64748b; }
     .calendar-cta a { color: #2563eb; text-decoration: none; font-weight: 500; }
     .calendar-cta a:hover { text-decoration: underline; }
-    .calendar-toolbar { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: nowrap; gap: 16px; margin-bottom: 16px; }
+    .calendar-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 16px; margin-bottom: 16px; }
     .calendar-toolbar .btn-start-campaign { margin: 0; }
     .calendar-toolbar > div:first-child { flex: 1 1 auto; min-width: 0; }
     .calendar-toolbar-actions { display:flex; align-items:center; gap:12px; flex-wrap:nowrap; justify-content:flex-end; margin-left: auto; }
@@ -209,10 +210,10 @@
       .calendar-toolbar-actions { width: 100%; justify-content: flex-start; }
     }
     .btn-saved-campaigns {
-      padding: 14px 20px;
-      border-radius: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       background: #f1f5f9;
       border: 1px solid #e2e8f0;
@@ -230,16 +231,48 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 28px;
-      height: 22px;
-      padding: 0 8px;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
       border-radius: 9999px;
       background: rgba(37, 99, 235, 0.12);
       border: 1px solid rgba(37, 99, 235, 0.25);
       color: #1d4ed8;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
     }
+    .wz-content-links-block { display: flex; flex-direction: column; gap: 8px; }
+    .wz-content-link-row { display: flex; align-items: center; gap: 8px; }
+    .wz-content-link-row input { flex: 1; min-width: 0; }
+    .wz-remove-content-link {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(15,23,42,0.55);
+      color: rgba(255,255,255,0.65);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+    }
+    .wz-remove-content-link:hover { color: #f87171; border-color: rgba(248,113,113,0.45); }
+    .wz-add-content-link {
+      align-self: flex-start;
+      margin-top: 2px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px dashed rgba(255,255,255,0.28);
+      background: transparent;
+      color: rgba(255,255,255,0.75);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .wz-add-content-link:hover { border-color: rgba(96,165,250,0.55); color: #93c5fd; }
     .saved-campaigns-modal-overlay { display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1200; align-items: center; justify-content: center; padding: 24px; }
     .saved-campaigns-modal-overlay.open { display:flex; }
     .saved-campaigns-modal {
@@ -397,7 +430,7 @@
           </button>
           <button type="button" class="btn-start-campaign" id="startCampaignBtn">
             Start a campaign
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
@@ -457,9 +490,10 @@
         <div class="start-campaign-step" data-wizard-step="1">
           <h4>Content</h4>
           <div class="start-campaign-wiz-field">
-            <label for="wzContent">content link we'll create the clips from</label>
-            <input type="url" id="wzContent" name="wzContent" required placeholder="https://…" inputmode="url">
-            <p class="start-campaign-wiz-hint">YouTube, Google Drive, Dropbox, or any public URL.</p>
+            <label>Content links we’ll create the clips from</label>
+            <div class="wz-content-links-block" id="wzContentLinksWrap"></div>
+            <button type="button" class="wz-add-content-link" id="wzAddContentLink">+ Add another link</button>
+            <p class="start-campaign-wiz-hint">Add one or more URLs: YouTube, Google Drive, Dropbox, or any public link.</p>
           </div>
           <div class="start-campaign-wiz-field">
             <label for="wzNarrative">Narrative / angle</label>
@@ -721,13 +755,64 @@
         }
       }
 
+      function getWzContentLinkUrls() {
+        var inputs = document.querySelectorAll('#wzContentLinksWrap .wz-content-link-input');
+        var urls = [];
+        for (var i = 0; i < inputs.length; i++) {
+          var v = (inputs[i].value || '').trim();
+          if (v) urls.push(v);
+        }
+        return urls;
+      }
+      function syncWzContentLinkRemoveButtons() {
+        var rows = document.querySelectorAll('#wzContentLinksWrap .wz-content-link-row');
+        rows.forEach(function(r) {
+          var rm = r.querySelector('.wz-remove-content-link');
+          if (rm) rm.hidden = rows.length <= 1;
+        });
+      }
+      function createWzContentLinkRow(value, showRemove) {
+        var row = document.createElement('div');
+        row.className = 'wz-content-link-row';
+        var inp = document.createElement('input');
+        inp.type = 'url';
+        inp.className = 'wz-content-link-input';
+        inp.placeholder = 'https://…';
+        inp.inputMode = 'url';
+        inp.value = value || '';
+        var rm = document.createElement('button');
+        rm.type = 'button';
+        rm.className = 'wz-remove-content-link';
+        rm.setAttribute('aria-label', 'Remove link');
+        rm.textContent = '\u00d7';
+        rm.hidden = !showRemove;
+        rm.addEventListener('click', function() {
+          if (document.querySelectorAll('#wzContentLinksWrap .wz-content-link-row').length <= 1) return;
+          row.remove();
+          syncWzContentLinkRemoveButtons();
+        });
+        row.appendChild(inp);
+        row.appendChild(rm);
+        return row;
+      }
+      function setWzContentLinkRows(urlList) {
+        var wrap = document.getElementById('wzContentLinksWrap');
+        if (!wrap) return;
+        var urls = Array.isArray(urlList) ? urlList.map(function(u) { return (u || '').trim(); }).filter(Boolean) : [];
+        if (!urls.length) urls = [''];
+        wrap.innerHTML = '';
+        urls.forEach(function(u) {
+          wrap.appendChild(createWzContentLinkRow(u, urls.length > 1));
+        });
+        syncWzContentLinkRemoveButtons();
+      }
+
       function resetStartCampaignWizardForm() {
         var t = document.getElementById('wzTitle');
         if (t) t.value = '';
         var s = document.getElementById('wzSponsor');
         if (s) s.checked = false;
-        var c = document.getElementById('wzContent');
-        if (c) c.value = '';
+        setWzContentLinkRows(['']);
         var n = document.getElementById('wzNarrative');
         if (n) n.value = '';
         var g = document.getElementById('wzGoal');
@@ -843,7 +928,8 @@
       function saveWizardForLater() {
         var title = (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '';
         var acceptSponsorOffers = !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked);
-        var content = (document.getElementById('wzContent') && document.getElementById('wzContent').value.trim()) || '';
+        var contentUrls = getWzContentLinkUrls();
+        var content = contentUrls.join('\n');
         var narrative = (document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim()) || '';
         var goal = (document.getElementById('wzGoal') && document.getElementById('wzGoal').value) || '';
         var postsPerDay = parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3;
@@ -868,6 +954,7 @@
           title: title,
           acceptSponsorOffers: acceptSponsorOffers,
           content: content,
+          contentLinks: contentUrls,
           narrative: narrative,
           goal: goal,
           postsPerDay: postsPerDay,
@@ -892,8 +979,11 @@
         if (t) t.value = saved.title || '';
         var s = document.getElementById('wzSponsor');
         if (s) s.checked = !!saved.acceptSponsorOffers;
-        var c = document.getElementById('wzContent');
-        if (c) c.value = saved.content || '';
+        var linkList = Array.isArray(saved.contentLinks) ? saved.contentLinks.slice() : [];
+        if (!linkList.length && saved.content) {
+          linkList = String(saved.content).split(/\n+/).map(function(x) { return x.trim(); }).filter(Boolean);
+        }
+        setWzContentLinkRows(linkList.length ? linkList : ['']);
         var n = document.getElementById('wzNarrative');
         if (n) n.value = saved.narrative || '';
         var g = document.getElementById('wzGoal');
@@ -924,6 +1014,27 @@
       }
 
       function validateStartCampaignWizardStep(stepIndex) {
+        if (stepIndex === 1) {
+          var urls = getWzContentLinkUrls();
+          if (!urls.length) {
+            var firstInp = document.querySelector('#wzContentLinksWrap .wz-content-link-input');
+            if (firstInp) {
+              firstInp.setCustomValidity('Add at least one content link.');
+              firstInp.reportValidity();
+              firstInp.setCustomValidity('');
+            }
+            return false;
+          }
+          var inputs = document.querySelectorAll('#wzContentLinksWrap .wz-content-link-input');
+          for (var ci = 0; ci < inputs.length; ci++) {
+            var v = (inputs[ci].value || '').trim();
+            if (v && !inputs[ci].checkValidity()) {
+              inputs[ci].reportValidity();
+              return false;
+            }
+          }
+          return true;
+        }
         if (stepIndex === 2) {
           var rows = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
           if (!rows.length) return false;
@@ -1015,7 +1126,12 @@
         if (!validateStartCampaignWizardStep(startCampaignWizardStep)) return;
 
         var title = (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '';
-        var content = (document.getElementById('wzContent') && document.getElementById('wzContent').value.trim()) || '';
+        var contentUrls = getWzContentLinkUrls();
+        var content = contentUrls.join('\n');
+        if (!contentUrls.length) {
+          alert('Add at least one content link.');
+          return;
+        }
         var narrative = (document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim()) || '';
         var goal = (document.getElementById('wzGoal') && document.getElementById('wzGoal').value) || '';
         var posts = parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3;
@@ -1051,6 +1167,7 @@
             body: JSON.stringify({
               title: title,
               content_link: content,
+              content_links: contentUrls,
               description: narrative || undefined,
               goal: goal,
               platform: primaryPlatform,
@@ -1107,6 +1224,12 @@
           syncWzRemoveButtons();
           updateModalWizardPrice();
         }
+      });
+      document.getElementById('wzAddContentLink')?.addEventListener('click', function() {
+        var wrap = document.getElementById('wzContentLinksWrap');
+        if (!wrap) return;
+        wrap.appendChild(createWzContentLinkRow('', true));
+        syncWzContentLinkRemoveButtons();
       });
       document.getElementById('wzPostsPerDay')?.addEventListener('input', updateModalWizardPrice);
 

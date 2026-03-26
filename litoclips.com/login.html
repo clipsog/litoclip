@@ -49,6 +49,7 @@
       </form>
       <div class="login-footer">
         <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+        <p style="margin-top: 12px;"><a href="login.html?next=admin">Admin login</a></p>
       </div>
     </div>
   </main>
@@ -60,11 +61,21 @@
       const form = document.getElementById('loginForm');
       const formError = document.getElementById('formError');
       const googleBtn = document.getElementById('googleLoginBtn');
+      const params = new URLSearchParams(window.location.search);
+      const wantsAdmin = params.get('next') === 'admin';
       if (googleBtn) googleBtn.href = AUTH_BASE + '/auth/google';
 
       function getDashboardHref(userType) {
         if (userType === 'sponsor') return 'sponsor-dashboard.html';
         return 'brand-overview.html';
+      }
+
+      function redirectAfterLogin(user) {
+        if (wantsAdmin && user && user.isAdmin) {
+          window.location.href = 'admin.html';
+          return;
+        }
+        window.location.href = getDashboardHref(user.userType);
       }
 
       form.addEventListener('submit', async function(e) {
@@ -83,7 +94,7 @@
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             localStorage.setItem('userType', data.user.userType || 'creator');
-            window.location.href = getDashboardHref(data.user.userType);
+            redirectAfterLogin(data.user);
           } else {
             formError.textContent = data.error || 'Invalid email or password.';
           }
@@ -93,7 +104,6 @@
       });
 
       // Handle OAuth return: ?token= or ?error=
-      const params = new URLSearchParams(window.location.search);
       const err = params.get('error');
       if (err) {
         formError.textContent = err === 'google_not_configured' ? 'Google sign-in is not set up yet.' : 'Sign-in failed. Please try again.';
@@ -108,7 +118,11 @@
             if (user) {
               localStorage.setItem('user', JSON.stringify(user));
               localStorage.setItem('userType', user.userType || 'creator');
-              window.location.replace(getDashboardHref(user.userType));
+              if (wantsAdmin && user.isAdmin) {
+                window.location.replace('admin.html');
+              } else {
+                window.location.replace(getDashboardHref(user.userType));
+              }
             } else { window.history.replaceState({}, '', 'login.html'); }
           })
           .catch(function() { window.history.replaceState({}, '', 'login.html'); });
