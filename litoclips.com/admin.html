@@ -833,7 +833,11 @@
         if (unread.length === 0) { banner.style.display = 'none'; return; }
         banner.style.display = 'flex';
         textEl.textContent = unread.length + ' new item' + (unread.length > 1 ? 's' : '') + ' to act on';
-      } catch (e) { banner.style.display = 'none'; }
+      } catch (e) {
+        banner.style.display = 'none';
+        if (badgeEl) badgeEl.style.display = 'none';
+        if (btnEl) btnEl.classList.remove('has-unread');
+      }
     }
 
     async function loadCampaignAccounts(campaignId) {
