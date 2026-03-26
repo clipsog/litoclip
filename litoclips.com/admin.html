@@ -201,10 +201,7 @@
           <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Expand a user to manage campaigns (add accounts & daily posts), submissions, payouts.</p>
           <div id="usersList"></div>
         </div>
-        <details class="brands-section" style="margin-top: 24px;">
-          <summary style="cursor: pointer; font-weight: 600; padding: 12px 0;">Brand requests <span id="brandsCount"></span></summary>
-          <div id="brandsList" style="padding-top: 16px;"></div>
-        </details>
+        
       </div>
       <div class="day-modal-overlay" id="dayModal">
         <div class="day-modal">
@@ -501,7 +498,7 @@
     async function loadAll() {
       await loadUsers();
       await loadAlertsBanner();
-      await loadBrands();
+      
     }
 
     async function loadAlertsBanner() {
@@ -530,6 +527,7 @@
     async function loadBrands() {
       const el = document.getElementById('brandsList');
       const countEl = document.getElementById('brandsCount');
+      if (!el) return;
       if (isDemoMode) {
         if (countEl) countEl.textContent = '(2)';
         el.innerHTML = '<p class="empty" style="padding:12px 0;">2 brand requests. Full table in demo mode.</p>';
@@ -685,14 +683,7 @@
                 }).join('')}
               </div>
             ` : ''}
-            ${submissions.length ? `<div class="user-section"><strong>Submissions</strong><table class="admin-table" style="font-size:12px;"><tbody>${submissions.map(s => {
-              const sc = s.status === 'approved' ? 'approved' : s.status === 'rejected' ? 'rejected' : 'pending';
-              return `<tr data-id="${s.id}"><td>${s.campaignTitle || s.campaignId}</td><td><a href="${s.postUrl}" target="_blank" rel="noopener" style="color:var(--teal);">Link</a></td><td><input type="number" class="sub-views" data-id="${s.id}" value="${s.views||0}" style="width:60px;padding:4px;font-size:12px;"></td><td>$${(s.earnings||0).toFixed(2)}</td><td><span class="badge ${sc}">${s.status}</span></td><td><button type="button" class="btn-sm sub-set-views" data-id="${s.id}">Set</button><select class="sub-status" data-id="${s.id}"><option value="pending" ${s.status==='pending'?'selected':''}>Pending</option><option value="approved" ${s.status==='approved'?'selected':''}>Approved</option><option value="rejected" ${s.status==='rejected'?'selected':''}>Rejected</option></select><button type="button" class="btn-sm sub-save-status" data-id="${s.id}">Save</button></td></tr>`;
-            }).join('')}</tbody></table></div>` : ''}
-            ${payouts.length ? `<div class="user-section"><strong>Payouts</strong><table class="admin-table" style="font-size:12px;"><tbody>${payouts.map(p => {
-              const pc = p.status === 'approved' ? 'approved' : p.status === 'rejected' ? 'rejected' : 'pending';
-              return `<tr><td>$${p.amount.toFixed(2)}</td><td>${p.paymentMethod}</td><td><span class="badge ${pc}">${p.status}</span></td><td>${p.status === 'pending' ? `<button type="button" class="btn-sm btn-approve payout-approve" data-id="${p.id}">Approve</button> <button type="button" class="btn-sm btn-reject payout-reject" data-id="${p.id}">Reject</button>` : ''}</td></tr>`;
-            }).join('')}</tbody></table></div>` : ''}
+            
           </div>
         </details>
       `;
