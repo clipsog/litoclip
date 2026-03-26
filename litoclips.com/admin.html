@@ -238,7 +238,7 @@
     </div>
   </div>
   <style>
-    #supportChatWidget { position: fixed; left: 18px; bottom: 18px; z-index: 2500; }
+    #supportChatWidget { position: fixed; right: 18px; left: auto; bottom: 18px; z-index: 2500; }
     .support-chat-toggle {
       width: 46px; height: 46px; border-radius: 999px;
       border: 1px solid rgba(147,197,253,0.35);
@@ -392,6 +392,57 @@
       });
       closeBtn.addEventListener('click', close);
 
+      function getAutoReply(userText) {
+        var t = String(userText || '').toLowerCase();
+        var s = t.replace(/\s+/g, ' ').trim();
+
+        function has(re) { return re.test(s); }
+        if (!s) return '';
+
+        if (has(/pricing|price|cost|how much|\$5|\$10|budget/)) {
+          return 'Pricing (simple): Week 1-3 is $5 per account/week. Days 1-2 are warm-up (we interact with your niche), then it is 1 post/day on TikTok. Week 4+ is $10 per account/week, and it becomes 3 posts/day per account.';
+        }
+        if (has(/warm.?up|warming up/)) {
+          return 'Warm-up is the first 2 days: we interact with accounts in your niche (likes/comments/follows). This helps your first real posts reach people who care.';
+        }
+        if (has(/pay(ment)?|stripe|paypal|auto[- ]?charge|auto[- ]?pay|charged|weekly|monthly/)) {
+          return 'You pay upfront to start. After week 1, you can pay from your campaign calendar to keep going, or turn on auto-charge so it renews automatically.';
+        }
+
+        if (has(/tiktok/)) {
+          return 'TikTok is best for PR and fast awareness. It has that ripple effect - when people like what you do, more people see it. It is a great entry door into broader attention.';
+        }
+        if (has(/instagram|ig/)) {
+          return 'Instagram is best for brand deals and product placement. You can control your narrative, and because people share their face and moments there, support on IG builds stronger credibility.';
+        }
+        if (has(/x( |-|$)|twitter/)) {
+          return 'X (Twitter) is more for notoriety and influence - especially with other brands/products in your industry. A lot of creators do X after they have more of a story to tell.';
+        }
+        if (has(/youtube/)) {
+          return 'YouTube is best for sales and redirection. Use Shorts to build familiarity, then send viewers back to your main page/content. It also works well for sponsors and linking in descriptions.';
+        }
+
+        if (has(/start campaign|create campaign|how do i start|new campaign|campaign calendar|calendar/)) {
+          return 'To start: upload your content link(s), choose platforms + number of accounts, add your narrative/angle, and then pay from your campaign calendar. You will track posts and views by clicking the days in the calendar.';
+        }
+        if (has(/content link|content links|multiple links|url/)) {
+          return 'Yes - add multiple content links. You can paste one link per row (or one per line where supported). We use them as your campaign content sources.';
+        }
+        if (has(/prep link|prep links|future day|day 3|day 4/)) {
+          return 'For upcoming days (Day 3+), you can add prep links (one per line). When that day comes, we use those links so uploading happens faster.';
+        }
+
+        if (has(/sponsor|sponsors|sponsorship|watermark|watermarks/)) {
+          return 'Sponsors: creators opt in to receive sponsor offers, get paid per view, and can allow watermarks. Sponsors deposit a budget, pick campaigns, and pay per view until the budget runs out.';
+        }
+
+        if (has(/admin/)) {
+          return 'If you are seeing "Admin access required": open the Admin page and use `Admin login`. If it still will not work, your account needs `is_admin` enabled in the database.';
+        }
+
+        return 'I can help with pricing, warm-up, platforms (TikTok/Instagram/X/YouTube), starting a campaign, sponsors, and calendar actions. If your question is different, email support@litoclips.com and mention the page and what you are trying to do.';
+      }
+
       function sendMessage() {
         var text = (inputEl.value || '').trim();
         if (!text) return;
@@ -400,7 +451,8 @@
         addBubble('user', text);
         inputEl.value = '';
 
-        var reply = 'Thanks! We received your message. A support agent will respond soon.';
+        var reply = getAutoReply(text);
+        if (!reply) reply = 'Thanks! We received your message. A support agent will respond soon.';
         window.setTimeout(function() {
           msgs.push({ role: 'bot', text: reply });
           saveChat(msgs);
