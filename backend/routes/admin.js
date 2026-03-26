@@ -295,6 +295,70 @@ router.put('/alerts/:id/read', async (req, res) => {
   }
 });
 
+// GET /api/admin/support-threads/:userId
+// Returns all support request + reply messages for a given user.
+router.get('/support-threads/:userId', async (req, res) => {
+  try {
+    const rows = await db.prepare(`
+      SELECT id, type, title, message, read, created_at
+      FROM admin_alerts
+      WHERE entity_type = 'user'
+        AND entity_id = ?
+        AND (type = 'support_request' OR type = 'support_reply')
+      ORDER BY created_at ASC
+    `).all(req.params.userId);
+    res.json(rows.map(r => ({
+      id: r.id,
+      type: r.type,
+      title: r.title,
+      message: r.message,
+      read: !!r.read,
+      createdAt: r.created_at,
+    })));
+  } catch (e) {
+    res.json([]);
+  }
+});
+
+// POST /api/admin/support-requests/:id/respond
+// Marks the request as read, inserts a support reply into admin history, and notifies the user.
+router.post('/support-requests/:id/respond', async (req, res) => {
+  try {
+    const { reply } = req.body || {};
+    const replyText = String(reply || '').trim();
+    if (!replyText) return res.status(400).json({ error: 'reply required' });
+
+    const request = await db.prepare(`
+      SELECT id, entity_id
+      FROM admin_alerts
+      WHERE id = ? AND type = 'support_request'
+    `).get(req.params.id);
+
+    if (!request) return res.status(404).json({ error: 'Support request not found' });
+
+    // 1) Mark request read for admin badge/count.
+    await db.prepare('UPDATE admin_alerts SET read = 1 WHERE id = ?').run(request.id);
+
+    // 2) Insert a user notification (so the system can email/push if configured).
+    const notifId = uuid();
+    await db.prepare(`
+      INSERT INTO notifications (id, user_id, type, payload, read)
+      VALUES (?, ?, 'support_reply', ?, 0)
+    `).run(notifId, request.entity_id, JSON.stringify({ reply: replyText, inReplyTo: request.id }));
+
+    // 3) Insert a reply in admin_alerts for the admin thread view.
+    const replyAlertId = uuid();
+    await db.prepare(`
+      INSERT INTO admin_alerts (id, type, entity_type, entity_id, title, message, read)
+      VALUES (?, 'support_reply', 'user', ?, ?, ?, 1)
+    `).run(replyAlertId, request.entity_id, 'Support reply', replyText);
+
+    res.json({ ok: true, replyAlertId, notificationId: notifId });
+  } catch (e) {
+    res.status(500).json({ error: e.message || 'Failed' });
+  }
+});
+
 // ---------- Users with campaigns (organized by user) ----------
 // GET /api/admin/users-with-campaigns
 router.get('/users-with-campaigns', async (req, res) => {

@@ -184,6 +184,43 @@
     .user-meta-row { display: inline-flex; align-items: center; gap: 6px; }
     .content-links-list { margin: 8px 0 0 0; padding-left: 16px; }
     .content-links-list li { margin: 2px 0; font-size: 12px; }
+    .support-user-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: rgba(254, 202, 202, 0.95);
+      cursor: pointer;
+      user-select: none;
+    }
+    .support-user-badge:hover {
+      background: rgba(239, 68, 68, 0.22);
+      color: #fff;
+      border-color: rgba(239, 68, 68, 0.55);
+    }
+    .support-user-badge .count {
+      font-weight: 900;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .support-thread-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+    .support-thread-overlay.active { display: flex; }
+    .support-thread-modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 720px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+    .support-thread-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .support-thread-header h3 { margin: 0; font-size: 16px; }
+    .support-thread-close { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 0 6px; }
+    .support-thread-body { padding: 16px 20px; }
+    .support-thread-messages { max-height: 360px; overflow: auto; padding-right: 6px; }
+    .support-msg { padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: rgba(15,23,42,0.25); margin-bottom: 10px; }
+    .support-msg .meta { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display:flex; justify-content: space-between; gap: 10px; }
+    .support-msg .label { color: var(--teal); font-weight: 700; }
+    .support-msg .text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; white-space: pre-wrap; }
+    .support-thread-reply { display: grid; gap: 10px; margin-top: 14px; }
+    .support-thread-reply textarea { width: 100%; min-height: 90px; padding: 10px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; color: var(--text); resize: vertical; font-family: inherit; font-size: 14px; }
+    .support-thread-reply .hint { font-size: 12px; color: var(--text-muted); }
     .day-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .day-modal-overlay.active { display: flex; }
     .day-modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; max-width: 420px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -278,6 +315,25 @@
             <button type="button" class="day-modal-close" id="sponsorModalClose">&times;</button>
           </div>
           <div class="day-modal-body" id="sponsorModalBody"></div>
+        </div>
+      </div>
+      <div class="support-thread-overlay" id="supportThreadModal">
+        <div class="support-thread-modal">
+          <div class="support-thread-header">
+            <h3 id="supportThreadTitle">Support thread</h3>
+            <button type="button" class="support-thread-close" id="supportThreadClose">&times;</button>
+          </div>
+          <div class="support-thread-body">
+            <div id="supportThreadMessages" class="support-thread-messages"></div>
+            <div class="support-thread-reply">
+              <div class="hint" id="supportThreadHint">Replying to the most recent unread request.</div>
+              <textarea id="supportThreadReply" placeholder="Write your reply to the user..."></textarea>
+              <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end; flex-wrap:wrap;">
+                <button type="button" class="btn-sm btn-soft" id="supportThreadCancel">Cancel</button>
+                <button type="button" class="btn-sm btn-primary-sm" id="supportThreadSend">Send reply</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -523,11 +579,13 @@
     const ACCOUNT_CREDS_KEY = 'litoclips_admin_account_creds_v1';
     const WATERMARK_LINK_KEY = 'litoclips_admin_watermark_links_v1';
     const campaignRuntime = {};
+    let supportUnreadByUser = {};
+    let supportLatestUnreadRequestIdByUser = {};
     const mockData = {
       alerts: [
         { id: 'a1', type: 'campaign_created', read: false, title: 'New campaign', message: 'Two new campaigns need account linking.' },
         { id: 'a2', type: 'payout_queue', read: false, title: 'Payout queue', message: '3 payout requests are waiting for review.' },
-        { id: 'spt1', type: 'support_request', read: false, title: 'Support request', message: 'User needs help with pricing + next steps.' }
+        { id: 'spt1', type: 'support_request', read: false, entityType: 'user', entityId: 'u1', title: 'Support request', message: 'User needs help with pricing + next steps.' },
       ],
       brands: [
         { id: 'b1', contact_email: 'brand@northstar.com', contact_name: 'Northstar Media', company_name: 'Northstar', platforms: 'tiktok,instagram', status: 'pending' },
@@ -798,9 +856,49 @@
     }
 
     async function loadAll() {
+      await loadSupportUnreadCounts();
       await loadUsers();
       await loadAlertsBanner();
       
+    }
+
+    function isSupportRequestAlert(a) {
+      const type = String(a?.type || '').toLowerCase();
+      return type === 'support_request' || type === 'support-request';
+    }
+
+    function getSupportEntityId(a) {
+      return a?.entityId || a?.entity_id || a?.entity_id;
+    }
+
+    async function loadSupportUnreadCounts() {
+      supportUnreadByUser = {};
+      supportLatestUnreadRequestIdByUser = {};
+
+      try {
+        const list = isMockMode ? mockData.alerts : asArray(await fetchJson('/admin/alerts'));
+        const supportUnread = asArray(list).filter(a => !a.read && isSupportRequestAlert(a) && getSupportEntityId(a));
+
+        supportUnread.forEach(a => {
+          const uid = String(getSupportEntityId(a));
+          const prev = supportUnreadByUser[uid] || 0;
+          supportUnreadByUser[uid] = prev + 1;
+        });
+
+        // latest unread request id per user (most recent createdAt)
+        supportUnread.forEach(a => {
+          const uid = String(getSupportEntityId(a));
+          const existingId = supportLatestUnreadRequestIdByUser[uid];
+          if (!existingId) {
+            supportLatestUnreadRequestIdByUser[uid] = a.id;
+          } else {
+            const prev = supportUnread.find(x => x.id === existingId);
+            const prevTime = prev?.createdAt ? new Date(prev.createdAt).getTime() : 0;
+            const curTime = a?.createdAt ? new Date(a.createdAt).getTime() : 0;
+            if (curTime >= prevTime) supportLatestUnreadRequestIdByUser[uid] = a.id;
+          }
+        });
+      } catch (e) {}
     }
 
     async function loadAlertsBanner() {
@@ -942,12 +1040,21 @@
       const campaigns = u.campaigns || [];
       const hasContent = campaigns.length || submissions.length || payouts.length;
       const actionCount = userActionCount(u);
+      const supportCount = supportUnreadByUser[u.id] || 0;
+      const supportBadge = supportCount > 0
+        ? '<span class="support-user-badge" data-support-user-id="' + u.id + '" title="Support requests">' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+              '<path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>' +
+            '</svg>' +
+            '<span class="count">' + supportCount + '</span>' +
+          '</span>'
+        : '';
       const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       return `
         <details class="user-card" ${hasContent ? '' : ''}>
           <summary class="user-summary">
             <span class="user-name">${u.name || u.email}</span>
-            <span class="user-meta user-meta-row">${u.email} · ${campaigns.length} campaign${campaigns.length !== 1 ? 's' : ''}${actionCount > 0 ? '<span class="task-ping" title="Actions needed">' + actionCount + '</span>' : ''}</span>
+            <span class="user-meta user-meta-row">${u.email} · ${campaigns.length} campaign${campaigns.length !== 1 ? 's' : ''}${actionCount > 0 ? '<span class="task-ping" title="Actions needed">' + actionCount + '</span>' : ''}${supportBadge}</span>
             <button type="button" class="btn-sm btn-primary-sm open-sponsors" data-id="${u.id}" data-name="${(u.name || u.email || 'User').replace(/"/g, '&quot;')}" onclick="event.preventDefault();event.stopPropagation();">Sponsors</button>
           </summary>
           <div class="user-detail">
@@ -1044,6 +1151,16 @@
           }
         });
       });
+
+      el.querySelectorAll('.support-user-badge').forEach(badge => {
+        badge.onclick = async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const userId = badge.dataset.supportUserId || badge.getAttribute('data-support-user-id');
+          await openSupportThreadModal(userId);
+        };
+      });
+
       el.querySelectorAll('.cal-day').forEach(dayEl => {
         dayEl.onclick = (e) => {
           e.stopPropagation();
@@ -1078,6 +1195,83 @@
           if (res.ok) loadAll(); else alert((await res.json()).error || 'Failed');
         };
       });
+    }
+
+    async function openSupportThreadModal(userId) {
+      const overlay = document.getElementById('supportThreadModal');
+      const titleEl = document.getElementById('supportThreadTitle');
+      const msgsEl = document.getElementById('supportThreadMessages');
+      const replyEl = document.getElementById('supportThreadReply');
+      const hintEl = document.getElementById('supportThreadHint');
+      const closeBtn = document.getElementById('supportThreadClose');
+      const cancelBtn = document.getElementById('supportThreadCancel');
+      const sendBtn = document.getElementById('supportThreadSend');
+
+      if (!overlay || !titleEl || !msgsEl || !replyEl) return;
+
+      overlay.classList.add('active');
+      replyEl.value = '';
+      msgsEl.innerHTML = '<p style="color:var(--text-muted);font-size:13px;margin:0;">Loading support thread...</p>';
+      titleEl.textContent = 'Support thread';
+
+      if (closeBtn) closeBtn.onclick = () => overlay.classList.remove('active');
+      if (cancelBtn) cancelBtn.onclick = () => overlay.classList.remove('active');
+
+      sendBtn && (sendBtn.onclick = async () => {
+        const latestId = supportLatestUnreadRequestIdByUser[userId];
+        const text = replyEl.value.trim();
+        if (!latestId) { alert('No unread request to reply to.'); return; }
+        if (!text) { alert('Write a reply first.'); return; }
+        const res = await fetch(API + '/admin/support-requests/' + latestId + '/respond', {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ reply: text })
+        });
+        if (res.ok) {
+          overlay.classList.remove('active');
+          await loadAll();
+        } else {
+          alert((await res.json()).error || 'Failed to send reply');
+        }
+      });
+
+      let thread = [];
+      try {
+        if (isMockMode) {
+          thread = asArray(mockData.alerts).filter(a => String(getSupportEntityId(a)) === String(userId) && (String(a.type||'').includes('support_request') || String(a.type||'').includes('support_reply')));
+        } else {
+          const r = await fetchJson('/admin/support-threads/' + userId);
+          thread = asArray(r);
+        }
+      } catch (e) { thread = []; }
+
+      // newest unread request id for this user
+      let latestUnread = null;
+      for (let i = thread.length - 1; i >= 0; i--) {
+        const m = thread[i];
+        if (String(m.type || '').toLowerCase() === 'support_request' && !m.read) { latestUnread = m.id; break; }
+      }
+      if (latestUnread) supportLatestUnreadRequestIdByUser[userId] = latestUnread;
+
+      const unreadCount = thread.filter(m => String(m.type||'').toLowerCase() === 'support_request' && !m.read).length;
+      hintEl && (hintEl.textContent = latestUnread ? 'Replying to the most recent unread request.' : 'No unread requests found.');
+
+      // Render messages
+      if (!thread.length) {
+        msgsEl.innerHTML = '<p style="color:var(--text-muted);font-size:13px;margin:0;">No support messages yet.</p>';
+      } else {
+        msgsEl.innerHTML = thread.map(m => {
+          const t = String(m.type || '');
+          const isReq = t.toLowerCase().includes('support_request');
+          const label = isReq ? 'Request' : 'Reply';
+          const dt = m.createdAt ? new Date(m.createdAt) : null;
+          const when = dt ? dt.toLocaleString() : '';
+          return '<div class="support-msg">' +
+            '<div class="meta"><span class="label">' + label + '</span><span>' + (when || '') + (isReq && !m.read ? ' (unread)' : '') + '</span></div>' +
+            '<div class="text">' + String(m.message || '') + '</div>' +
+            '</div>';
+        }).join('');
+      }
     }
 
     let currentModalCampaignId = null;
