@@ -477,6 +477,43 @@ router.patch('/campaigns/:cid/posts/:pid', async (req, res) => {
   });
 });
 
+// ---------- Sponsorship offers by user ----------
+// GET /api/admin/users/:id/sponsor-deals
+router.get('/users/:id/sponsor-deals', async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const rows = await db.prepare(`
+      SELECT sd.id, sd.campaign_id, sd.status, sd.budget_reserved_cents, sd.spent_cents, sd.created_at,
+             c.title as campaign_title,
+             so.name as offer_name, so.watermark_text, so.cpm_cents, so.budget_cents,
+             su.email as sponsor_email, su.name as sponsor_name
+      FROM sponsor_deals sd
+      JOIN campaigns c ON c.id = sd.campaign_id
+      JOIN sponsor_offers so ON so.id = sd.offer_id
+      JOIN users su ON su.id = so.user_id
+      WHERE c.owner_id = ?
+      ORDER BY sd.created_at DESC
+    `).all(userId);
+    res.json(rows.map(r => ({
+      id: r.id,
+      campaignId: r.campaign_id,
+      campaignTitle: r.campaign_title,
+      status: r.status,
+      budgetReservedCents: r.budget_reserved_cents || 0,
+      spentCents: r.spent_cents || 0,
+      createdAt: r.created_at,
+      offerName: r.offer_name,
+      watermarkText: r.watermark_text,
+      cpmCents: r.cpm_cents || 0,
+      budgetCents: r.budget_cents || 0,
+      sponsorEmail: r.sponsor_email,
+      sponsorName: r.sponsor_name || r.sponsor_email
+    })));
+  } catch (e) {
+    res.json([]);
+  }
+});
+
 // ---------- Make user admin (first admin: set in DB or run a one-off) ----------
 // PUT /api/admin/users/:id/admin
 router.put('/users/:id/admin', async (req, res) => {

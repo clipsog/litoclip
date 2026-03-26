@@ -152,6 +152,11 @@
     .day-modal-header h3 { font-size: 16px; margin: 0; }
     .day-modal-close { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; line-height: 1; }
     .day-modal-body { padding: 20px; }
+    .sponsor-offer-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: rgba(15,23,42,0.35); margin-bottom: 10px; }
+    .sponsor-offer-card h4 { margin: 0 0 6px; font-size: 14px; }
+    .sponsor-offer-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .watermark-link-box { display:flex; gap:8px; align-items:center; margin-top:8px; }
+    .watermark-link-box input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-elevated); color: var(--text); }
   </style>
 </head>
 <body class="dashboard-theme">
@@ -186,7 +191,7 @@
       <div class="admin-panel active" style="padding: 24px 32px;">
         <div class="admin-hero">
           <h1>Admin dashboard</h1>
-          <p>Manage users, campaigns, submissions, and payouts in one place.</p>
+          <p>Manage users, campaigns, daily actions, and sponsor offers in one place.</p>
           <div class="admin-tools">
             <button type="button" class="btn-sm btn-soft" id="toggleMockDataBtn">Use mock data</button>
             <span id="dataModeLabel" style="font-size:12px; opacity:0.9;">Live data mode</span>
@@ -198,7 +203,7 @@
         </div>
         <div class="admin-card" style="margin-bottom: 24px;">
           <h2 style="margin-bottom: 4px;">Users</h2>
-          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Expand a user to manage campaigns (add accounts & daily posts), submissions, payouts.</p>
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Expand a user to manage campaigns, daily posting actions, and sponsorship offers.</p>
           <div id="usersList"></div>
         </div>
         
@@ -221,6 +226,15 @@
           <div class="day-modal-body" id="infoModalBody"></div>
         </div>
       </div>
+      <div class="day-modal-overlay" id="sponsorModal">
+        <div class="day-modal" style="max-width:640px;">
+          <div class="day-modal-header">
+            <h3 id="sponsorModalTitle">Sponsorship offers</h3>
+            <button type="button" class="day-modal-close" id="sponsorModalClose">&times;</button>
+          </div>
+          <div class="day-modal-body" id="sponsorModalBody"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -233,6 +247,7 @@
     const MOCK_KEY = 'litoclips_admin_mock_mode';
     const PREP_KEY = 'litoclips_admin_prep_links_v1';
     const ACCOUNT_CREDS_KEY = 'litoclips_admin_account_creds_v1';
+    const WATERMARK_LINK_KEY = 'litoclips_admin_watermark_links_v1';
     const campaignRuntime = {};
     const mockData = {
       alerts: [
@@ -256,6 +271,12 @@
       ],
       payouts: [
         { id: 'p1', userId: 'u1', amount: 120, paymentMethod: 'PayPal', status: 'pending' }
+      ],
+      sponsorDeals: {
+        u1: [
+          { id: 'sd1', campaignTitle: 'Summer single launch', offerName: 'Northstar Launch Pack', sponsorName: 'Northstar Media', sponsorEmail: 'brand@northstar.com', watermarkText: '@northstar', status: 'active', budgetReservedCents: 20000, spentCents: 6400 }
+        ],
+        u2: []
       ]
     };
     function splitContentLinks(v) {
@@ -297,6 +318,12 @@
     }
     function saveCredStore(v) {
       localStorage.setItem(ACCOUNT_CREDS_KEY, JSON.stringify(v || {}));
+    }
+    function getWatermarkStore() {
+      try { return JSON.parse(localStorage.getItem(WATERMARK_LINK_KEY) || '{}') || {}; } catch (_) { return {}; }
+    }
+    function saveWatermarkStore(v) {
+      localStorage.setItem(WATERMARK_LINK_KEY, JSON.stringify(v || {}));
     }
     function saveAccountCred(campaignId, handle, cred) {
       const store = getCredStore();
@@ -622,7 +649,7 @@
           <summary class="user-summary">
             <span class="user-name">${u.name || u.email}</span>
             <span class="user-meta user-meta-row">${u.email} · ${campaigns.length} campaign${campaigns.length !== 1 ? 's' : ''}${actionCount > 0 ? '<span class="task-ping" title="Actions needed">' + actionCount + '</span>' : ''}</span>
-            ${!u.isAdmin ? '<button type="button" class="btn-sm btn-primary-sm make-admin" data-id="' + u.id + '" onclick="event.preventDefault();event.stopPropagation();">Make admin</button>' : '<span class="badge approved">Admin</span>'}
+            <button type="button" class="btn-sm btn-primary-sm open-sponsors" data-id="${u.id}" data-name="${(u.name || u.email || 'User').replace(/"/g, '&quot;')}" onclick="event.preventDefault();event.stopPropagation();">Sponsors</button>
           </summary>
           <div class="user-detail">
             ${campaigns.length ? `
@@ -691,10 +718,10 @@
 
     function bindUserCardEvents(el) {
       if (!el) return;
-      el.querySelectorAll('.make-admin').forEach(btn => {
-        btn.onclick = async (e) => { e.preventDefault(); e.stopPropagation();
-          const res = await fetch(API + '/admin/users/' + btn.dataset.id + '/admin', { method: 'PUT', headers: headers(), body: JSON.stringify({ isAdmin: true }) });
-          if (res.ok) loadAll(); else alert((await res.json()).error || 'Failed');
+      el.querySelectorAll('.open-sponsors').forEach(btn => {
+        btn.onclick = async (e) => {
+          e.preventDefault(); e.stopPropagation();
+          await openSponsorModal(btn.dataset.id, btn.dataset.name || 'User');
         };
       });
       el.querySelectorAll('.campaign-info-btn').forEach(btn => {
@@ -858,6 +885,57 @@
 
     document.getElementById('infoModalClose')?.addEventListener('click', () => document.getElementById('infoModal')?.classList.remove('active'));
     document.getElementById('infoModal')?.addEventListener('click', (e) => { if (e.target.id === 'infoModal') e.target.classList.remove('active'); });
+    async function openSponsorModal(userId, userName) {
+      const modal = document.getElementById('sponsorModal');
+      const titleEl = document.getElementById('sponsorModalTitle');
+      const bodyEl = document.getElementById('sponsorModalBody');
+      if (!modal || !titleEl || !bodyEl) return;
+      titleEl.textContent = 'Sponsorship offers — ' + (userName || 'User');
+      let deals = [];
+      if (isMockMode) {
+        deals = (mockData.sponsorDeals && mockData.sponsorDeals[userId]) ? mockData.sponsorDeals[userId] : [];
+      } else {
+        try {
+          deals = asArray(await fetchJson('/admin/users/' + userId + '/sponsor-deals'));
+        } catch (e) {
+          deals = [];
+        }
+      }
+      if (!deals.length) {
+        bodyEl.innerHTML = '<p class="empty" style="padding:0;">No sponsorship offers yet for this user.</p>';
+      } else {
+        const wmStore = getWatermarkStore();
+        bodyEl.innerHTML = deals.map(d => {
+          const localWm = wmStore[d.id] || '';
+          const wmText = d.watermarkText || '';
+          const wmMaybeUrl = /^https?:\/\//i.test(wmText) ? wmText : '';
+          const sponsor = d.sponsorName || d.sponsorEmail || 'Sponsor';
+          const remaining = Math.max(0, (d.budgetReservedCents || 0) - (d.spentCents || 0));
+          return '<div class="sponsor-offer-card">' +
+            '<h4>' + (d.offerName || 'Offer') + '</h4>' +
+            '<div class="sponsor-offer-meta">Campaign: ' + (d.campaignTitle || d.campaignId || '—') + ' · Sponsor: ' + sponsor + ' · Status: ' + (d.status || 'active') + '</div>' +
+            '<div class="sponsor-offer-meta">Budget: $' + ((d.budgetReservedCents || d.budgetCents || 0)/100).toFixed(2) + ' · Remaining: $' + (remaining/100).toFixed(2) + '</div>' +
+            '<div style="font-size:12px;color:var(--text-secondary);"><strong>Watermark:</strong> ' + (wmText ? wmText : 'Not provided') + (wmMaybeUrl ? ' · <a href="' + wmMaybeUrl.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener" style="color:var(--teal);">Open</a>' : '') + '</div>' +
+            '<div class="watermark-link-box"><input type="url" data-wm-link="' + d.id + '" value="' + (localWm || '').replace(/"/g, '&quot;') + '" placeholder="Optional: watermark asset link (Drive, Dropbox, etc)"><button type="button" class="btn-sm btn-soft" data-wm-save="' + d.id + '">Save</button></div>' +
+          '</div>';
+        }).join('');
+        bodyEl.querySelectorAll('[data-wm-save]').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const id = btn.getAttribute('data-wm-save');
+            const input = bodyEl.querySelector('[data-wm-link="' + id + '"]');
+            const v = (input?.value || '').trim();
+            const s = getWatermarkStore();
+            s[id] = v;
+            saveWatermarkStore(s);
+            btn.textContent = 'Saved';
+            setTimeout(() => { btn.textContent = 'Save'; }, 900);
+          });
+        });
+      }
+      modal.classList.add('active');
+    }
+    document.getElementById('sponsorModalClose')?.addEventListener('click', () => document.getElementById('sponsorModal')?.classList.remove('active'));
+    document.getElementById('sponsorModal')?.addEventListener('click', (e) => { if (e.target.id === 'sponsorModal') e.target.classList.remove('active'); });
 
     init();
   </script>
