@@ -413,5 +413,182 @@
     })();
   </script>
   <script src="notifications-ui.js"></script>
+  <style>
+    #supportChatWidget { position: fixed; left: 18px; bottom: 18px; z-index: 2500; }
+    .support-chat-toggle {
+      width: 46px; height: 46px; border-radius: 999px;
+      border: 1px solid rgba(147,197,253,0.35);
+      background: linear-gradient(180deg, rgba(37,99,235,0.95) 0%, rgba(29,78,216,0.95) 100%);
+      color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 25px rgba(37,99,235,0.25);
+    }
+    .support-chat-toggle:hover { opacity: 0.95; }
+    .support-chat-panel {
+      display: none;
+      width: 340px; max-width: calc(100vw - 36px);
+      height: 420px;
+      background: rgba(15,23,42,0.92);
+      border: 1px solid rgba(148,163,184,0.25);
+      border-radius: 16px;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      margin-bottom: 10px;
+    }
+    .support-chat-panel.open { display: flex; flex-direction: column; }
+    .support-chat-header {
+      padding: 12px 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: rgba(2,6,23,0.65);
+      border-bottom: 1px solid rgba(148,163,184,0.18);
+      color: #f8fafc;
+    }
+    .support-chat-title { font-weight: 700; font-size: 14px; }
+    .support-chat-close {
+      border: none; background: transparent; color: rgba(226,232,240,0.9);
+      cursor: pointer; font-size: 22px; line-height: 1;
+      padding: 0 6px;
+    }
+    .support-chat-body { flex: 1; padding: 12px; overflow: auto; }
+    .support-chat-bubble {
+      padding: 10px 12px; border-radius: 14px;
+      font-size: 13px; line-height: 1.45;
+      margin-bottom: 10px; max-width: 90%;
+    }
+    .support-chat-bubble.user {
+      background: rgba(37,99,235,0.22);
+      border: 1px solid rgba(147,197,253,0.25);
+      color: #e0e7ff;
+      margin-left: auto;
+    }
+    .support-chat-bubble.bot {
+      background: rgba(148,163,184,0.14);
+      border: 1px solid rgba(148,163,184,0.20);
+      color: rgba(226,232,240,0.95);
+      margin-right: auto;
+    }
+    .support-chat-footer {
+      padding: 12px; border-top: 1px solid rgba(148,163,184,0.18);
+      background: rgba(2,6,23,0.55);
+      display: flex; gap: 10px; align-items: center;
+    }
+    .support-chat-input {
+      flex: 1; height: 40px; border-radius: 12px;
+      border: 1px solid rgba(148,163,184,0.22);
+      background: rgba(15,23,42,0.6);
+      color: #e2e8f0; padding: 0 12px;
+      outline: none;
+    }
+    .support-chat-send {
+      height: 40px; padding: 0 14px; border-radius: 12px;
+      border: none; cursor: pointer;
+      background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff; font-weight: 700; font-size: 13px;
+      white-space: nowrap;
+    }
+    .support-chat-quick {
+      padding: 10px 12px;
+      font-size: 12px; color: rgba(226,232,240,0.75);
+      border-top: 1px solid rgba(148,163,184,0.16);
+    }
+    .support-chat-quick a { color: #93c5fd; text-decoration: none; font-weight: 600; }
+    .support-chat-quick a:hover { text-decoration: underline; }
+  </style>
+  <div id="supportChatWidget" aria-live="polite">
+    <button type="button" class="support-chat-toggle" id="supportChatToggle" aria-expanded="false" aria-controls="supportChatPanel" title="Customer support">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+      </svg>
+    </button>
+    <div class="support-chat-panel" id="supportChatPanel" role="dialog" aria-label="Customer support">
+      <div class="support-chat-header">
+        <div class="support-chat-title">Customer Service</div>
+        <button type="button" class="support-chat-close" id="supportChatClose" aria-label="Close chat">&times;</button>
+      </div>
+      <div class="support-chat-body" id="supportChatMessages"></div>
+      <div class="support-chat-footer">
+        <input class="support-chat-input" id="supportChatInput" type="text" placeholder="Message support..." autocomplete="off">
+        <button type="button" class="support-chat-send" id="supportChatSend">Send</button>
+      </div>
+      <div class="support-chat-quick">
+        Need help now? <a href="mailto:support@litoclips.com?subject=Support%20request" target="_blank" rel="noopener">Email support</a>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      var toggleBtn = document.getElementById('supportChatToggle');
+      var panel = document.getElementById('supportChatPanel');
+      var closeBtn = document.getElementById('supportChatClose');
+      var messagesEl = document.getElementById('supportChatMessages');
+      var inputEl = document.getElementById('supportChatInput');
+      var sendBtn = document.getElementById('supportChatSend');
+      if (!toggleBtn || !panel || !messagesEl || !inputEl || !sendBtn) return;
+
+      var CHAT_KEY = 'litoclips_support_chat_v1';
+      function loadChat() {
+        try {
+          var raw = localStorage.getItem(CHAT_KEY);
+          var msgs = raw ? JSON.parse(raw) : [];
+          return Array.isArray(msgs) ? msgs : [];
+        } catch (_) {
+          return [];
+        }
+      }
+      function saveChat(msgs) {
+        try { localStorage.setItem(CHAT_KEY, JSON.stringify(msgs || [])); } catch (_) {}
+      }
+      function addBubble(role, text) {
+        var div = document.createElement('div');
+        div.className = 'support-chat-bubble ' + (role === 'user' ? 'user' : 'bot');
+        div.textContent = text;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      var msgs = loadChat();
+      if (!msgs.length) {
+        addBubble('bot', 'Hi! How can we help you today?');
+      } else {
+        msgs.forEach(function(m) { addBubble(m.role, m.text); });
+      }
+
+      function open() {
+        panel.classList.add('open');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        window.setTimeout(function() { inputEl.focus(); }, 60);
+      }
+      function close() {
+        panel.classList.remove('open');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+
+      toggleBtn.addEventListener('click', function() {
+        if (panel.classList.contains('open')) close(); else open();
+      });
+      closeBtn.addEventListener('click', close);
+
+      function sendMessage() {
+        var text = (inputEl.value || '').trim();
+        if (!text) return;
+        msgs.push({ role: 'user', text: text });
+        saveChat(msgs);
+        addBubble('user', text);
+        inputEl.value = '';
+
+        var reply = 'Thanks! We received your message. A support agent will respond soon.';
+        window.setTimeout(function() {
+          msgs.push({ role: 'bot', text: reply });
+          saveChat(msgs);
+          addBubble('bot', reply);
+        }, 450);
+      }
+
+      sendBtn.addEventListener('click', function() { sendMessage(); });
+      inputEl.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') sendMessage();
+      });
+    })();
+  </script>
 </body>
 </html>
