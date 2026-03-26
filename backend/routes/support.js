@@ -31,5 +31,64 @@ router.post('/requests', async (req, res) => {
   res.status(201).json({ ok: true, id });
 });
 
+// GET /api/support/inbox
+// Returns the user's support request + reply history.
+router.get('/inbox', async (req, res) => {
+  try {
+    const rows = await db.prepare(`
+      SELECT id, type, title, message, read, created_at
+      FROM admin_alerts
+      WHERE entity_type = 'user'
+        AND entity_id = ?
+        AND (type = 'support_request' OR type = 'support_reply')
+      ORDER BY created_at DESC
+      LIMIT 50
+    `).all(req.user.id);
+
+    res.json(rows.map(r => ({
+      id: r.id,
+      type: r.type,
+      title: r.title,
+      message: r.message,
+      read: !!r.read,
+      createdAt: r.created_at,
+    })));
+  } catch (e) {
+    res.json([]);
+  }
+});
+
+// GET /api/support/replies/unread-count
+router.get('/replies/unread-count', async (req, res) => {
+  try {
+    const row = await db.prepare(`
+      SELECT COUNT(1) as c
+      FROM notifications
+      WHERE user_id = ?
+        AND type = 'support_reply'
+        AND (read = 0 OR read IS NULL)
+    `).get(req.user.id);
+    res.json({ unread: row?.c || 0 });
+  } catch (e) {
+    res.json({ unread: 0 });
+  }
+});
+
+// POST /api/support/replies/mark-read-all
+router.post('/replies/mark-read-all', async (req, res) => {
+  try {
+    await db.prepare(`
+      UPDATE notifications
+      SET read = 1
+      WHERE user_id = ?
+        AND type = 'support_reply'
+        AND (read = 0 OR read IS NULL)
+    `).run(req.user.id);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
 module.exports = router;
 

@@ -441,6 +441,19 @@
       <div class="calendar-cta" id="calendarCta"></div>
     </div>
 
+    <div class="dashboard-section" id="inboxSection">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <h2 style="margin:0;">Inbox</h2>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div id="supportInboxUnreadPill" style="padding:6px 12px; border-radius:999px; border:1px solid #e2e8f0; background:#f1f5f9; color:#2563eb; font-weight:700; font-size:13px;">0 new</div>
+          <button type="button" id="supportInboxMarkReadBtn" style="padding:8px 12px; border-radius:10px; border:1px solid #e2e8f0; background:#fff; color:#0f172a; font-weight:700; cursor:pointer;">Mark read</button>
+        </div>
+      </div>
+      <p id="supportInboxSubtitle" style="color:#64748b; font-size:14px; margin:12px 0 18px;">Support requests and admin replies show up here.</p>
+      <div id="supportInboxEmpty" style="display:none; text-align:center; padding:28px 16px; color:#94a3b8; border:1px dashed #e2e8f0; border-radius:12px;">No messages yet.</div>
+      <div id="supportInboxList" class="campaign-list" style="gap:10px;"></div>
+    </div>
+
     <div class="dashboard-section">
       <h2>Sponsorship Offers</h2>
       <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Offers from sponsors for your campaigns will appear here when you receive them.</p>
@@ -1376,6 +1389,7 @@
   <style>
     #supportChatWidget { position: fixed; right: 18px; left: auto; bottom: 18px; z-index: 2500; }
     .support-chat-toggle {
+      position: relative;
       width: 46px; height: 46px; border-radius: 999px;
       border: 1px solid rgba(147,197,253,0.35);
       background: linear-gradient(180deg, rgba(37,99,235,0.95) 0%, rgba(29,78,216,0.95) 100%);
@@ -1383,6 +1397,25 @@
       display: flex; align-items: center; justify-content: center;
       box-shadow: 0 10px 25px rgba(37,99,235,0.25);
     }
+    .support-chat-badge {
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: rgba(239,68,68,0.95);
+      border: 1px solid rgba(0,0,0,0.15);
+      color: #fff;
+      font-weight: 900;
+      font-size: 11px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .support-chat-badge.show { display: inline-flex; }
     .support-chat-toggle:hover { opacity: 0.95; }
     .support-chat-panel {
       display: none;
@@ -1523,6 +1556,7 @@
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
       </svg>
+      <span id="supportChatBadge" class="support-chat-badge">0</span>
     </button>
     <div class="support-chat-panel" id="supportChatPanel" role="dialog" aria-label="Customer support" style="position:relative;">
       <div class="support-chat-header">
@@ -1572,6 +1606,11 @@
       var contactSendBtn = document.getElementById('supportContactSend');
       var contactSubjectEl = document.getElementById('supportContactSubject');
       var contactMessageEl = document.getElementById('supportContactMessage');
+      var supportChatBadgeEl = document.getElementById('supportChatBadge');
+      var inboxListEl = document.getElementById('supportInboxList');
+      var inboxEmptyEl = document.getElementById('supportInboxEmpty');
+      var inboxUnreadPillEl = document.getElementById('supportInboxUnreadPill');
+      var inboxMarkReadBtn = document.getElementById('supportInboxMarkReadBtn');
       if (!toggleBtn || !panel || !messagesEl || !inputEl || !sendBtn) return;
 
       var CHAT_KEY = 'litoclips_support_chat_v1';
@@ -1602,10 +1641,92 @@
         msgs.forEach(function(m) { addBubble(m.role, m.text); });
       }
 
+      function apiBase() {
+        var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        return isLocal ? 'http://localhost:37373/api' : (window.location.origin + '/api');
+      }
+
+      function setSupportUnreadUI(n) {
+        var count = parseInt(n, 10) || 0;
+        if (supportChatBadgeEl) {
+          supportChatBadgeEl.textContent = count > 99 ? '99+' : String(count);
+          supportChatBadgeEl.classList.toggle('show', count > 0);
+          if (count === 0) supportChatBadgeEl.style.display = 'none';
+          else supportChatBadgeEl.style.display = 'inline-flex';
+        }
+        if (inboxUnreadPillEl) inboxUnreadPillEl.textContent = count ? (count + ' new') : '0 new';
+      }
+
+      async function fetchUnreadRepliesCount() {
+        try {
+          var token = localStorage.getItem('token');
+          var r = await fetch(apiBase() + '/support/replies/unread-count', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (!r.ok) return 0;
+          var data = await r.json().catch(function() { return {}; });
+          return (data && typeof data.unread === 'number') ? data.unread : 0;
+        } catch (_) { return 0; }
+      }
+
+      async function markSupportRepliesRead() {
+        try {
+          var token = localStorage.getItem('token');
+          var r = await fetch(apiBase() + '/support/replies/mark-read-all', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          return r && r.ok;
+        } catch (_) { return false; }
+      }
+
+      async function loadSupportInbox() {
+        try {
+          if (!inboxListEl || !inboxEmptyEl) return;
+          var token = localStorage.getItem('token');
+          var r = await fetch(apiBase() + '/support/inbox', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (!r.ok) throw new Error('Failed to load inbox');
+          var list = await r.json().catch(function() { return []; });
+          if (!Array.isArray(list) || !list.length) {
+            inboxEmptyEl.style.display = 'block';
+            inboxListEl.innerHTML = '';
+            return;
+          }
+          inboxEmptyEl.style.display = 'none';
+          inboxListEl.innerHTML = list.slice(0, 10).map(function(m) {
+            var type = String(m.type || '');
+            var label = type === 'support_reply' ? 'Reply' : 'Support request';
+            var title = m.title ? String(m.title) : '';
+            var subjectLine = title ? ('<div style="font-weight:800;color:#0f172a;font-size:14px;margin-bottom:4px;">' + title.replace(/</g, '&lt;') + '</div>') : '';
+            var when = m.createdAt ? (new Date(m.createdAt).toLocaleString()) : '';
+            var body = String(m.message || '').replace(/</g, '&lt;');
+            return '<div style="padding:14px 16px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">' +
+              '<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">' +
+              '<div>' +
+              '<div style="font-size:12px; color:#64748b; font-weight:700;">' + label + (when ? (' · ' + when) : '') + '</div>' +
+              subjectLine +
+              '<div style="color:#475569; font-size:13px; margin-top:8px; white-space:pre-wrap; line-height:1.45;">' + body + '</div>' +
+              '</div>' +
+              '</div>' +
+              '</div>';
+          }).join('');
+        } catch (_) {
+          // Keep inbox quiet; widget still works.
+        }
+      }
+
       function open() {
         panel.classList.add('open');
         toggleBtn.setAttribute('aria-expanded', 'true');
         window.setTimeout(function() { inputEl.focus(); }, 60);
+        // When opening the widget, clear unread support reply badge.
+        (async function() {
+          await markSupportRepliesRead();
+          var n = await fetchUnreadRepliesCount();
+          setSupportUnreadUI(n);
+        })();
       }
       function close() {
         panel.classList.remove('open');
@@ -1742,6 +1863,23 @@
         closeContactForm();
         addBubble('bot', 'Support request sent. We will respond soon.');
       });
+
+      inboxMarkReadBtn && inboxMarkReadBtn.addEventListener('click', async function() {
+        await markSupportRepliesRead();
+        var n = await fetchUnreadRepliesCount();
+        setSupportUnreadUI(n);
+      });
+
+      // Initial load + periodic unread refresh.
+      (async function() {
+        var n = await fetchUnreadRepliesCount();
+        setSupportUnreadUI(n);
+        await loadSupportInbox();
+      })();
+      window.setInterval(async function() {
+        var n = await fetchUnreadRepliesCount();
+        setSupportUnreadUI(n);
+      }, 25000);
 
       function sendMessage() {
         var text = (inputEl.value || '').trim();
