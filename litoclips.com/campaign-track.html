@@ -619,6 +619,27 @@
         return 'I can help with pricing, warm-up, platforms (TikTok/Instagram/X/YouTube), starting a campaign, sponsors, and calendar actions. If your question is different, email support@litoclips.com and mention the page and what you are trying to do.';
       }
 
+      function postSupportRequest(text) {
+        try {
+          var pathname = window.location.pathname || '';
+          if (/admin\.html$/i.test(pathname)) return;
+
+          var apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:37373/api'
+            : (window.location.origin + '/api');
+          var token = localStorage.getItem('token');
+
+          var headers = { 'Content-Type': 'application/json' };
+          if (token) headers['Authorization'] = 'Bearer ' + token;
+
+          fetch(apiBase + '/support/requests', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ message: text, page: pathname + window.location.search })
+          }).catch(function() {});
+        } catch (_) {}
+      }
+
       function sendMessage() {
         var text = (inputEl.value || '').trim();
         if (!text) return;
@@ -626,6 +647,8 @@
         saveChat(msgs);
         addBubble('user', text);
         inputEl.value = '';
+
+        postSupportRequest(text);
 
         var reply = getAutoReply(text);
         if (!reply) reply = 'Thanks! We received your message. A support agent will respond soon.';

@@ -18,6 +18,7 @@ const sponsorsRoutes = require('./routes/sponsors');
 const adminRoutes = require('./routes/admin');
 const brandApplicationsRoutes = require('./routes/brandApplications');
 const paymentsRoutes = require('./routes/payments');
+const supportRoutes = require('./routes/support');
 
 const app = express();
 app.use(cors({ origin: config.frontendOrigin, credentials: true }));
@@ -114,6 +115,7 @@ app.use('/api/sponsors', sponsorsRoutes);
 app.use('/api/brand-applications', brandApplicationsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/support', supportRoutes);
 
 // Optional: blog articles
 app.get('/api/articles', (req, res) => {
