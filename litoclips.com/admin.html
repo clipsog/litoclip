@@ -7,13 +7,33 @@
   <title>Admin — LitoClips</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="litoclips-theme.css">
   <style>
-    .admin-wrap { padding-top: 70px; min-height: 100vh; }
-    .alerts-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: rgba(176,101,255,0.12); border: 1px solid var(--teal); border-radius: 10px; margin-bottom: 20px; font-size: 14px; }
+    :root {
+      --bg-card: #ffffff;
+      --bg-elevated: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --teal: #2563eb;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+    body { background: #f8fafc; color: var(--text); font-family: 'Inter', sans-serif; }
+    .header { background: #ffffff; border-bottom: 1px solid var(--border); }
+    .header-container { max-width: 1100px; margin: 0 auto; padding: 10px 24px; display:flex; align-items:center; justify-content:space-between; }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+    .header-link { color: var(--text-secondary); text-decoration: none; font-size: 14px; }
+    .header-link:hover { color: var(--teal); }
+    .logout-btn { padding: 8px 14px; border-radius: 10px; border: none; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; font-weight: 600; cursor: pointer; }
+    .admin-wrap { min-height: calc(100vh - 64px); padding: 24px; }
+    .alerts-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #1e3a8a; }
     .admin-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
-    .admin-card h2 { font-family: 'Space Grotesk', sans-serif; font-size: 20px; margin-bottom: 16px; color: var(--teal); }
+    .admin-card h2 { font-family: 'Manrope', sans-serif; font-size: 20px; margin-bottom: 16px; color: var(--teal); }
     .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .admin-table th, .admin-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
     .admin-table th { color: var(--text-muted); font-weight: 600; }
@@ -23,7 +43,7 @@
     .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
     .btn-approve { background: var(--success); color: #000; }
     .btn-reject { background: var(--danger); color: #fff; }
-    .btn-primary-sm { background: var(--teal); color: #000; }
+    .btn-primary-sm { background: var(--teal); color: #fff; }
     .stat-row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; }
     .stat-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; min-width: 140px; }
     .stat-box .num { font-size: 28px; font-weight: 700; color: var(--teal); }
@@ -52,7 +72,7 @@
     .user-section { margin-bottom: 16px; }
     .user-section:last-child { margin-bottom: 0; }
     .user-section strong { display: block; margin-bottom: 8px; font-size: 13px; }
-    .demo-banner { background: rgba(176,101,255,0.2); border: 1px solid var(--teal); color: var(--teal); padding: 10px 20px; margin: 0 32px 16px; border-radius: 10px; font-size: 14px; text-align: center; }
+    .demo-banner { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px 20px; margin: 0 32px 16px; border-radius: 10px; font-size: 14px; text-align: center; }
     .admin-cal { margin-top: 12px; }
     .admin-cal .accounts-pills { margin-bottom: 12px; font-size: 13px; }
     .admin-cal .account-pill { display: inline-block; padding: 4px 10px; background: rgba(176,101,255,0.15); border-radius: 6px; font-size: 12px; margin: 2px; }
@@ -80,19 +100,21 @@
     .day-modal-body { padding: 20px; }
   </style>
 </head>
-<body>
-  <header class="header">
-    <div style="display: flex; align-items: center; gap: 16px;">
+<body class="dashboard-theme">
+  <header class="header scrolled">
+    <div class="header-container">
+      <div style="display: flex; align-items: center; gap: 16px;">
       <a href="index.html" class="logo">
         <div class="logo-icon"><img src="assets/logo.png" alt="LitoClips"></div>
         <span class="logo-text">LitoClips</span>
       </a>
       <span style="color: var(--text-muted); font-size: 14px;">Admin</span>
-    </div>
-    <div class="header-right">
-      <span id="adminEmail" style="color: var(--text-secondary); font-size: 14px;"></span>
-      <a href="index.html" class="header-link">← Back to site</a>
-      <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+      <div class="header-right">
+        <span id="adminEmail" style="color: var(--text-secondary); font-size: 14px;"></span>
+        <a href="index.html" class="header-link">← Back to site</a>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
     </div>
   </header>
 
@@ -152,6 +174,18 @@
     function headers() {
       const t = localStorage.getItem('token');
       return { 'Content-Type': 'application/json', ...(t ? { 'Authorization': 'Bearer ' + t } : {}) };
+    }
+    function asArray(v) {
+      if (Array.isArray(v)) return v;
+      if (v && Array.isArray(v.items)) return v.items;
+      if (v && Array.isArray(v.data)) return v.data;
+      return [];
+    }
+    async function fetchJson(path) {
+      const r = await fetch(API + path, { headers: headers() });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error((data && data.error) || ('Request failed (' + r.status + ')'));
+      return data;
     }
 
     function show(el) { if (el) el.style.display = ''; }
@@ -234,7 +268,7 @@
 
       document.getElementById('alertsMarkAll').onclick = async () => {
         if (isDemoMode) { document.getElementById('alertsBanner').style.display = 'none'; return; }
-        const list = await fetch(API + '/admin/alerts', { headers: headers() }).then(r => r.json());
+        const list = asArray(await fetchJson('/admin/alerts'));
         await Promise.all(list.filter(a => !a.read).map(a => fetch(API + '/admin/alerts/' + a.id + '/read', { method: 'PUT', headers: headers() })));
         loadAll();
       };
@@ -253,7 +287,7 @@
       const textEl = document.getElementById('alertsBannerText');
       if (isDemoMode) { banner.style.display = 'none'; return; }
       try {
-        const list = await fetch(API + '/admin/alerts', { headers: headers() }).then(r => r.json());
+        const list = asArray(await fetchJson('/admin/alerts'));
         const unread = list.filter(a => !a.read);
         if (unread.length === 0) { banner.style.display = 'none'; return; }
         banner.style.display = 'flex';
@@ -263,7 +297,7 @@
 
     async function loadCampaignAccounts(campaignId) {
       try {
-        const list = await fetch(API + '/admin/campaigns/' + campaignId + '/accounts', { headers: headers() }).then(r => r.json());
+        const list = asArray(await fetchJson('/admin/campaigns/' + campaignId + '/accounts'));
         list.forEach((a, i) => {
           const label = document.querySelector('.cal-account-label-' + campaignId + '-' + i);
           if (label) label.textContent = '@' + a.handle;
@@ -280,7 +314,7 @@
         return;
       }
       try {
-        const list = await fetch(API + '/admin/brand-applications', { headers: headers() }).then(r => r.json());
+        const list = asArray(await fetchJson('/admin/brand-applications'));
         if (countEl) countEl.textContent = list.length ? '(' + list.length + ')' : '';
         if (list.length === 0) { el.innerHTML = '<p class="empty" style="padding:12px 0;">No brand applications yet.</p>'; return; }
         el.innerHTML = '<table class="admin-table"><thead><tr><th>Contact</th><th>Company</th><th>Platforms</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
@@ -321,17 +355,17 @@
       }
       try {
         const [users, withCampaigns, submissions, payouts] = await Promise.all([
-          fetch(API + '/admin/users', { headers: headers() }).then(r => r.json()),
-          fetch(API + '/admin/users-with-campaigns', { headers: headers() }).then(r => r.json()),
-          fetch(API + '/admin/submissions', { headers: headers() }).then(r => r.json()),
-          fetch(API + '/admin/payouts', { headers: headers() }).then(r => r.json())
+          fetchJson('/admin/users'),
+          fetchJson('/admin/users-with-campaigns'),
+          fetchJson('/admin/submissions'),
+          fetchJson('/admin/payouts')
         ]);
         const campaignsByUser = {};
-        (withCampaigns || []).forEach(u => { campaignsByUser[u.id] = u.campaigns || []; });
-        const merged = users.map(u => ({ ...u, campaigns: campaignsByUser[u.id] || [] }));
+        asArray(withCampaigns).forEach(u => { campaignsByUser[u.id] = asArray(u.campaigns); });
+        const merged = asArray(users).map(u => ({ ...u, campaigns: campaignsByUser[u.id] || [] }));
         el.innerHTML = merged.map(u => {
-          const uSubs = (submissions || []).filter(s => s.userId === u.id);
-          const uPayouts = (payouts || []).filter(p => p.userId === u.id);
+          const uSubs = asArray(submissions).filter(s => s.userId === u.id);
+          const uPayouts = asArray(payouts).filter(p => p.userId === u.id);
           return renderUserCard(u, uSubs, uPayouts);
         }).join('');
         bindUserCardEvents(el);
