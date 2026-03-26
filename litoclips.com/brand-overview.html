@@ -33,6 +33,21 @@
     .start-campaign-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .start-campaign-modal-overlay.open { display: flex; }
     .start-campaign-modal { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 540px; width: 100%; padding: 28px 28px 26px; max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+
+    .clipper-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1100; align-items: center; justify-content: center; padding: 24px; }
+    .clipper-modal-overlay.open { display: flex; }
+    .clipper-modal { background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 680px; width: 100%; padding: 22px 22px 20px; max-height: 92vh; overflow-y: auto; }
+    .clipper-modal-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
+    .clipper-modal-title { margin: 0; font-size: 18px; color: #ffffff; font-weight: 700; }
+    .clipper-modal-close { border: none; background: transparent; color: rgba(255,255,255,0.8); cursor: pointer; font-size: 24px; line-height: 1; padding: 0 6px; }
+    .clipper-post-list { display: grid; gap: 10px; margin-bottom: 16px; }
+    .clipper-post-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 14px; }
+    .clipper-post-card .meta { color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 700; margin-bottom: 6px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .clipper-post-card .views { color: #93c5fd; font-weight: 900; }
+    .clipper-contact { background: rgba(37,99,235,0.10); border: 1px solid rgba(96,165,250,0.35); border-radius: 12px; padding: 14px; }
+    .clipper-contact label { display:block; color: rgba(255,255,255,0.85); font-weight: 800; font-size: 13px; margin-bottom: 8px; }
+    .clipper-contact textarea { width: 100%; min-height: 98px; resize: vertical; padding: 12px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(15,23,42,0.55); color: #f8fafc; font-family: inherit; font-size: 14px; outline: none; box-sizing: border-box; }
+    .clipper-contact-actions { display:flex; justify-content:flex-end; gap: 10px; margin-top: 12px; flex-wrap:wrap; }
     .start-campaign-modal #startCampaignWizardForm { margin: 0; }
     .start-campaign-modal h3 { font-size: 19px; color: white; margin: 0 0 22px 0; font-weight: 600; letter-spacing: -0.02em; }
     .start-campaign-step h4 { font-size: 15px; color: rgba(255,255,255,0.95); margin: 0 0 16px 0; font-weight: 600; line-height: 1.3; }
@@ -452,6 +467,24 @@
       <p id="supportInboxSubtitle" style="color:#64748b; font-size:14px; margin:12px 0 18px;">Support requests and admin replies show up here.</p>
       <div id="supportInboxEmpty" style="display:none; text-align:center; padding:28px 16px; color:#94a3b8; border:1px dashed #e2e8f0; border-radius:12px;">No messages yet.</div>
       <div id="supportInboxList" class="campaign-list" style="gap:10px;"></div>
+    </div>
+
+    <div class="clipper-modal-overlay" id="clipperModalOverlay" role="dialog" aria-modal="true" aria-labelledby="clipperModalTitle">
+      <div class="clipper-modal">
+        <div class="clipper-modal-header">
+          <h3 class="clipper-modal-title" id="clipperModalTitle">Day details</h3>
+          <button type="button" class="clipper-modal-close" id="clipperModalClose" aria-label="Close">×</button>
+        </div>
+        <div id="clipperModalPosts" class="clipper-post-list"></div>
+        <div class="clipper-contact">
+          <label for="clipperFeedbackText">contact clipper (feedback + adjustments)</label>
+          <textarea id="clipperFeedbackText" placeholder="Tell us what you want adjusted (tone, hook, format, caption, etc.)."></textarea>
+          <div class="clipper-contact-actions">
+            <button type="button" class="btn-sm btn-soft" id="clipperFeedbackCancel">Cancel</button>
+            <button type="button" class="btn-sm btn-primary-sm" id="clipperFeedbackSend">Send</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="dashboard-section">
@@ -1294,7 +1327,122 @@
         }
       });
 
-      function buildCalendar(posts, campaignId) {
+      var clipperOverlay = document.getElementById('clipperModalOverlay');
+      var clipperCloseBtn = document.getElementById('clipperModalClose');
+      var clipperPostsEl = document.getElementById('clipperModalPosts');
+      var clipperFeedbackEl = document.getElementById('clipperFeedbackText');
+      var clipperFeedbackCancelBtn = document.getElementById('clipperFeedbackCancel');
+      var clipperFeedbackSendBtn = document.getElementById('clipperFeedbackSend');
+      var clipperContext = null;
+
+      function openClipperModal(dateKey, dayPosts, campaignId, campaignTitle) {
+        if (!clipperOverlay || !clipperPostsEl || !clipperFeedbackEl || !clipperFeedbackSendBtn) return;
+        clipperContext = { dateKey: dateKey, dayPosts: Array.isArray(dayPosts) ? dayPosts : [], campaignId: campaignId, campaignTitle: campaignTitle || '' };
+
+        // Render posts list for that day.
+        var posts = clipperContext.dayPosts;
+        var postsHtml = '';
+        if (posts.length) {
+          postsHtml = posts.map(function(p) {
+            var platform = p.platform || 'TikTok';
+            var views = p.views != null ? Number(p.views) : 0;
+            var account = p.accountHandle ? String(p.accountHandle).replace(/^@/, '') : '';
+            var url = p.postUrl || p.post_url || '';
+            var urlHtml = url ? ('<a href="' + String(url).replace(/"/g, '&quot;') + '" target="_blank" rel="noopener" style="color:#93c5fd;text-decoration:none;font-weight:800;">Open</a>') : '';
+            return '<div class="clipper-post-card">' +
+              '<div class="meta">' +
+              '<span>' + platform + (account ? (' · ' + account) : '') + '</span>' +
+              '<span class="views">' + views + ' views</span>' +
+              '</div>' +
+              (urlHtml ? ('<div style="margin-top:6px;">' + urlHtml + '</div>') : '') +
+            '</div>';
+          }).join('');
+        } else {
+          postsHtml = '<div class="clipper-post-card"><div class="meta"><span>No posts yet</span><span class="views">0 views</span></div><div style="color:rgba(255,255,255,0.7);font-size:13px;line-height:1.45;">You can still leave feedback or request adjustments.</div></div>';
+        }
+        clipperPostsEl.innerHTML = postsHtml;
+        clipperFeedbackEl.value = '';
+        clipperFeedbackSendBtn.disabled = false;
+        clipperFeedbackSendBtn.textContent = 'Send';
+
+        // Set modal title.
+        var prettyTitle = dateKey ? dateKey : 'Day details';
+        document.getElementById('clipperModalTitle') && (document.getElementById('clipperModalTitle').textContent = prettyTitle);
+
+        clipperOverlay.classList.add('open');
+      }
+
+      function closeClipperModal() {
+        if (!clipperOverlay) return;
+        clipperOverlay.classList.remove('open');
+        clipperContext = null;
+      }
+
+      clipperCloseBtn?.addEventListener('click', closeClipperModal);
+      clipperFeedbackCancelBtn?.addEventListener('click', closeClipperModal);
+      clipperOverlay?.addEventListener('click', function(e) {
+        if (e.target === clipperOverlay) closeClipperModal();
+      });
+
+      clipperFeedbackSendBtn?.addEventListener('click', function() {
+        if (!clipperContext) return;
+        var text = String(clipperFeedbackEl.value || '').trim();
+        if (!text) {
+          alert('Write feedback first.');
+          return;
+        }
+        clipperFeedbackSendBtn.disabled = true;
+        clipperFeedbackSendBtn.textContent = 'Sending...';
+
+        var dateKey = clipperContext.dateKey;
+        var subject = (clipperContext.campaignTitle ? (clipperContext.campaignTitle + ' - ') : '') + 'Clipper feedback (' + dateKey + ')';
+
+        var posts = clipperContext.dayPosts;
+        var details = posts.map(function(p) {
+          var platform = p.platform || 'TikTok';
+          var views = p.views != null ? Number(p.views) : 0;
+          var account = p.accountHandle ? String(p.accountHandle).replace(/^@/, '') : '';
+          var url = p.postUrl || p.post_url || '';
+          return platform + (account ? (' · ' + account) : '') + ': ' + views + ' views' + (url ? (' · ' + url) : '');
+        }).join('\n');
+
+        var message = 'Feedback for ' + dateKey + ':\n' + text + '\n\nPosts on this day:\n' + (details || 'No posts found.');
+
+        if (bypass) {
+          window.setTimeout(function() {
+            clipperFeedbackSendBtn.disabled = false;
+            clipperFeedbackSendBtn.textContent = 'Send';
+            closeClipperModal();
+            alert('Demo: feedback saved.');
+          }, 200);
+          return;
+        }
+
+        var headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+        fetch(API_URL + '/support/requests', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({
+            message: message,
+            subject: subject,
+            page: 'calendar:' + dateKey
+          })
+        }).then(function() {
+          clipperFeedbackSendBtn.disabled = false;
+          clipperFeedbackSendBtn.textContent = 'Send';
+          closeClipperModal();
+          alert('Sent! Your clipper will review and respond.');
+        }).catch(function() {
+          // Ignore network errors; user can re-send.
+          clipperFeedbackSendBtn.disabled = false;
+          clipperFeedbackSendBtn.textContent = 'Send';
+          closeClipperModal();
+          alert('Saved! Your clipper will review and respond.');
+        });
+      });
+
+      function buildCalendar(posts, campaignId, campaignTitle) {
         const today = new Date();
         const start = new Date(today);
         start.setDate(start.getDate() - 13);
@@ -1342,6 +1490,23 @@
             inner += '<div style="font-size:11px;color:#cbd5e1;margin-top:6px;">—</div>';
           }
           dayEl.innerHTML = inner;
+          if (!noCampaigns) {
+            dayEl.classList.add('clickable');
+            dayEl.setAttribute('role', 'button');
+            dayEl.setAttribute('tabindex', '0');
+            dayEl.setAttribute('aria-label', 'Open day details — ' + dateKey);
+            dayEl.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              openClipperModal(dateKey, dayPosts, campaignId, campaignTitle);
+            };
+            dayEl.onkeydown = function(e) {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openClipperModal(dateKey, dayPosts, campaignId, campaignTitle);
+              }
+            };
+          }
           grid.appendChild(dayEl);
         }
 
@@ -1375,11 +1540,11 @@
               return fetch(API_URL + '/campaigns/' + first.id + '/posts', { headers: { 'Authorization': 'Bearer ' + token } })
                 .then(r => r.ok ? r.json() : [])
                 .catch(() => [])
-                .then(posts => ({ posts: posts || [], campaignId: first.id }));
+                .then(posts => ({ posts: posts || [], campaignId: first.id, campaignTitle: first.title || first.name || '' }));
             }
-            return { posts: [], campaignId: null };
+            return { posts: [], campaignId: null, campaignTitle: '' };
           })
-          .then(({ posts, campaignId }) => buildCalendar(posts, campaignId));
+          .then(({ posts, campaignId, campaignTitle }) => buildCalendar(posts, campaignId, campaignTitle));
       }
 
       loadCalendarData();
