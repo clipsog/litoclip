@@ -34,6 +34,21 @@
     .alerts-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #1e3a8a; }
     .admin-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
     .admin-card h2 { font-family: 'Manrope', sans-serif; font-size: 20px; margin-bottom: 16px; color: var(--teal); }
+    .admin-panel { max-width: 1000px; margin: 0 auto; }
+    .admin-hero {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 18px;
+      border: 1px solid rgba(191, 219, 254, 0.6);
+    }
+    .admin-hero h1 { margin: 0 0 6px 0; font-size: 24px; }
+    .admin-hero p { margin: 0; opacity: 0.95; font-size: 14px; }
+    .admin-tools { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+    .admin-tools .btn-sm { border-radius: 8px; }
+    .btn-soft { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
+    .btn-soft:hover { background: #dbeafe; }
     .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .admin-table th, .admin-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
     .admin-table th { color: var(--text-muted); font-weight: 600; }
@@ -129,7 +144,15 @@
 
     <div id="adminContent" class="admin-content-hidden">
       <div id="demoBanner" class="demo-banner" style="display: none;">Demo mode — sample data. Use the backend and log in as admin for real data.</div>
-      <div class="admin-panel active" style="padding: 24px 32px; max-width: 900px; margin: 0 auto;">
+      <div class="admin-panel active" style="padding: 24px 32px;">
+        <div class="admin-hero">
+          <h1>Admin dashboard</h1>
+          <p>Manage users, campaigns, submissions, and payouts in one place.</p>
+          <div class="admin-tools">
+            <button type="button" class="btn-sm btn-soft" id="toggleMockDataBtn">Use mock data</button>
+            <span id="dataModeLabel" style="font-size:12px; opacity:0.9;">Live data mode</span>
+          </div>
+        </div>
         <div id="alertsBanner" class="alerts-banner" style="display:none;">
           <span id="alertsBannerText"></span>
           <button type="button" class="btn-sm btn-primary-sm" id="alertsMarkAll">Mark read</button>
@@ -170,6 +193,32 @@
     const API = isLocal ? 'http://localhost:37373/api' : (window.location.origin + '/api');
     const params = new URLSearchParams(window.location.search);
     let isDemoMode = false;
+    let isMockMode = false;
+    const MOCK_KEY = 'litoclips_admin_mock_mode';
+    const mockData = {
+      alerts: [
+        { id: 'a1', read: false, title: 'New campaign', message: 'Two new campaigns need account linking.' },
+        { id: 'a2', read: false, title: 'Payout queue', message: '3 payout requests are waiting for review.' }
+      ],
+      brands: [
+        { id: 'b1', contact_email: 'brand@northstar.com', contact_name: 'Northstar Media', company_name: 'Northstar', platforms: 'tiktok,instagram', status: 'pending' },
+        { id: 'b2', contact_email: 'studio@moviewave.com', contact_name: 'MovieWave Team', company_name: 'MovieWave', platforms: 'x,youtube', status: 'contacted' }
+      ],
+      users: [
+        { id: 'u1', name: 'Ari Lane', email: 'ari@creator.com', isAdmin: false },
+        { id: 'u2', name: 'Jules Park', email: 'jules@label.com', isAdmin: false }
+      ],
+      withCampaigns: [
+        { id: 'u1', campaigns: [{ id: 'c1', title: 'Summer single launch', platforms: 'tiktok, instagram', platform: 'tiktok', contentLink: 'https://youtube.com/watch?v=demo1', numAccounts: 3, goal: 'awareness', createdAt: new Date().toISOString(), startedAt: new Date().toISOString() }] },
+        { id: 'u2', campaigns: [{ id: 'c2', title: 'Podcast guest run', platforms: 'x, youtube', platform: 'youtube', contentLink: 'https://drive.google.com/demo2', numAccounts: 2, goal: 'pr', createdAt: new Date().toISOString(), startedAt: new Date().toISOString() }] }
+      ],
+      submissions: [
+        { id: 's1', userId: 'u1', campaignId: 'c1', campaignTitle: 'Summer single launch', postUrl: 'https://tiktok.com/@demo/video/1', views: 12500, earnings: 62.5, status: 'pending' }
+      ],
+      payouts: [
+        { id: 'p1', userId: 'u1', amount: 120, paymentMethod: 'PayPal', status: 'pending' }
+      ]
+    };
 
     function headers() {
       const t = localStorage.getItem('token');
@@ -184,12 +233,22 @@
     async function fetchJson(path) {
       const r = await fetch(API + path, { headers: headers() });
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error((data && data.error) || ('Request failed (' + r.status + ')'));
+      if (!r.ok) {
+        const err = new Error((data && data.error) || ('Request failed (' + r.status + ')'));
+        err.status = r.status;
+        throw err;
+      }
       return data;
     }
 
     function show(el) { if (el) el.style.display = ''; }
     function hide(el) { if (el) el.style.display = 'none'; }
+    function updateDataModeUI() {
+      const label = document.getElementById('dataModeLabel');
+      const btn = document.getElementById('toggleMockDataBtn');
+      if (label) label.textContent = isMockMode ? 'Mock data mode' : 'Live data mode';
+      if (btn) btn.textContent = isMockMode ? 'Use live data' : 'Use mock data';
+    }
 
     async function init() {
       const token = localStorage.getItem('token');
@@ -199,6 +258,7 @@
 
       if (params.get('demo') === '1' || params.get('bypass') === '1') {
         isDemoMode = true;
+        isMockMode = true;
         hide(loginPrompt);
         adminContent.classList.remove('admin-content-hidden');
         const banner = document.getElementById('demoBanner');
@@ -259,6 +319,14 @@
       hide(loginPrompt);
       adminContent.classList.remove('admin-content-hidden');
       document.getElementById('adminEmail').textContent = me.email;
+      isMockMode = localStorage.getItem(MOCK_KEY) === '1';
+      updateDataModeUI();
+      document.getElementById('toggleMockDataBtn')?.addEventListener('click', function() {
+        isMockMode = !isMockMode;
+        localStorage.setItem(MOCK_KEY, isMockMode ? '1' : '0');
+        updateDataModeUI();
+        loadAll();
+      });
 
       document.getElementById('logoutBtn').onclick = () => {
         localStorage.removeItem('token');
@@ -268,6 +336,11 @@
 
       document.getElementById('alertsMarkAll').onclick = async () => {
         if (isDemoMode) { document.getElementById('alertsBanner').style.display = 'none'; return; }
+        if (isMockMode) {
+          mockData.alerts.forEach(a => { a.read = true; });
+          loadAll();
+          return;
+        }
         const list = asArray(await fetchJson('/admin/alerts'));
         await Promise.all(list.filter(a => !a.read).map(a => fetch(API + '/admin/alerts/' + a.id + '/read', { method: 'PUT', headers: headers() })));
         loadAll();
@@ -278,8 +351,8 @@
 
     async function loadAll() {
       await loadUsers();
-      loadAlertsBanner();
-      loadBrands();
+      await loadAlertsBanner();
+      await loadBrands();
     }
 
     async function loadAlertsBanner() {
@@ -287,7 +360,7 @@
       const textEl = document.getElementById('alertsBannerText');
       if (isDemoMode) { banner.style.display = 'none'; return; }
       try {
-        const list = asArray(await fetchJson('/admin/alerts'));
+        const list = isMockMode ? mockData.alerts : asArray(await fetchJson('/admin/alerts'));
         const unread = list.filter(a => !a.read);
         if (unread.length === 0) { banner.style.display = 'none'; return; }
         banner.style.display = 'flex';
@@ -314,7 +387,7 @@
         return;
       }
       try {
-        const list = asArray(await fetchJson('/admin/brand-applications'));
+        const list = isMockMode ? mockData.brands : asArray(await fetchJson('/admin/brand-applications'));
         if (countEl) countEl.textContent = list.length ? '(' + list.length + ')' : '';
         if (list.length === 0) { el.innerHTML = '<p class="empty" style="padding:12px 0;">No brand applications yet.</p>'; return; }
         el.innerHTML = '<table class="admin-table"><thead><tr><th>Contact</th><th>Company</th><th>Platforms</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
@@ -344,32 +417,41 @@
 
     async function loadUsers() {
       const el = document.getElementById('usersList');
-      if (isDemoMode) {
-        const users = [
-          { id: 'u1', name: 'Alex Rivera', email: 'alex@example.com', isAdmin: false, campaigns: [{ id: 'c1', title: 'Gaming Clips Q1', platform: 'tiktok', status: 'active' }] },
-          { id: 'u2', name: 'Jordan Lee', email: 'jordan@example.com', isAdmin: false, campaigns: [{ id: 'c2', title: 'Fitness Shorts', platform: 'youtube', status: 'active' }] }
-        ];
-        el.innerHTML = users.map(u => renderUserCard(u, [], [])).join('');
-        bindUserCardEvents(el);
-        return;
-      }
+      if (isDemoMode) isMockMode = true;
       try {
-        const [users, withCampaigns, submissions, payouts] = await Promise.all([
-          fetchJson('/admin/users'),
-          fetchJson('/admin/users-with-campaigns'),
-          fetchJson('/admin/submissions'),
-          fetchJson('/admin/payouts')
-        ]);
+        const dataSet = isMockMode
+          ? [mockData.users, mockData.withCampaigns, mockData.submissions, mockData.payouts]
+          : await Promise.all([
+              fetchJson('/admin/users'),
+              fetchJson('/admin/users-with-campaigns'),
+              fetchJson('/admin/submissions'),
+              fetchJson('/admin/payouts')
+            ]);
+        const [users, withCampaigns, submissions, payouts] = dataSet;
         const campaignsByUser = {};
         asArray(withCampaigns).forEach(u => { campaignsByUser[u.id] = asArray(u.campaigns); });
         const merged = asArray(users).map(u => ({ ...u, campaigns: campaignsByUser[u.id] || [] }));
+        if (!merged.length && !isMockMode) {
+          isMockMode = true;
+          updateDataModeUI();
+          return loadUsers();
+        }
         el.innerHTML = merged.map(u => {
           const uSubs = asArray(submissions).filter(s => s.userId === u.id);
           const uPayouts = asArray(payouts).filter(p => p.userId === u.id);
           return renderUserCard(u, uSubs, uPayouts);
         }).join('');
         bindUserCardEvents(el);
-      } catch (e) { el.innerHTML = '<p class="empty">Could not load. ' + (e.message || '') + '</p>'; }
+      } catch (e) {
+        if ((e && (e.status === 401 || e.status === 403)) && !isMockMode) {
+          isMockMode = true;
+          localStorage.setItem(MOCK_KEY, '1');
+          updateDataModeUI();
+          el.innerHTML = '<p class="empty">Live admin API is unauthorized right now, so mock data mode is enabled for preview.</p>';
+          return loadUsers();
+        }
+        el.innerHTML = '<p class="empty">Could not load. ' + (e.message || '') + '</p>';
+      }
     }
 
     function formatDateKey(d) {
