@@ -93,24 +93,22 @@
       z-index: 3000;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 12px;
     }
     .stripe-pay-modal-overlay.open { display: flex; }
     .stripe-pay-modal {
       background: #fff;
       border-radius: 16px;
-      width: 100%;
-      max-width: 400px;
-      max-height: 92vh;
+      width: calc(100% - 24px);
+      max-width: 560px;
+      max-height: min(900px, calc(100vh - 24px));
       overflow: hidden;
       display: flex;
       flex-direction: column;
       box-shadow: 0 25px 80px rgba(0,0,0,0.35);
-      transform: scale(0.9);
-      transform-origin: center center;
     }
-    @media (max-width: 480px) {
-      .stripe-pay-modal { transform: none; max-width: min(400px, 100%); }
+    @media (max-width: 600px) {
+      .stripe-pay-modal { max-width: 100%; width: 100%; }
     }
     .stripe-pay-modal-header {
       padding: 14px 16px;
@@ -135,23 +133,26 @@
     }
     .stripe-pay-modal-hint { margin: 0; padding: 8px 16px 0; font-size: 12px; color: #64748b; line-height: 1.45; flex-shrink: 0; }
     .stripe-pay-modal-scroll {
-      overflow-y: auto;
       overflow-x: hidden;
-      flex: 1;
-      min-height: 0;
+      overflow-y: visible;
+      flex: 0 1 auto;
       -webkit-overflow-scrolling: touch;
     }
     #stripePayMount {
-      padding: 8px 12px 16px;
-      min-height: 72px;
-      transform: scale(0.92);
-      transform-origin: top center;
-      width: 108.7%;
-      margin-left: -4.35%;
-      padding-bottom: 12px;
+      padding: 12px 18px 28px;
+      min-height: 700px;
+      width: 100%;
+      box-sizing: border-box;
     }
-    @media (max-width: 480px) {
-      #stripePayMount { transform: none; width: 100%; margin-left: 0; }
+    @media (max-height: 760px) {
+      .stripe-pay-modal { max-height: calc(100vh - 16px); }
+      .stripe-pay-modal-scroll {
+        overflow-y: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: calc(100vh - 130px);
+      }
+      #stripePayMount { min-height: 480px; }
     }
     #stripePayLoading { padding: 18px 16px; text-align: center; color: #64748b; font-size: 13px; }
     .payment-done-banner {
