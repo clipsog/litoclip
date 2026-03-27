@@ -1310,9 +1310,13 @@
               paymentMethod: 'stripe'
             })
           });
-          var payData = payRes && payRes.ok ? await payRes.json() : null;
-          if (!payData || !payData.checkoutUrl) {
-            throw new Error((payData && payData.error) ? payData.error : 'Failed to start Stripe checkout.');
+          var payData = null;
+          try {
+            payData = await payRes.json();
+          } catch (parseErr) {}
+          if (!payRes.ok || !payData || !payData.checkoutUrl) {
+            var payErr = (payData && payData.error) ? payData.error : ('Could not start checkout' + (payRes.status ? ' (HTTP ' + payRes.status + ')' : '') + '.');
+            throw new Error(payErr);
           }
 
           // Stripe will take them to the hosted checkout.

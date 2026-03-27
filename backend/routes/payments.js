@@ -59,16 +59,36 @@ async function createPayPalOrder(amountUsd, currency, campaignTitle, paymentId) 
 // POST /api/payments/create – create payment and return checkout URL / session
 router.post('/create', requireAuth, async (req, res) => {
   const { campaignId, amountCents, currency, paymentMethod } = req.body || {};
-  if (!campaignId || !amountCents || amountCents < 100) {
-    return res.status(400).json({ error: 'Campaign ID and amount (min $1) required' });
+  if (!campaignId) {
+    return res.status(400).json({ error: 'Campaign ID required' });
   }
   const method = (paymentMethod || 'stripe').toLowerCase();
-  const amount = parseInt(amountCents, 10);
+  const amount = Math.round(Number(amountCents));
+  if (!Number.isFinite(amount) || amount < 100) {
+    return res.status(400).json({ error: 'Valid amount required (minimum $1.00)' });
+  }
   const curr = (currency || 'usd').toLowerCase();
 
   const campaign = await db.prepare('SELECT id, title, owner_id FROM campaigns WHERE id = ?').get(campaignId);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+
+  if (method === 'stripe' && !stripe) {
+    return res.status(503).json({
+      error: 'Card checkout is not enabled on the server yet. STRIPE_SECRET_KEY must be set on the backend. Contact support if you already paid or need help.',
+    });
+  }
+  if (method === 'paypal' && !config.paypal.clientId) {
+    return res.status(503).json({ error: 'PayPal checkout is not configured on the server.' });
+  }
+  if (method === 'crypto') {
+    const hasCrypto = !!(config.crypto.btcAddress || config.crypto.ethAddress || config.crypto.usdtAddress);
+    if (!hasCrypto) {
+      return res.status(503).json({ error: 'Crypto payment is not configured on the server.' });
+    }
+  } else if (method !== 'stripe' && method !== 'paypal') {
+    return res.status(400).json({ error: 'Invalid payment method' });
+  }
 
   const paymentId = uuid();
   await db.prepare(`
@@ -77,7 +97,7 @@ router.post('/create', requireAuth, async (req, res) => {
   `).run(paymentId, campaignId, req.user.id, amount, curr, method);
 
   try {
-    if (method === 'stripe' && stripe) {
+    if (method === 'stripe') {
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [{
@@ -123,9 +143,6 @@ router.post('/create', requireAuth, async (req, res) => {
       const btc = config.crypto.btcAddress;
       const eth = config.crypto.ethAddress;
       const usdt = config.crypto.usdtAddress;
-      if (!btc && !eth && !usdt) {
-        return res.status(400).json({ error: 'Crypto payment not configured' });
-      }
       const amountUsd = (amount / 100).toFixed(2);
       await db.prepare(`
         UPDATE payments SET
@@ -148,7 +165,7 @@ router.post('/create', requireAuth, async (req, res) => {
       });
     }
 
-    return res.status(400).json({ error: 'Invalid payment method or not configured' });
+    return res.status(500).json({ error: 'Could not start payment' });
   } catch (err) {
     await db.prepare('UPDATE payments SET status = ? WHERE id = ?').run('failed', paymentId);
     throw err;
