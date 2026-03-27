@@ -76,7 +76,7 @@
     }
     .start-campaign-watermark-preview img {
       width: 100%;
-      max-width: 320px;
+      max-width: 440px;
       height: auto;
       display: block;
       border-radius: 8px;
@@ -552,15 +552,7 @@
             <input type="checkbox" id="wzSponsor" name="wzSponsor">
             <span>Allow sponsors to view and offer on this campaign</span>
           </label>
-          <label class="start-campaign-wiz-check">
-            <input type="checkbox" id="wzWatermark" name="wzWatermark">
-            <span>Include LitoClips watermark and get 10% off</span>
-          </label>
-          <div class="start-campaign-watermark-preview">
-            <img src="assets/logo-litoclips.png" alt="LitoClips watermark preview">
-            <div class="caption">Preview watermark placement. Enabling this option applies a 10% discount to your first-week checkout.</div>
-          </div>
-          <p class="start-campaign-wiz-hint">You can add more platforms and adjust everything on the next screen before anything is saved.</p>
+          <p class="start-campaign-wiz-hint">You can add more platforms and adjust everything on the next screens. You will choose the optional watermark discount right before payment.</p>
         </div>
 
         <div class="start-campaign-step" data-wizard-step="1">
@@ -603,6 +595,24 @@
             <div class="start-campaign-wiz-price-note" id="wzPriceNote"></div>
             <strong>Pricing</strong> — First month: <strong>$8.99</strong> per account per week (1 post/day). Month 2+: <strong>$13.99</strong> per account per week (3 posts/day); +$2 per extra post/day.
           </div>
+        </div>
+
+        <div class="start-campaign-step" data-wizard-step="3">
+          <h4>Review &amp; pay</h4>
+          <p class="start-campaign-wiz-lead">You are about to start secure checkout for your first week. Optional: include the LitoClips watermark and save <strong>10%</strong> on this payment.</p>
+          <div class="start-campaign-wiz-pricing" style="margin-bottom: 10px;">
+            <div class="start-campaign-wiz-price-line" id="wzCheckoutPriceLine"></div>
+            <div class="start-campaign-wiz-price-note" id="wzCheckoutPriceNote"></div>
+          </div>
+          <label class="start-campaign-wiz-check">
+            <input type="checkbox" id="wzWatermark" name="wzWatermark">
+            <span>Include LitoClips watermark and save 10% on this checkout</span>
+          </label>
+          <div class="start-campaign-watermark-preview">
+            <img src="assets/litoclips-watermark-powered-by.png" alt="LitoClips: Powered by watermark preview">
+            <div class="caption">This is the branding that appears on clips when you opt in. The discount applies to your first-week total shown above.</div>
+          </div>
+          <p class="start-campaign-wiz-hint">Click <strong>Start campaign</strong> to open payment and activate your campaign.</p>
         </div>
       </form>
     </div>
@@ -759,7 +769,7 @@
 
       let campaignsList = [];
       let startCampaignPendingDate = null;
-      const START_CAMPAIGN_WIZARD_STEPS = 3;
+      const START_CAMPAIGN_WIZARD_STEPS = 4;
       let startCampaignWizardStep = 0;
       const SAVED_CAMPAIGNS_KEY = 'litoclips_saved_campaigns_v1';
 
@@ -831,6 +841,10 @@
         if (noteEl) {
           noteEl.textContent = 'Month 2+: $' + month2 + '/wk' + (posts > 3 ? ' (' + posts + ' posts/day)' : ' (3 posts/day)');
         }
+        var checkoutLineEl = document.getElementById('wzCheckoutPriceLine');
+        var checkoutNoteEl = document.getElementById('wzCheckoutPriceNote');
+        if (checkoutLineEl) checkoutLineEl.textContent = lineEl.textContent;
+        if (checkoutNoteEl && noteEl) checkoutNoteEl.textContent = noteEl.textContent;
       }
 
       function getWzContentLinkUrls() {
@@ -1180,7 +1194,7 @@
             b.classList.toggle('on', i === startCampaignWizardStep);
           });
         }
-        if (startCampaignWizardStep === START_CAMPAIGN_WIZARD_STEPS - 1) {
+        if (startCampaignWizardStep >= 2) {
           updateModalWizardPrice();
         }
         var last = startCampaignWizardStep >= START_CAMPAIGN_WIZARD_STEPS - 1;
@@ -1207,7 +1221,13 @@
         startCampaignPendingDate = null;
       }
       async function startCampaignAndPayWithStripe() {
-        if (!validateStartCampaignWizardStep(startCampaignWizardStep)) return;
+        for (var vi = 0; vi < START_CAMPAIGN_WIZARD_STEPS; vi++) {
+          if (!validateStartCampaignWizardStep(vi)) {
+            startCampaignWizardStep = vi;
+            syncStartCampaignWizard();
+            return;
+          }
+        }
 
         var title = (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '';
         var contentUrls = getWzContentLinkUrls();
