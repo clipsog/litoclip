@@ -406,6 +406,49 @@
     .nav-avatar-dropdown.open { display: block; }
     .nav-avatar-dropdown a { display: block; padding: 10px 16px; color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px; }
     .nav-avatar-dropdown a:hover { background: rgba(255,255,255,0.08); color: white; }
+    .stripe-pay-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.72);
+      z-index: 2100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .stripe-pay-modal-overlay.open { display: flex; }
+    .stripe-pay-modal {
+      background: #fff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 540px;
+      max-height: 92vh;
+      overflow: auto;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.35);
+    }
+    .stripe-pay-modal-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .stripe-pay-modal-header h3 { margin: 0; font-size: 17px; color: #0f172a; }
+    .stripe-pay-modal-close {
+      border: none;
+      background: #f1f5f9;
+      color: #475569;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 22px;
+      line-height: 1;
+    }
+    .stripe-pay-modal-hint { margin: 0; padding: 12px 20px 0; font-size: 13px; color: #64748b; line-height: 1.5; }
+    #stripePayMount { padding: 16px 20px 24px; min-height: 120px; }
+    #stripePayLoading { padding: 24px 20px; text-align: center; color: #64748b; font-size: 14px; }
   </style>
 </head>
 <body class="dashboard-theme gradient-section-bg">
@@ -530,7 +573,7 @@
       <form id="startCampaignWizardForm" novalidate>
         <div class="start-campaign-modal-toprow">
           <div class="start-campaign-wizard-progress">
-            <span id="startCampaignStepLabel">Step 1 of 3</span>
+            <span id="startCampaignStepLabel">Step 1 of 4</span>
             <div class="start-campaign-dots" id="startCampaignDots" aria-hidden="true"></div>
           </div>
           <div class="start-campaign-modal-actions start-campaign-modal-actions-top">
@@ -628,6 +671,19 @@
     </div>
   </div>
 
+  <div class="stripe-pay-modal-overlay" id="stripePayModal" role="dialog" aria-modal="true" aria-labelledby="stripePayModalTitle">
+    <div class="stripe-pay-modal">
+      <div class="stripe-pay-modal-header">
+        <h3 id="stripePayModalTitle">Pay with card</h3>
+        <button type="button" class="stripe-pay-modal-close" id="stripePayModalClose" aria-label="Close">&times;</button>
+      </div>
+      <p class="stripe-pay-modal-hint">Secure checkout by Stripe. Enter your card details below.</p>
+      <div id="stripePayLoading">Loading secure checkout…</div>
+      <div id="stripePayMount"></div>
+    </div>
+  </div>
+
+  <script src="stripe-embedded-pay.js"></script>
   <script>
     (function() {
       const params = new URLSearchParams(window.location.search);
@@ -683,6 +739,29 @@
 
       const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:37373/api' : (window.location.origin + '/api');
+
+      var stripeEmbeddedCheckoutInstance = null;
+      function closeStripePayModal() {
+        if (stripeEmbeddedCheckoutInstance && typeof stripeEmbeddedCheckoutInstance.destroy === 'function') {
+          try { stripeEmbeddedCheckoutInstance.destroy(); } catch (de) {}
+        }
+        stripeEmbeddedCheckoutInstance = null;
+        var m = document.getElementById('stripePayMount');
+        if (m) m.innerHTML = '';
+        var modal = document.getElementById('stripePayModal');
+        if (modal) modal.classList.remove('open');
+        var ld = document.getElementById('stripePayLoading');
+        if (ld) ld.style.display = 'block';
+      }
+      document.getElementById('stripePayModalClose')?.addEventListener('click', closeStripePayModal);
+      document.getElementById('stripePayModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeStripePayModal();
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape') return;
+        var sm = document.getElementById('stripePayModal');
+        if (sm && sm.classList.contains('open')) closeStripePayModal();
+      });
 
       function loadAccountBalance() {
         const linkEl = document.getElementById('accountBalanceLink');
@@ -1307,20 +1386,53 @@
               campaignId: createData.id,
               amountCents: amountCents,
               currency: 'usd',
-              paymentMethod: 'stripe'
+              paymentMethod: 'stripe',
+              checkoutMode: 'embedded'
             })
           });
           var payData = null;
           try {
             payData = await payRes.json();
           } catch (parseErr) {}
-          if (!payRes.ok || !payData || !payData.checkoutUrl) {
+          if (!payRes.ok || !payData) {
             var payErr = (payData && payData.error) ? payData.error : ('Could not start checkout' + (payRes.status ? ' (HTTP ' + payRes.status + ')' : '') + '.');
             throw new Error(payErr);
           }
-
-          // Stripe will take them to the hosted checkout.
-          window.location.href = payData.checkoutUrl;
+          if (payData.checkoutMode === 'hosted' && payData.checkoutUrl) {
+            window.location.href = payData.checkoutUrl;
+            return;
+          }
+          if (payData.checkoutUrl && !payData.clientSecret) {
+            window.location.href = payData.checkoutUrl;
+            return;
+          }
+          var pk = payData.stripePublishableKey;
+          var cs = payData.clientSecret;
+          if (!window.LitoClipsStripePay || !pk || !cs) {
+            throw new Error((payData && payData.error) ? payData.error : 'Missing Stripe client setup. Set STRIPE_PUBLISHABLE_KEY on the server.');
+          }
+          closeStartCampaignModal();
+          var stripeModal = document.getElementById('stripePayModal');
+          var mountEl = document.getElementById('stripePayMount');
+          var loadingEl = document.getElementById('stripePayLoading');
+          if (mountEl) mountEl.innerHTML = '';
+          if (loadingEl) loadingEl.style.display = 'block';
+          if (stripeModal) stripeModal.classList.add('open');
+          try {
+            if (stripeEmbeddedCheckoutInstance && typeof stripeEmbeddedCheckoutInstance.destroy === 'function') {
+              try { stripeEmbeddedCheckoutInstance.destroy(); } catch (de1) {}
+            }
+            stripeEmbeddedCheckoutInstance = null;
+            stripeEmbeddedCheckoutInstance = await window.LitoClipsStripePay.mountEmbeddedCheckout({
+              publishableKey: pk,
+              clientSecret: cs,
+              mountEl: mountEl,
+              loadingEl: loadingEl
+            });
+          } catch (stripeErr) {
+            closeStripePayModal();
+            throw stripeErr;
+          }
         } catch (err) {
           alert(err && err.message ? err.message : 'Something went wrong while starting your campaign.');
         }

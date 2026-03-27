@@ -58,11 +58,13 @@ async function createPayPalOrder(amountUsd, currency, campaignTitle, paymentId) 
 
 // POST /api/payments/create – create payment and return checkout URL / session
 router.post('/create', requireAuth, async (req, res) => {
-  const { campaignId, amountCents, currency, paymentMethod } = req.body || {};
+  const { campaignId, amountCents, currency, paymentMethod, checkoutMode } = req.body || {};
   if (!campaignId) {
     return res.status(400).json({ error: 'Campaign ID required' });
   }
   const method = (paymentMethod || 'stripe').toLowerCase();
+  /** embedded = card form in a modal on your site (Stripe Embedded Checkout). hosted = full-page redirect to stripe.com/checkout */
+  const stripeUi = String(checkoutMode || 'embedded').toLowerCase() === 'hosted' ? 'hosted' : 'embedded';
   const amount = Math.round(Number(amountCents));
   if (!Number.isFinite(amount) || amount < 100) {
     return res.status(400).json({ error: 'Valid amount required (minimum $1.00)' });
@@ -98,31 +100,63 @@ router.post('/create', requireAuth, async (req, res) => {
 
   try {
     if (method === 'stripe') {
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [{
-          price_data: {
-            currency: curr,
-            product_data: {
-              name: `LitoClips: ${campaign.title}`,
-              description: 'Campaign creation & clip service',
-            },
-            unit_amount: amount,
+      const lineItems = [{
+        price_data: {
+          currency: curr,
+          product_data: {
+            name: `LitoClips: ${campaign.title}`,
+            description: 'Campaign creation & clip service',
           },
-          quantity: 1,
-        }],
+          unit_amount: amount,
+        },
+        quantity: 1,
+      }];
+      const shared = {
+        payment_method_types: ['card'],
+        line_items: lineItems,
         mode: 'payment',
-        success_url: `${config.frontendOrigin}/campaign-track.html?id=${campaignId}&name=${encodeURIComponent(campaign.title)}&payment=success&payment_id=${paymentId}`,
-        cancel_url: `${config.frontendOrigin}/new-campaign.html?payment=cancelled`,
         client_reference_id: paymentId,
         metadata: { campaign_id: campaignId, payment_id: paymentId },
-      });
+      };
+      let session;
+      if (stripeUi === 'hosted') {
+        session = await stripe.checkout.sessions.create({
+          ...shared,
+          success_url: `${config.frontendOrigin}/campaign-track.html?id=${campaignId}&name=${encodeURIComponent(campaign.title)}&payment=success&payment_id=${paymentId}`,
+          cancel_url: `${config.frontendOrigin}/new-campaign.html?payment=cancelled`,
+        });
+      } else {
+        const returnBase = `${config.frontendOrigin}/campaign-track.html?id=${encodeURIComponent(campaignId)}&name=${encodeURIComponent(campaign.title)}`;
+        session = await stripe.checkout.sessions.create({
+          ...shared,
+          ui_mode: 'embedded',
+          return_url: `${returnBase}&payment=done&session_id={CHECKOUT_SESSION_ID}`,
+        });
+      }
       await db.prepare('UPDATE payments SET stripe_checkout_session_id = ? WHERE id = ?').run(session.id, paymentId);
+      if (stripeUi === 'hosted') {
+        return res.json({
+          paymentId,
+          method: 'stripe',
+          checkoutMode: 'hosted',
+          checkoutUrl: session.url,
+          sessionId: session.id,
+          stripePublishableKey: config.stripe.publishableKey || null,
+        });
+      }
+      if (!session.client_secret) {
+        await db.prepare('UPDATE payments SET status = ? WHERE id = ?').run('failed', paymentId);
+        return res.status(500).json({
+          error: 'Stripe did not return an embedded checkout session. Try again or use checkoutMode: hosted.',
+        });
+      }
       return res.json({
         paymentId,
         method: 'stripe',
-        checkoutUrl: session.url,
+        checkoutMode: 'embedded',
+        clientSecret: session.client_secret,
         sessionId: session.id,
+        stripePublishableKey: config.stripe.publishableKey || null,
       });
     }
 
