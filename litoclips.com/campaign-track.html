@@ -92,20 +92,28 @@
       background: #fff;
       border-radius: 16px;
       width: 100%;
-      max-width: 540px;
+      max-width: 400px;
       max-height: 92vh;
-      overflow: auto;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
       box-shadow: 0 25px 80px rgba(0,0,0,0.35);
+      transform: scale(0.9);
+      transform-origin: center center;
+    }
+    @media (max-width: 480px) {
+      .stripe-pay-modal { transform: none; max-width: min(400px, 100%); }
     }
     .stripe-pay-modal-header {
-      padding: 18px 20px;
+      padding: 14px 16px;
       border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+      flex-shrink: 0;
     }
-    .stripe-pay-modal-header h3 { margin: 0; font-size: 17px; color: #0f172a; }
+    .stripe-pay-modal-header h3 { margin: 0; font-size: 15px; color: #0f172a; }
     .stripe-pay-modal-close {
       border: none;
       background: #f1f5f9;
@@ -117,9 +125,27 @@
       font-size: 22px;
       line-height: 1;
     }
-    .stripe-pay-modal-hint { margin: 0; padding: 12px 20px 0; font-size: 13px; color: #64748b; line-height: 1.5; }
-    #stripePayMount { padding: 16px 20px 24px; min-height: 120px; }
-    #stripePayLoading { padding: 24px 20px; text-align: center; color: #64748b; font-size: 14px; }
+    .stripe-pay-modal-hint { margin: 0; padding: 8px 16px 0; font-size: 12px; color: #64748b; line-height: 1.45; flex-shrink: 0; }
+    .stripe-pay-modal-scroll {
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 1;
+      min-height: 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    #stripePayMount {
+      padding: 8px 12px 16px;
+      min-height: 72px;
+      transform: scale(0.92);
+      transform-origin: top center;
+      width: 108.7%;
+      margin-left: -4.35%;
+      padding-bottom: 12px;
+    }
+    @media (max-width: 480px) {
+      #stripePayMount { transform: none; width: 100%; margin-left: 0; }
+    }
+    #stripePayLoading { padding: 18px 16px; text-align: center; color: #64748b; font-size: 13px; }
     .payment-done-banner {
       background: #ecfdf5;
       border: 1px solid #6ee7b7;
@@ -221,8 +247,10 @@
         <button type="button" class="stripe-pay-modal-close" id="stripePayModalClose" aria-label="Close">&times;</button>
       </div>
       <p class="stripe-pay-modal-hint">Secure checkout by Stripe. Enter your card details below.</p>
-      <div id="stripePayLoading">Loading secure checkout…</div>
-      <div id="stripePayMount"></div>
+      <div class="stripe-pay-modal-scroll">
+        <div id="stripePayLoading">Loading secure checkout…</div>
+        <div id="stripePayMount"></div>
+      </div>
     </div>
   </div>
 
