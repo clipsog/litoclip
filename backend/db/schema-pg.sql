@@ -202,7 +202,9 @@ CREATE TABLE IF NOT EXISTS sponsor_wallets (
   balance_cents INTEGER DEFAULT 0,
   total_deposited_cents INTEGER DEFAULT 0,
   total_spent_cents INTEGER DEFAULT 0,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  watermark_image_mime TEXT,
+  watermark_image_updated_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS sponsor_deposits (

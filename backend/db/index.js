@@ -37,6 +37,8 @@ if (config.databaseUrl) {
       } else if (!hasUserPosition) {
         await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS user_position TEXT');
       }
+      await pool.query('ALTER TABLE sponsor_wallets ADD COLUMN IF NOT EXISTS watermark_image_mime TEXT');
+      await pool.query('ALTER TABLE sponsor_wallets ADD COLUMN IF NOT EXISTS watermark_image_updated_at TIMESTAMPTZ');
     }
     ensureSchemaFn = runSchemaPg;
     return db;

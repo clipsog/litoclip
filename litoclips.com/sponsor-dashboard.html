@@ -21,10 +21,10 @@
     .empty-state-icon { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
     .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
     .empty-state p { font-size: 14px; margin-bottom: 24px; max-width: 360px; margin-left: auto; margin-right: auto; }
-    .campaign-list, .offer-list, .deal-list { display: flex; flex-direction: column; gap: 12px; }
-    .campaign-card, .offer-card, .deal-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-radius: 12px; flex-wrap: wrap; gap: 12px; }
-    .campaign-card h4, .offer-card h4, .deal-card h4 { font-size: 16px; margin-bottom: 4px; }
-    .campaign-card .meta, .offer-card .meta, .deal-card .meta { font-size: 13px; }
+    .deal-list { display: flex; flex-direction: column; gap: 12px; }
+    .deal-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-radius: 12px; flex-wrap: wrap; gap: 12px; }
+    .deal-card h4 { font-size: 16px; margin-bottom: 4px; }
+    .deal-card .meta { font-size: 13px; }
     .btn-sponsor { padding: 10px 20px; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; }
     .btn-sponsor:hover { opacity: 0.95; }
     .btn-sponsor:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -41,29 +41,39 @@
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
     .form-group input { width: 100%; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
-    .modal-overlay.active { display: flex; }
-    .modal { border-radius: 16px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-    .modal-header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h3 { font-size: 18px; margin: 0; }
-    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
-    .modal-body { padding: 24px; }
-    .modal-footer { padding: 16px 24px; display: flex; justify-content: flex-end; gap: 12px; }
     .btn-secondary { padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; }
     .btn-primary { background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; }
     .btn-primary:hover, .btn-secondary:hover { opacity: 0.95; }
     .status-badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
     .status-badge.active { background: rgba(34, 197, 94, 0.25); color: #86efac; }
     .status-badge.exhausted { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
-    .campaign-card { cursor: pointer; transition: background 0.2s, border-color 0.2s; }
-    .campaign-card:hover { background: rgba(255,255,255,0.1) !important; }
-    .modal-wide { max-width: 560px; }
-    .videos-list { display: flex; flex-direction: column; gap: 10px; }
-    .video-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; }
-    .video-item a { color: #93c5fd; text-decoration: none; }
-    .video-item a:hover { text-decoration: underline; }
-    .video-item .platform { font-size: 12px; color: rgba(255,255,255,0.6); }
-    .video-item .views { font-weight: 600; color: #86efac; }
+    .watermark-upload-layout { display: flex; flex-direction: column; gap: 20px; max-width: 480px; }
+    @media (min-width: 640px) {
+      .watermark-upload-layout { max-width: 560px; }
+    }
+    .watermark-dropzone {
+      position: relative;
+      min-height: 200px;
+      border: 2px dashed rgba(255,255,255,0.25);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .watermark-dropzone:hover, .watermark-dropzone:focus-visible {
+      border-color: rgba(147, 197, 253, 0.6);
+      background: rgba(255,255,255,0.07);
+      outline: none;
+    }
+    .watermark-dropzone.dragover { border-color: #60a5fa; background: rgba(37, 99, 235, 0.12); }
+    .watermark-dropzone-inner { text-align: center; width: 100%; }
+    .watermark-dropzone-inner p { margin: 0; color: rgba(255,255,255,0.65); font-size: 14px; }
+    .watermark-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .watermark-actions .btn-secondary { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.2); }
   </style>
 </head>
 <body class="dashboard-theme gradient-section-bg">
@@ -98,46 +108,26 @@
   <main class="sponsor-page">
     <div class="welcome-banner">
       <h1>Sponsor Dashboard</h1>
-      <p>Browse creator campaigns that accept sponsors, create offers, and send sponsorship deals. Your balance is used when you sponsor a campaign.</p>
+      <p>Upload your brand watermark for sponsored clips. Your balance in the header is used when you sponsor campaigns elsewhere on the platform.</p>
     </div>
 
     <div class="dashboard-section">
-      <h2>Browse Campaigns</h2>
-      <p class="section-desc">Active campaigns from creators who allow sponsors. Click a card to view their videos, then Sponsor to send your offer.</p>
-      <div id="campaignsList" class="campaign-list">
-        <div class="empty-state" id="campaignsEmpty">
-          <div class="empty-state-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <h2>Your watermark</h2>
+      <p class="section-desc">PNG, JPEG, WebP, or GIF — max 2 MB. This file is saved to your sponsor account so creators can apply your branding when a deal allows watermarks.</p>
+      <div class="watermark-upload-layout">
+        <div class="watermark-dropzone" id="watermarkDropzone" tabindex="0" role="button" aria-label="Upload watermark image">
+          <input type="file" id="watermarkFileInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" style="position:absolute;width:0;height:0;opacity:0" aria-hidden="true">
+          <div class="watermark-dropzone-inner">
+            <p id="watermarkPlaceholder">Click or drag an image here to upload</p>
+            <img id="watermarkPreview" alt="Watermark preview" style="display:none;max-width:100%;max-height:220px;border-radius:10px;margin:0 auto;">
           </div>
-          <h3>No campaigns yet</h3>
-          <p>Creators who opt in to sponsor offers will appear here. Check back later or encourage creators to enable sponsor offers on their campaigns.</p>
         </div>
-      </div>
-    </div>
-
-    <div class="dashboard-section">
-      <h2>My Offers</h2>
-      <p class="section-desc">Create sponsor offers (watermark, CPM, budget). Use an offer when sponsoring a campaign.</p>
-      <div class="form-group" style="max-width: 400px; margin-bottom: 24px;">
-        <label>Offer name</label>
-        <input type="text" id="offerName" placeholder="e.g. Brand X Watermark">
-      </div>
-      <div class="form-group" style="max-width: 400px; margin-bottom: 24px;">
-        <label>Watermark text</label>
-        <input type="text" id="offerWatermark" placeholder="e.g. @brandx">
-      </div>
-      <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px;">
-        <div class="form-group" style="max-width: 160px;">
-          <label>CPM (cents)</label>
-          <input type="number" id="offerCpm" placeholder="50" min="1">
+        <div class="watermark-actions">
+          <button type="button" class="btn-primary" id="watermarkChooseBtn">Choose file</button>
+          <button type="button" class="btn-secondary" id="watermarkRemoveBtn" style="display:none">Remove watermark</button>
         </div>
-        <div class="form-group" style="max-width: 160px;">
-          <label>Budget (cents)</label>
-          <input type="number" id="offerBudget" placeholder="5000" min="100">
-        </div>
+        <p id="watermarkStatus" class="section-desc" style="margin:0;"></p>
       </div>
-      <button type="button" class="btn-primary" id="createOfferBtn">Create offer</button>
-      <div id="offersList" class="offer-list" style="margin-top: 24px;"></div>
     </div>
 
     <div class="dashboard-section">
@@ -145,54 +135,11 @@
       <p class="section-desc">Sponsorship deals you've sent to campaigns.</p>
       <div id="dealsList" class="deal-list">
         <div class="empty-state" id="dealsEmpty">
-          <p>No deals yet. Browse campaigns above and send an offer to get started.</p>
+          <p>No deals yet. When you sponsor campaigns, your deals will show up here.</p>
         </div>
       </div>
     </div>
   </main>
-
-  <div class="modal-overlay" id="campaignDetailModal">
-    <div class="modal modal-wide">
-      <div class="modal-header">
-        <h3 id="campaignDetailTitle">Campaign</h3>
-        <button type="button" class="modal-close" id="campaignDetailClose">&times;</button>
-      </div>
-      <div class="modal-body">
-        <h4 style="font-size: 14px; margin-bottom: 16px; color: rgba(255,255,255,0.8);">Videos</h4>
-        <div id="campaignVideosList" class="videos-list"></div>
-        <div id="campaignVideosEmpty" class="empty-state" style="display:none; padding: 24px;">
-          <p>No videos posted yet. Check back later.</p>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" id="campaignDetailCancel">Close</button>
-        <button type="button" class="btn-primary" id="campaignDetailSponsorBtn">Sponsor this campaign</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="sponsorModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 id="sponsorModalTitle">Sponsor campaign</h3>
-        <button type="button" class="modal-close" id="sponsorModalClose">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p id="sponsorModalCampaign" class="section-desc" style="margin-bottom: 16px;"></p>
-        <div class="form-group">
-          <label>Select offer</label>
-          <select id="sponsorOfferSelect" style="width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,0.2); border-radius:8px; font-size:14px; background: rgba(255,255,255,0.08); color: white;">
-            <option value="">-- Choose an offer --</option>
-          </select>
-        </div>
-        <p id="sponsorModalError" style="color: #f87171; font-size: 14px; margin-top: 12px; display: none;"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" id="sponsorModalCancel">Cancel</button>
-        <button type="button" class="btn-primary" id="sponsorModalSubmit">Send sponsorship</button>
-      </div>
-    </div>
-  </div>
 
   <script>
     (function() {
@@ -239,89 +186,147 @@
         window.location.href = 'index.html';
       });
 
+      const previewImg = document.getElementById('watermarkPreview');
+      const placeholderEl = document.getElementById('watermarkPlaceholder');
+      const removeBtn = document.getElementById('watermarkRemoveBtn');
+      const statusEl = document.getElementById('watermarkStatus');
+      const fileInput = document.getElementById('watermarkFileInput');
+      const dropzone = document.getElementById('watermarkDropzone');
+      let previewObjectUrl = null;
+
+      function revokePreviewUrl() {
+        if (previewObjectUrl) {
+          URL.revokeObjectURL(previewObjectUrl);
+          previewObjectUrl = null;
+        }
+      }
+
+      function setWatermarkPreviewFromBlob(blob) {
+        revokePreviewUrl();
+        previewObjectUrl = URL.createObjectURL(blob);
+        previewImg.src = previewObjectUrl;
+        previewImg.style.display = 'block';
+        placeholderEl.style.display = 'none';
+        removeBtn.style.display = 'inline-block';
+      }
+
+      function clearWatermarkPreviewUi() {
+        revokePreviewUrl();
+        previewImg.removeAttribute('src');
+        previewImg.style.display = 'none';
+        placeholderEl.style.display = 'block';
+        removeBtn.style.display = 'none';
+      }
+
+      function loadWatermarkImage() {
+        clearWatermarkPreviewUi();
+        statusEl.textContent = '';
+        fetch(API_URL + '/sponsors/watermark', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => { if (!r.ok) throw new Error('none'); return r.blob(); })
+          .then(blob => setWatermarkPreviewFromBlob(blob))
+          .catch(() => { clearWatermarkPreviewUi(); });
+      }
+
+      function setStatus(msg, isError) {
+        statusEl.textContent = msg || '';
+        statusEl.style.color = isError ? '#f87171' : 'rgba(255,255,255,0.65)';
+      }
+
+      function uploadWatermarkFile(file) {
+        if (!file || !file.type || !/^image\/(png|jpeg|jpg|webp|gif)$/i.test(file.type)) {
+          setStatus('Please choose a PNG, JPEG, WebP, or GIF image.', true);
+          return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+          setStatus('File must be 2 MB or smaller.', true);
+          return;
+        }
+        const fd = new FormData();
+        fd.append('watermark', file);
+        setStatus('Uploading…');
+        document.getElementById('watermarkChooseBtn').disabled = true;
+        removeBtn.disabled = true;
+        fetch(API_URL + '/sponsors/watermark', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: fd
+        })
+          .then(r => r.ok ? r.json() : r.json().then(d => { throw new Error(d.error || 'Upload failed'); }))
+          .then(() => {
+            setStatus('Watermark saved.');
+            setWatermarkPreviewFromBlob(file);
+            loadWallet();
+          })
+          .catch(err => {
+            setStatus(err.message || 'Upload failed', true);
+          })
+          .finally(() => {
+            document.getElementById('watermarkChooseBtn').disabled = false;
+            removeBtn.disabled = false;
+            fileInput.value = '';
+          });
+      }
+
+      document.getElementById('watermarkChooseBtn').addEventListener('click', function() { fileInput.click(); });
+      fileInput.addEventListener('change', function() {
+        const f = this.files && this.files[0];
+        if (f) uploadWatermarkFile(f);
+      });
+
+      ['dragenter', 'dragover'].forEach(ev => {
+        dropzone.addEventListener(ev, function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach(ev => {
+        dropzone.addEventListener(ev, function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.remove('dragover');
+        });
+      });
+      dropzone.addEventListener('drop', function(e) {
+        const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) uploadWatermarkFile(f);
+      });
+      dropzone.addEventListener('click', function() { fileInput.click(); });
+      dropzone.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+      });
+
+      removeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (!confirm('Remove your saved watermark?')) return;
+        setStatus('Removing…');
+        removeBtn.disabled = true;
+        fetch(API_URL + '/sponsors/watermark', { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => r.ok ? r.json() : r.json().then(d => { throw new Error(d.error || 'Failed'); }))
+          .then(() => {
+            clearWatermarkPreviewUi();
+            setStatus('Watermark removed.');
+            loadWallet();
+          })
+          .catch(err => setStatus(err.message || 'Could not remove', true))
+          .finally(() => { removeBtn.disabled = false; });
+      });
+
       function loadWallet() {
         fetch(API_URL + '/sponsors/wallet', { headers: { 'Authorization': 'Bearer ' + token } })
           .then(r => r.ok ? r.json() : null)
           .then(data => {
             const cents = data?.balanceCents ?? 0;
             document.getElementById('balanceAmount').textContent = '$' + (cents / 100).toFixed(2);
+            if (data && data.hasWatermarkImage) loadWatermarkImage();
+            else {
+              clearWatermarkPreviewUi();
+              statusEl.textContent = '';
+            }
           })
           .catch(() => {});
       }
       loadWallet();
-
-      let campaigns = [];
-      let offers = [];
-      let selectedCampaignId = null;
-
-      const MOCK_CAMPAIGNS = [
-        { id: 'mock-gaming-1', creatorName: 'Alex Rivera', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], allowWatermark: true },
-        { id: 'mock-podcast-1', creatorName: 'Jamie Chen', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], allowWatermark: false },
-        { id: 'mock-lifestyle-1', creatorName: 'Morgan Lee', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], allowWatermark: true },
-        { id: 'mock-tech-1', creatorName: 'Sam Torres', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], allowWatermark: true },
-        { id: 'mock-music-1', creatorName: 'Jordan Blake', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], allowWatermark: false },
-      ];
-
-      function loadCampaigns() {
-        fetch(API_URL + '/sponsors/campaigns', { headers: { 'Authorization': 'Bearer ' + token } })
-          .then(r => r.ok ? r.json() : [])
-          .catch(() => [])
-          .then(data => {
-            campaigns = (data && data.length > 0) ? data : MOCK_CAMPAIGNS;
-            renderCampaigns();
-          });
-      }
-
-      function renderCampaigns() {
-        const listEl = document.getElementById('campaignsList');
-        const emptyEl = document.getElementById('campaignsEmpty');
-        if (!listEl) return;
-        listEl.querySelectorAll('.campaign-card').forEach(c => c.remove());
-        if (campaigns.length === 0) {
-          if (emptyEl) emptyEl.style.display = 'block';
-          return;
-        }
-        if (emptyEl) emptyEl.style.display = 'none';
-        campaigns.forEach(c => {
-          const isMock = (c.id || '').startsWith('mock-');
-          const card = document.createElement('div');
-          card.className = 'campaign-card';
-          const creatorName = c.creatorName || 'Creator';
-          const campaignTitle = c.title || 'Untitled';
-          const platforms = Array.isArray(c.platforms) ? c.platforms : (c.platform ? [c.platform] : []);
-          const platformStr = platforms.length ? platforms.join(', ') : (c.platform || '—');
-          const sampleBadge = isMock ? '<span class="status-badge" style="background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);margin-right:8px;">Sample</span>' : '';
-          card.innerHTML = '<div><h4>' + sampleBadge + creatorName + ' · ' + campaignTitle + '</h4><span class="meta">' + platformStr + (c.allowWatermark ? ' · Watermark allowed' : '') + '</span></div><span style="color:rgba(255,255,255,0.6);font-size:14px;">View videos →</span>';
-          card.addEventListener('click', (e) => { e.stopPropagation(); openCampaignDetail(c); });
-          listEl.appendChild(card);
-        });
-      }
-
-      function loadOffers() {
-        fetch(API_URL + '/sponsors/offers', { headers: { 'Authorization': 'Bearer ' + token } })
-          .then(r => r.ok ? r.json() : [])
-          .catch(() => [])
-          .then(data => {
-            offers = data || [];
-            renderOffers();
-            updateSponsorModalOffers();
-          });
-      }
-
-      function renderOffers() {
-        const listEl = document.getElementById('offersList');
-        if (!listEl) return;
-        listEl.innerHTML = '';
-        offers.filter(o => o.status === 'active').forEach(o => {
-          const card = document.createElement('div');
-          card.className = 'offer-card';
-          card.innerHTML = '<div><h4>' + (o.name || 'Offer') + '</h4><span class="meta">Watermark: ' + (o.watermarkText || '—') + ' · CPM $' + (o.cpmCents / 100).toFixed(2) + ' · Budget $' + (o.budgetCents / 100).toFixed(2) + '</span></div><span class="status-badge active">Active</span>';
-          listEl.appendChild(card);
-        });
-        if (offers.length === 0) {
-          listEl.innerHTML = '<p class="section-desc" style="font-size:14px;">No offers yet. Create one above.</p>';
-        }
-      }
 
       function loadDeals() {
         fetch(API_URL + '/sponsors/deals', { headers: { 'Authorization': 'Bearer ' + token } })
@@ -342,146 +347,6 @@
           });
       }
 
-      document.getElementById('createOfferBtn').addEventListener('click', function() {
-        const name = document.getElementById('offerName').value.trim();
-        const watermark = document.getElementById('offerWatermark').value.trim();
-        const cpm = parseInt(document.getElementById('offerCpm').value, 10) || 0;
-        const budget = parseInt(document.getElementById('offerBudget').value, 10) || 0;
-        if (!name || !watermark || cpm < 1 || budget < 100) {
-          alert('Please fill in name, watermark, CPM (min 1), and budget (min $1).');
-          return;
-        }
-        this.disabled = true;
-        fetch(API_URL + '/sponsors/offers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ name, watermarkText: watermark, cpmCents: cpm, budgetCents: budget })
-        })
-          .then(r => r.ok ? r.json() : r.json().then(d => { throw new Error(d.error || 'Failed'); }))
-          .then(() => {
-            document.getElementById('offerName').value = '';
-            document.getElementById('offerWatermark').value = '';
-            document.getElementById('offerCpm').value = '';
-            document.getElementById('offerBudget').value = '';
-            loadOffers();
-          })
-          .catch(err => alert(err.message || 'Failed to create offer'))
-          .finally(() => { this.disabled = false; });
-      });
-
-      function openCampaignDetail(campaign) {
-        selectedCampaignId = campaign?.id;
-        const creatorName = campaign?.creatorName || 'Creator';
-        const campaignTitle = campaign?.title || 'Campaign';
-        document.getElementById('campaignDetailTitle').textContent = creatorName + ' · ' + campaignTitle;
-        document.getElementById('campaignVideosList').innerHTML = '';
-        document.getElementById('campaignVideosEmpty').style.display = 'none';
-        document.getElementById('campaignDetailModal').classList.add('active');
-        fetch(API_URL + '/sponsors/campaigns/' + campaign.id + '/posts', { headers: { 'Authorization': 'Bearer ' + token } })
-          .then(r => r.ok ? r.json() : [])
-          .catch(() => [])
-          .then(posts => {
-            const listEl = document.getElementById('campaignVideosList');
-            const emptyEl = document.getElementById('campaignVideosEmpty');
-            if (!posts || posts.length === 0) {
-              emptyEl.style.display = 'block';
-              return;
-            }
-            posts.forEach(p => {
-              const item = document.createElement('div');
-              item.className = 'video-item';
-              const link = (p.postUrl && p.postUrl.startsWith('http')) ? '<a href="' + p.postUrl + '" target="_blank" rel="noopener">' + (p.platform || 'Video') + ' · ' + (p.accountHandle || '') + '</a>' : '<span>' + (p.platform || 'Video') + ' · ' + (p.accountHandle || '') + '</span>';
-              item.innerHTML = '<div><div>' + link + '</div><div class="platform">' + (p.postDate || '') + '</div></div><span class="views">' + (p.views || 0).toLocaleString() + ' views</span>';
-              listEl.appendChild(item);
-            });
-          });
-      }
-
-      function closeCampaignDetail() {
-        document.getElementById('campaignDetailModal').classList.remove('active');
-      }
-
-      document.getElementById('campaignDetailClose').addEventListener('click', closeCampaignDetail);
-      document.getElementById('campaignDetailCancel').addEventListener('click', closeCampaignDetail);
-      document.getElementById('campaignDetailSponsorBtn').addEventListener('click', function() {
-        const c = campaigns.find(x => x.id === selectedCampaignId);
-        if (c) {
-          closeCampaignDetail();
-          openSponsorModal(c);
-        }
-      });
-
-      function openSponsorModal(campaign) {
-        selectedCampaignId = campaign?.id;
-        document.getElementById('sponsorModalTitle').textContent = 'Sponsor: ' + (campaign?.creatorName || '') + ' · ' + (campaign?.title || 'Campaign');
-        document.getElementById('sponsorModalCampaign').textContent = 'Choose an offer to send to this campaign. The offer\'s budget will be reserved.';
-        document.getElementById('sponsorModalError').style.display = 'none';
-        updateSponsorModalOffers();
-        document.getElementById('sponsorModal').classList.add('active');
-      }
-
-      function updateSponsorModalOffers() {
-        const sel = document.getElementById('sponsorOfferSelect');
-        if (!sel) return;
-        sel.innerHTML = '<option value="">-- Choose an offer --</option>';
-        offers.filter(o => o.status === 'active').forEach(o => {
-          const opt = document.createElement('option');
-          opt.value = o.id;
-          opt.textContent = (o.name || 'Offer') + ' — $' + (o.budgetCents / 100).toFixed(2) + ' budget';
-          sel.appendChild(opt);
-        });
-      }
-
-      function closeSponsorModal() {
-        document.getElementById('sponsorModal').classList.remove('active');
-        selectedCampaignId = null;
-      }
-
-      document.getElementById('sponsorModalClose').addEventListener('click', closeSponsorModal);
-      document.getElementById('sponsorModalCancel').addEventListener('click', closeSponsorModal);
-
-      document.getElementById('sponsorModalSubmit').addEventListener('click', function() {
-        const offerId = document.getElementById('sponsorOfferSelect').value;
-        const errEl = document.getElementById('sponsorModalError');
-        if (!offerId) {
-          errEl.textContent = 'Please select an offer.';
-          errEl.style.display = 'block';
-          return;
-        }
-        if (!selectedCampaignId) {
-          errEl.textContent = 'No campaign selected.';
-          errEl.style.display = 'block';
-          return;
-        }
-        if ((selectedCampaignId || '').startsWith('mock-')) {
-          errEl.textContent = 'This is a sample campaign for preview. When creators enable sponsor offers on their campaigns, you can sponsor them here.';
-          errEl.style.display = 'block';
-          return;
-        }
-        errEl.style.display = 'none';
-        this.disabled = true;
-        fetch(API_URL + '/sponsors/deals', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ offerId, campaignId: selectedCampaignId })
-        })
-          .then(r => r.ok ? r.json() : r.json().then(d => { throw new Error(d.error || 'Failed'); }))
-          .then(() => {
-            closeSponsorModal();
-            loadCampaigns();
-            loadOffers();
-            loadDeals();
-            loadWallet();
-          })
-          .catch(err => {
-            errEl.textContent = err.message || 'Failed to send sponsorship';
-            errEl.style.display = 'block';
-          })
-          .finally(() => { this.disabled = false; });
-      });
-
-      loadCampaigns();
-      loadOffers();
       loadDeals();
     })();
   </script>

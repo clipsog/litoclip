@@ -1,10 +1,53 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const { v4: uuid } = require('uuid');
 const { db } = require('../db');
-const { requireAuth, requireCreator, requireSponsor } = require('../middleware/auth');
+const { requireAuth, requireSponsor } = require('../middleware/auth');
 
 const router = express.Router();
 const MIN_DEPOSIT_CENTS = 5000; // $50 minimum
+
+const WATERMARK_DIR = path.join(__dirname, '..', 'data', 'sponsor-watermarks');
+const WATERMARK_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
+const MAX_WATERMARK_BYTES = 2 * 1024 * 1024;
+
+function ensureWatermarkDir() {
+  if (!fs.existsSync(WATERMARK_DIR)) fs.mkdirSync(WATERMARK_DIR, { recursive: true });
+}
+
+function watermarkFilePath(userId) {
+  return path.join(WATERMARK_DIR, userId);
+}
+
+const uploadWatermark = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      ensureWatermarkDir();
+      cb(null, WATERMARK_DIR);
+    },
+    filename: (req, file, cb) => {
+      cb(null, req.user.id);
+    },
+  }),
+  limits: { fileSize: MAX_WATERMARK_BYTES },
+  fileFilter: (req, file, cb) => {
+    if (WATERMARK_MIMES.has(file.mimetype)) cb(null, true);
+    else cb(new Error('Use PNG, JPEG, WebP, or GIF only.'));
+  },
+});
+
+function handleWatermarkUpload(req, res, next) {
+  uploadWatermark.single('watermark')(req, res, (err) => {
+    if (err) {
+      const msg = err.code === 'LIMIT_FILE_SIZE' ? 'Image must be 2 MB or smaller.' : (err.message || 'Upload failed');
+      return res.status(400).json({ error: msg });
+    }
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    next();
+  });
+}
 
 async function getWallet(userId) {
   let row = await db.prepare('SELECT * FROM sponsor_wallets WHERE user_id = ?').get(userId);
@@ -22,7 +65,44 @@ router.get('/wallet', requireAuth, requireSponsor, async (req, res) => {
     balanceCents: w.balance_cents || 0,
     totalDepositedCents: w.total_deposited_cents || 0,
     totalSpentCents: w.total_spent_cents || 0,
+    hasWatermarkImage: !!(w.watermark_image_mime && String(w.watermark_image_mime).trim()),
   });
+});
+
+// POST /api/sponsors/watermark – upload or replace watermark image (multipart field: watermark)
+router.post('/watermark', requireAuth, requireSponsor, handleWatermarkUpload, async (req, res) => {
+  const mime = req.file.mimetype;
+  await getWallet(req.user.id);
+  await db.prepare(`
+    UPDATE sponsor_wallets SET watermark_image_mime = ?, watermark_image_updated_at = datetime('now'), updated_at = datetime('now')
+    WHERE user_id = ?
+  `).run(mime, req.user.id);
+  res.status(201).json({ ok: true, mimeType: mime });
+});
+
+// GET /api/sponsors/watermark – raw image bytes (Authorization: Bearer …)
+router.get('/watermark', requireAuth, requireSponsor, async (req, res) => {
+  const w = await getWallet(req.user.id);
+  if (!w.watermark_image_mime) return res.status(404).json({ error: 'No watermark uploaded' });
+  const fp = watermarkFilePath(req.user.id);
+  if (!fs.existsSync(fp)) return res.status(404).json({ error: 'No watermark uploaded' });
+  res.setHeader('Content-Type', w.watermark_image_mime);
+  res.setHeader('Cache-Control', 'private, max-age=300');
+  fs.createReadStream(fp).pipe(res);
+});
+
+// DELETE /api/sponsors/watermark – remove stored watermark
+router.delete('/watermark', requireAuth, requireSponsor, async (req, res) => {
+  const fp = watermarkFilePath(req.user.id);
+  try {
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  } catch (_) {}
+  await getWallet(req.user.id);
+  await db.prepare(`
+    UPDATE sponsor_wallets SET watermark_image_mime = NULL, watermark_image_updated_at = NULL, updated_at = datetime('now')
+    WHERE user_id = ?
+  `).run(req.user.id);
+  res.json({ ok: true });
 });
 
 // POST /api/sponsors/deposit – create deposit (pending; payment flow TBD)

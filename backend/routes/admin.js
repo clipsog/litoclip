@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuid } = require('uuid');
 const { db } = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { sendSupportReplyEmail } = require('../services/mailer');
 
 const router = express.Router();
 router.use(requireAuth, requireAdmin);
@@ -346,6 +347,20 @@ router.post('/support-requests/:id/respond', async (req, res) => {
       VALUES (?, ?, 'support_reply', ?, 0)
     `).run(notifId, request.entity_id, JSON.stringify({ reply: replyText, inReplyTo: request.id }));
 
+    // 2b) Email the same reply to the user's registered email (if SMTP configured).
+    let emailResult = null;
+    try {
+      const user = await db.prepare('SELECT email, name FROM users WHERE id = ?').get(request.entity_id);
+      emailResult = await sendSupportReplyEmail({
+        toEmail: user?.email || '',
+        toName: user?.name || '',
+        subject: 'LitoClips Support replied to your request',
+        replyText,
+      });
+    } catch (emailErr) {
+      emailResult = { ok: false, skipped: false, reason: emailErr.message || 'email failed' };
+    }
+
     // 3) Insert a reply in admin_alerts for the admin thread view.
     const replyAlertId = uuid();
     await db.prepare(`
@@ -353,7 +368,7 @@ router.post('/support-requests/:id/respond', async (req, res) => {
       VALUES (?, 'support_reply', 'user', ?, ?, ?, 1)
     `).run(replyAlertId, request.entity_id, 'Support reply', replyText);
 
-    res.json({ ok: true, replyAlertId, notificationId: notifId });
+    res.json({ ok: true, replyAlertId, notificationId: notifId, email: emailResult });
   } catch (e) {
     res.status(500).json({ error: e.message || 'Failed' });
   }

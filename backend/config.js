@@ -46,4 +46,13 @@ module.exports = {
     usdtAddress: process.env.CRYPTO_USDT_ADDRESS || '',
     network: process.env.CRYPTO_NETWORK || 'ethereum',
   },
+  smtp: {
+    host: process.env.SMTP_HOST || '',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    secure: String(process.env.SMTP_SECURE || '').toLowerCase() === 'true',
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    fromEmail: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || '',
+    fromName: process.env.SMTP_FROM_NAME || 'LitoClips Support',
+  },
 };

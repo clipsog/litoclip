@@ -99,6 +99,8 @@ function run(sqlite) {
   try { sqlite.prepare('ALTER TABLE campaigns ADD COLUMN watermark_coupon_percent REAL DEFAULT 0').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
   try { sqlite.prepare('ALTER TABLE campaign_posts ADD COLUMN sponsor_deal_id TEXT REFERENCES sponsor_deals(id)').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
   try { sqlite.prepare('ALTER TABLE campaign_posts ADD COLUMN views_sponsor_credited INTEGER DEFAULT 0').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  try { sqlite.prepare('ALTER TABLE sponsor_wallets ADD COLUMN watermark_image_mime TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  try { sqlite.prepare('ALTER TABLE sponsor_wallets ADD COLUMN watermark_image_updated_at TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
 }
 
 module.exports = { run };
