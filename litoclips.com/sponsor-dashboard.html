@@ -74,6 +74,34 @@
     .watermark-dropzone-inner p { margin: 0; color: rgba(255,255,255,0.65); font-size: 14px; }
     .watermark-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
     .watermark-actions .btn-secondary { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.2); }
+    .campaign-list { display: flex; flex-direction: column; gap: 12px; }
+    .campaign-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-radius: 12px; flex-wrap: wrap; gap: 12px; cursor: pointer; transition: background 0.2s; }
+    .campaign-card:hover { background: rgba(255,255,255,0.1) !important; }
+    .campaign-card h4 { font-size: 16px; margin-bottom: 4px; }
+    .campaign-card .meta { font-size: 13px; color: rgba(255,255,255,0.65); }
+    .browse-filters { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; max-width: 640px; }
+    .browse-filters-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .browse-filters-row label { font-size: 13px; font-weight: 500; display: block; margin-bottom: 6px; }
+    .browse-filters-row select { min-width: 200px; padding: 10px 12px; border-radius: 8px; font-size: 14px; background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.2); }
+    .browse-tag-add { display: flex; gap: 8px; flex: 1; min-width: 200px; }
+    .browse-tag-add input { flex: 1; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
+    .browse-filter-pills { display: flex; flex-wrap: wrap; gap: 8px; min-height: 28px; }
+    .filter-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(37, 99, 235, 0.25); color: #bfdbfe; font-size: 12px; }
+    .filter-pill button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+    .modal-overlay.active { display: flex; }
+    .modal { border-radius: 16px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-wide { max-width: 560px; }
+    .modal-header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 18px; margin: 0; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: inherit; }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; display: flex; justify-content: flex-end; gap: 12px; }
+    .videos-list { display: flex; flex-direction: column; gap: 10px; }
+    .video-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; }
+    .video-item a { color: #93c5fd; text-decoration: none; }
+    .video-item .platform { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .video-item .views { font-weight: 600; color: #86efac; }
   </style>
 </head>
 <body class="dashboard-theme gradient-section-bg">
@@ -108,7 +136,7 @@
   <main class="sponsor-page">
     <div class="welcome-banner">
       <h1>Sponsor Dashboard</h1>
-      <p>Upload your brand watermark for sponsored clips. Your balance in the header is used when you sponsor campaigns elsewhere on the platform.</p>
+      <p>Upload your watermark, browse creator campaigns by content type and niche, and send sponsorship deals. Your balance is shown in the header.</p>
     </div>
 
     <div class="dashboard-section">
@@ -131,15 +159,106 @@
     </div>
 
     <div class="dashboard-section">
+      <h2>Browse campaigns</h2>
+      <p class="section-desc">Filter by the kind of content creators make and by niche tags they added at signup. Click a campaign to view videos and sponsor.</p>
+      <div class="browse-filters">
+        <div class="browse-filters-row">
+          <div>
+            <label for="browseContentType">Content type</label>
+            <select id="browseContentType">
+              <option value="">All types</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:220px;">
+            <label for="browseTagInput">Niche tags (match any)</label>
+            <div class="browse-tag-add">
+              <input type="text" id="browseTagInput" placeholder="e.g. gaming" autocomplete="off">
+              <button type="button" class="btn-secondary" id="browseAddTagBtn" style="padding:10px 14px;white-space:nowrap;">Add tag</button>
+            </div>
+          </div>
+        </div>
+        <div class="browse-filter-pills" id="browseFilterPills"></div>
+        <div class="browse-filters-row" style="align-items:center;">
+          <button type="button" class="btn-primary" id="browseApplyBtn">Apply filters</button>
+          <button type="button" class="btn-secondary" id="browseClearBtn" style="padding:10px 16px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.2);">Clear</button>
+        </div>
+      </div>
+      <div id="campaignsList" class="campaign-list">
+        <div class="empty-state" id="campaignsEmpty">
+          <div class="empty-state-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <h3>No matching campaigns</h3>
+          <p>Try clearing filters or choosing a different content type. Creators who accept sponsors and match your filters appear here.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-section">
       <h2>My Deals</h2>
       <p class="section-desc">Sponsorship deals you've sent to campaigns.</p>
       <div id="dealsList" class="deal-list">
         <div class="empty-state" id="dealsEmpty">
-          <p>No deals yet. When you sponsor campaigns, your deals will show up here.</p>
+          <p>No deals yet. Sponsor a campaign from Browse above to see it here.</p>
         </div>
       </div>
     </div>
   </main>
+
+  <div class="modal-overlay" id="campaignDetailModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3 id="campaignDetailTitle">Campaign</h3>
+        <button type="button" class="modal-close" id="campaignDetailClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4 style="font-size: 14px; margin-bottom: 16px; color: rgba(255,255,255,0.8);">Videos</h4>
+        <div id="campaignVideosList" class="videos-list"></div>
+        <div id="campaignVideosEmpty" class="empty-state" style="display:none; padding: 24px;">
+          <p>No videos posted yet. Check back later.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="campaignDetailCancel">Close</button>
+        <button type="button" class="btn-primary" id="campaignDetailSponsorBtn">Sponsor this campaign</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="sponsorModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="sponsorModalTitle">Sponsor campaign</h3>
+        <button type="button" class="modal-close" id="sponsorModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="sponsorModalCampaign" class="section-desc" style="margin-bottom: 16px;"></p>
+        <div class="form-group">
+          <label>Offer name</label>
+          <input type="text" id="sponsorOfferName" placeholder="e.g. Brand X Watermark" style="width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,0.2); border-radius:8px; font-size:14px; background: rgba(255,255,255,0.08); color: white;">
+        </div>
+        <div class="form-group">
+          <label>Watermark text</label>
+          <input type="text" id="sponsorOfferWatermark" placeholder="e.g. @brandx" style="width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,0.2); border-radius:8px; font-size:14px; background: rgba(255,255,255,0.08); color: white;">
+        </div>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+          <div class="form-group" style="flex: 1; min-width: 140px;">
+            <label>CPM (cents)</label>
+            <input type="number" id="sponsorOfferCpm" min="1" placeholder="50" style="width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,0.2); border-radius:8px; font-size:14px; background: rgba(255,255,255,0.08); color: white;">
+          </div>
+          <div class="form-group" style="flex: 1; min-width: 140px;">
+            <label>Budget (cents)</label>
+            <input type="number" id="sponsorOfferBudget" min="100" placeholder="5000" style="width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,0.2); border-radius:8px; font-size:14px; background: rgba(255,255,255,0.08); color: white;">
+          </div>
+        </div>
+        <p id="sponsorModalError" style="color: #f87171; font-size: 14px; margin-top: 12px; display: none;"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="sponsorModalCancel">Cancel</button>
+        <button type="button" class="btn-primary" id="sponsorModalSubmit">Send sponsorship</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function() {
@@ -327,6 +446,255 @@
           .catch(() => {});
       }
       loadWallet();
+
+      const CONTENT_LABELS = { youtube_videos: 'YouTube videos', music: 'Music', podcasts: 'Podcasts', apps: 'Apps' };
+      let campaigns = [];
+      let selectedCampaignId = null;
+      let browseFilterTags = [];
+      let activeContentType = '';
+      let activeFilterTags = [];
+
+      const browseContentTypeEl = document.getElementById('browseContentType');
+      const browseTagInput = document.getElementById('browseTagInput');
+      const browseFilterPills = document.getElementById('browseFilterPills');
+
+      function fillContentTypeSelect(types) {
+        const sel = browseContentTypeEl;
+        const prev = sel.value;
+        while (sel.options.length > 1) sel.remove(1);
+        (types || []).forEach(function(t) {
+          const o = document.createElement('option');
+          o.value = t.id;
+          o.textContent = t.label;
+          sel.appendChild(o);
+        });
+        sel.value = prev;
+      }
+
+      fetch(API_URL + '/sponsors/creator-taxonomy', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (data && data.contentTypes && data.contentTypes.length) fillContentTypeSelect(data.contentTypes);
+        })
+        .catch(function() {});
+
+      function normalizeBrowseTag(raw) {
+        return String(raw || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      }
+
+      function renderBrowsePills() {
+        browseFilterPills.innerHTML = '';
+        browseFilterTags.forEach(function(tag, i) {
+          const pill = document.createElement('span');
+          pill.className = 'filter-pill';
+          pill.appendChild(document.createTextNode(tag));
+          const rm = document.createElement('button');
+          rm.type = 'button';
+          rm.setAttribute('aria-label', 'Remove');
+          rm.textContent = '×';
+          rm.addEventListener('click', function() {
+            browseFilterTags = browseFilterTags.filter(function(_, j) { return j !== i; });
+            renderBrowsePills();
+          });
+          pill.appendChild(rm);
+          browseFilterPills.appendChild(pill);
+        });
+      }
+
+      document.getElementById('browseAddTagBtn').addEventListener('click', function() {
+        const t = normalizeBrowseTag(browseTagInput.value);
+        browseTagInput.value = '';
+        if (t.length < 2) return;
+        if (!browseFilterTags.includes(t)) browseFilterTags.push(t);
+        renderBrowsePills();
+      });
+      browseTagInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('browseAddTagBtn').click(); }
+      });
+
+      document.getElementById('browseApplyBtn').addEventListener('click', function() {
+        activeContentType = browseContentTypeEl.value || '';
+        activeFilterTags = browseFilterTags.slice();
+        loadCampaigns();
+      });
+      document.getElementById('browseClearBtn').addEventListener('click', function() {
+        browseContentTypeEl.value = '';
+        browseFilterTags = [];
+        activeContentType = '';
+        activeFilterTags = [];
+        browseTagInput.value = '';
+        renderBrowsePills();
+        loadCampaigns();
+      });
+
+      function buildCampaignsUrl() {
+        let base = API_URL + '/sponsors/campaigns';
+        const p = new URLSearchParams();
+        if (activeContentType) p.set('contentType', activeContentType);
+        activeFilterTags.forEach(function(t) { p.append('tag', t); });
+        const qs = p.toString();
+        return qs ? (base + '?' + qs) : base;
+      }
+
+      function campaignTaxonomyLine(c) {
+        const types = (c.contentTypes || []).map(function(id) { return CONTENT_LABELS[id] || id; }).join(' · ');
+        const tags = (c.nicheTags || []).slice(0, 8).join(', ');
+        var parts = [];
+        if (types) parts.push(types);
+        if (tags) parts.push(tags);
+        return parts.join(' — ') || 'Creator campaign';
+      }
+
+      function loadCampaigns() {
+        fetch(buildCampaignsUrl(), { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(function(r) { return r.ok ? r.json() : []; })
+          .catch(function() { return []; })
+          .then(function(data) {
+            campaigns = data || [];
+            renderCampaigns();
+          });
+      }
+
+      function renderCampaigns() {
+        const listEl = document.getElementById('campaignsList');
+        const emptyEl = document.getElementById('campaignsEmpty');
+        if (!listEl) return;
+        listEl.querySelectorAll('.campaign-card').forEach(function(c) { c.remove(); });
+        if (campaigns.length === 0) {
+          if (emptyEl) emptyEl.style.display = 'block';
+          return;
+        }
+        if (emptyEl) emptyEl.style.display = 'none';
+        campaigns.forEach(function(c) {
+          const isMock = (c.id || '').startsWith('mock-');
+          const card = document.createElement('div');
+          card.className = 'campaign-card';
+          const creatorName = c.creatorName || 'Creator';
+          const campaignTitle = c.title || 'Untitled';
+          const platforms = Array.isArray(c.platforms) ? c.platforms : (c.platform ? [c.platform] : []);
+          const platformStr = platforms.length ? platforms.join(', ') : (c.platform || '—');
+          const sampleBadge = isMock ? '<span class="status-badge" style="background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);margin-right:8px;">Sample</span>' : '';
+          const tax = campaignTaxonomyLine(c);
+          card.innerHTML = '<div><h4>' + sampleBadge + creatorName + ' · ' + campaignTitle + '</h4><span class="meta">' + tax + '</span><span class="meta" style="display:block;margin-top:4px;">' + platformStr + (c.allowWatermark ? ' · Watermark allowed' : '') + '</span></div><span style="color:rgba(255,255,255,0.6);font-size:14px;">View videos →</span>';
+          card.addEventListener('click', function(e) { e.stopPropagation(); openCampaignDetail(c); });
+          listEl.appendChild(card);
+        });
+      }
+
+      function openCampaignDetail(campaign) {
+        selectedCampaignId = campaign && campaign.id;
+        const creatorName = campaign && campaign.creatorName || 'Creator';
+        const campaignTitle = campaign && campaign.title || 'Campaign';
+        document.getElementById('campaignDetailTitle').textContent = creatorName + ' · ' + campaignTitle;
+        document.getElementById('campaignVideosList').innerHTML = '';
+        document.getElementById('campaignVideosEmpty').style.display = 'none';
+        document.getElementById('campaignDetailModal').classList.add('active');
+        fetch(API_URL + '/sponsors/campaigns/' + campaign.id + '/posts', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(function(r) { return r.ok ? r.json() : []; })
+          .catch(function() { return []; })
+          .then(function(posts) {
+            const listEl = document.getElementById('campaignVideosList');
+            const emptyEl = document.getElementById('campaignVideosEmpty');
+            if (!posts || posts.length === 0) {
+              emptyEl.style.display = 'block';
+              return;
+            }
+            posts.forEach(function(p) {
+              const item = document.createElement('div');
+              item.className = 'video-item';
+              const link = (p.postUrl && p.postUrl.startsWith('http')) ? '<a href="' + p.postUrl + '" target="_blank" rel="noopener">' + (p.platform || 'Video') + ' · ' + (p.accountHandle || '') + '</a>' : '<span>' + (p.platform || 'Video') + ' · ' + (p.accountHandle || '') + '</span>';
+              item.innerHTML = '<div><div>' + link + '</div><div class="platform">' + (p.postDate || '') + '</div></div><span class="views">' + (p.views || 0).toLocaleString() + ' views</span>';
+              listEl.appendChild(item);
+            });
+          });
+      }
+
+      function closeCampaignDetail() {
+        document.getElementById('campaignDetailModal').classList.remove('active');
+      }
+
+      document.getElementById('campaignDetailClose').addEventListener('click', closeCampaignDetail);
+      document.getElementById('campaignDetailCancel').addEventListener('click', closeCampaignDetail);
+      document.getElementById('campaignDetailSponsorBtn').addEventListener('click', function() {
+        const c = campaigns.find(function(x) { return x.id === selectedCampaignId; });
+        if (c) {
+          closeCampaignDetail();
+          openSponsorModal(c);
+        }
+      });
+
+      function openSponsorModal(campaign) {
+        selectedCampaignId = campaign && campaign.id;
+        const title = campaign && campaign.title || 'Campaign';
+        document.getElementById('sponsorModalTitle').textContent = 'Sponsor: ' + (campaign && campaign.creatorName || '') + ' · ' + title;
+        document.getElementById('sponsorModalCampaign').textContent = 'Set watermark text, CPM, and budget. The budget will be reserved when you send.';
+        document.getElementById('sponsorModalError').style.display = 'none';
+        document.getElementById('sponsorOfferName').value = 'Sponsor: ' + title;
+        document.getElementById('sponsorOfferWatermark').value = '';
+        document.getElementById('sponsorOfferCpm').value = '50';
+        document.getElementById('sponsorOfferBudget').value = '5000';
+        document.getElementById('sponsorModal').classList.add('active');
+      }
+
+      function closeSponsorModal() {
+        document.getElementById('sponsorModal').classList.remove('active');
+        selectedCampaignId = null;
+      }
+
+      document.getElementById('sponsorModalClose').addEventListener('click', closeSponsorModal);
+      document.getElementById('sponsorModalCancel').addEventListener('click', closeSponsorModal);
+
+      document.getElementById('sponsorModalSubmit').addEventListener('click', function() {
+        const errEl = document.getElementById('sponsorModalError');
+        const name = document.getElementById('sponsorOfferName').value.trim();
+        const watermark = document.getElementById('sponsorOfferWatermark').value.trim();
+        const cpm = parseInt(document.getElementById('sponsorOfferCpm').value, 10) || 0;
+        const budget = parseInt(document.getElementById('sponsorOfferBudget').value, 10) || 0;
+        if (!name || !watermark || cpm < 1 || budget < 100) {
+          errEl.textContent = 'Please fill in offer name, watermark, CPM (min 1 cent), and budget (min 100 cents).';
+          errEl.style.display = 'block';
+          return;
+        }
+        if (!selectedCampaignId) {
+          errEl.textContent = 'No campaign selected.';
+          errEl.style.display = 'block';
+          return;
+        }
+        if ((selectedCampaignId || '').startsWith('mock-')) {
+          errEl.textContent = 'This is a sample campaign. Sponsor real campaigns from creators on the platform.';
+          errEl.style.display = 'block';
+          return;
+        }
+        errEl.style.display = 'none';
+        const btn = this;
+        btn.disabled = true;
+        fetch(API_URL + '/sponsors/offers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ name: name, watermarkText: watermark, cpmCents: cpm, budgetCents: budget })
+        })
+          .then(function(r) { return r.ok ? r.json() : r.json().then(function(d) { throw new Error(d.error || 'Failed to create offer'); }); })
+          .then(function(offerData) {
+            return fetch(API_URL + '/sponsors/deals', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify({ offerId: offerData.id, campaignId: selectedCampaignId })
+            }).then(function(r) { return r.ok ? r.json() : r.json().then(function(d) { throw new Error(d.error || 'Failed to send sponsorship'); }); });
+          })
+          .then(function() {
+            closeSponsorModal();
+            loadCampaigns();
+            loadDeals();
+            loadWallet();
+          })
+          .catch(function(err) {
+            errEl.textContent = err.message || 'Failed to send sponsorship';
+            errEl.style.display = 'block';
+          })
+          .finally(function() { btn.disabled = false; });
+      });
+
+      loadCampaigns();
 
       function loadDeals() {
         fetch(API_URL + '/sponsors/deals', { headers: { 'Authorization': 'Bearer ' + token } })

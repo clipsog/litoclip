@@ -39,6 +39,10 @@ if (config.databaseUrl) {
       }
       await pool.query('ALTER TABLE sponsor_wallets ADD COLUMN IF NOT EXISTS watermark_image_mime TEXT');
       await pool.query('ALTER TABLE sponsor_wallets ADD COLUMN IF NOT EXISTS watermark_image_updated_at TIMESTAMPTZ');
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS creator_content_types TEXT');
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS creator_niche_tags TEXT');
+      await pool.query('ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS content_types TEXT');
+      await pool.query('ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS niche_tags TEXT');
     }
     ensureSchemaFn = runSchemaPg;
     return db;

@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
   first_name TEXT,
   last_name TEXT,
   user_position TEXT,
+  creator_content_types TEXT,
+  creator_niche_tags TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -52,6 +54,8 @@ CREATE TABLE IF NOT EXISTS campaigns (
   accept_sponsor_offers INTEGER DEFAULT 0,
   allow_watermark INTEGER DEFAULT 0,
   watermark_coupon_percent REAL DEFAULT 0,
+  content_types TEXT,
+  niche_tags TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

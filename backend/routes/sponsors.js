@@ -5,8 +5,20 @@ const multer = require('multer');
 const { v4: uuid } = require('uuid');
 const { db } = require('../db');
 const { requireAuth, requireSponsor } = require('../middleware/auth');
+const {
+  CONTENT_TYPE_LABELS,
+  ALLOWED_CONTENT_TYPE_IDS,
+  parseJsonArray,
+} = require('../lib/creatorTaxonomy');
 
 const router = express.Router();
+
+/** Public list of content-type options (signup + sponsor filters). */
+router.get('/creator-taxonomy', (req, res) => {
+  res.json({
+    contentTypes: ALLOWED_CONTENT_TYPE_IDS.map((id) => ({ id, label: CONTENT_TYPE_LABELS[id] || id })),
+  });
+});
 const MIN_DEPOSIT_CENTS = 5000; // $50 minimum
 
 const WATERMARK_DIR = path.join(__dirname, '..', 'data', 'sponsor-watermarks');
@@ -162,12 +174,29 @@ router.get('/offers', requireAuth, requireSponsor, async (req, res) => {
 
 // Mock campaigns for demo when no real campaigns exist
 const MOCK_CAMPAIGNS = [
-  { id: 'mock-gaming-1', creatorName: 'Alex Rivera', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], acceptSponsorOffers: true, allowWatermark: true },
-  { id: 'mock-podcast-1', creatorName: 'Jamie Chen', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], acceptSponsorOffers: true, allowWatermark: false },
-  { id: 'mock-lifestyle-1', creatorName: 'Morgan Lee', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], acceptSponsorOffers: true, allowWatermark: true },
-  { id: 'mock-tech-1', creatorName: 'Sam Torres', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], acceptSponsorOffers: true, allowWatermark: true },
-  { id: 'mock-music-1', creatorName: 'Jordan Blake', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], acceptSponsorOffers: true, allowWatermark: false },
+  { id: 'mock-gaming-1', creatorName: 'Alex Rivera', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], acceptSponsorOffers: true, allowWatermark: true, contentTypes: ['youtube_videos'], nicheTags: ['gaming', 'highlights'] },
+  { id: 'mock-podcast-1', creatorName: 'Jamie Chen', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], acceptSponsorOffers: true, allowWatermark: false, contentTypes: ['podcasts'], nicheTags: ['interviews', 'tech'] },
+  { id: 'mock-lifestyle-1', creatorName: 'Morgan Lee', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], acceptSponsorOffers: true, allowWatermark: true, contentTypes: ['youtube_videos'], nicheTags: ['lifestyle', 'vlog'] },
+  { id: 'mock-tech-1', creatorName: 'Sam Torres', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], acceptSponsorOffers: true, allowWatermark: true, contentTypes: ['youtube_videos', 'apps'], nicheTags: ['tech', 'reviews'] },
+  { id: 'mock-music-1', creatorName: 'Jordan Blake', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], acceptSponsorOffers: true, allowWatermark: false, contentTypes: ['music'], nicheTags: ['covers', 'indie'] },
 ];
+
+function effectiveCampaignTaxonomy(row) {
+  const cTypes = parseJsonArray(row.content_types);
+  const cTags = parseJsonArray(row.niche_tags);
+  const oTypes = parseJsonArray(row.owner_content_types);
+  const oTags = parseJsonArray(row.owner_niche_tags);
+  return {
+    contentTypes: cTypes.length ? cTypes : oTypes,
+    nicheTags: cTags.length ? cTags : oTags,
+  };
+}
+
+function campaignMatchesFilters(effective, contentTypeFilter, tagFilters) {
+  if (contentTypeFilter && !effective.contentTypes.includes(contentTypeFilter)) return false;
+  if (tagFilters.length && !tagFilters.some((t) => effective.nicheTags.includes(t))) return false;
+  return true;
+}
 
 // Mock posts for demo campaigns
 const MOCK_POSTS = [
@@ -176,32 +205,79 @@ const MOCK_POSTS = [
   { id: 'mock-post-3', platform: 'youtube', postUrl: 'https://youtube.com/shorts/abc123', views: 15600, postDate: '2025-03-08', accountHandle: '@jamiepodcast' },
 ];
 
-// GET /api/sponsors/campaigns – list campaigns that accept sponsor offers (for sponsors to browse)
+// GET /api/sponsors/campaigns – list campaigns (optional ?contentType=youtube_videos&tag=gaming — tag can repeat)
 router.get('/campaigns', requireAuth, requireSponsor, async (req, res) => {
+  const contentTypeFilter = (req.query.contentType || req.query.content_type || '').trim() || null;
+  const tagSingle = (req.query.tag || '').trim();
+  const tagsParam = req.query.tags;
+  let tagFilters = [];
+  if (typeof tagsParam === 'string' && tagsParam.trim()) {
+    tagFilters = tagsParam.split(',').map((t) => t.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')).filter((t) => t.length >= 2);
+  }
+  if (tagSingle) {
+    const t = tagSingle.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    if (t.length >= 2) tagFilters.push(t);
+  }
+  if (Array.isArray(req.query.tag)) {
+    req.query.tag.forEach((tagSingle2) => {
+      const t = String(tagSingle2 || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      if (t.length >= 2) tagFilters.push(t);
+    });
+  }
+  tagFilters = [...new Set(tagFilters)];
+
   let rows = [];
   try {
     rows = await db.prepare(`
-      SELECT c.id, c.title, c.platform, c.platforms, c.accept_sponsor_offers, c.allow_watermark, u.name as creator_name
+      SELECT c.id, c.title, c.platform, c.platforms, c.accept_sponsor_offers, c.allow_watermark,
+             c.content_types, c.niche_tags,
+             u.name as creator_name, u.creator_content_types as owner_content_types, u.creator_niche_tags as owner_niche_tags
       FROM campaigns c
       LEFT JOIN users u ON u.id = c.owner_id
       WHERE c.status = 'active' AND c.accept_sponsor_offers = 1
       ORDER BY c.created_at DESC
     `).all();
   } catch (e) {
-    // DB may not be ready
+    try {
+      rows = await db.prepare(`
+        SELECT c.id, c.title, c.platform, c.platforms, c.accept_sponsor_offers, c.allow_watermark, u.name as creator_name
+        FROM campaigns c
+        LEFT JOIN users u ON u.id = c.owner_id
+        WHERE c.status = 'active' AND c.accept_sponsor_offers = 1
+        ORDER BY c.created_at DESC
+      `).all();
+    } catch (e2) {
+      rows = [];
+    }
   }
-  const campaigns = rows.map(r => ({
-    id: r.id,
-    creatorName: r.creator_name || 'Creator',
-    title: r.title,
-    platform: r.platform,
-    platforms: r.platforms ? (typeof r.platforms === 'string' ? JSON.parse(r.platforms || '[]') : r.platforms) : [],
-    acceptSponsorOffers: !!r.accept_sponsor_offers,
-    allowWatermark: !!r.allow_watermark,
-  }));
+  const mapRow = (r) => {
+    const effective = (r.content_types !== undefined || r.owner_content_types !== undefined)
+      ? effectiveCampaignTaxonomy(r)
+      : { contentTypes: [], nicheTags: [] };
+    return {
+      id: r.id,
+      creatorName: r.creator_name || 'Creator',
+      title: r.title,
+      platform: r.platform,
+      platforms: r.platforms ? (typeof r.platforms === 'string' ? JSON.parse(r.platforms || '[]') : r.platforms) : [],
+      acceptSponsorOffers: !!r.accept_sponsor_offers,
+      allowWatermark: !!r.allow_watermark,
+      contentTypes: effective.contentTypes,
+      nicheTags: effective.nicheTags,
+    };
+  };
+  let campaigns = rows.map(mapRow).filter((c) => campaignMatchesFilters(
+    { contentTypes: c.contentTypes, nicheTags: c.nicheTags },
+    contentTypeFilter,
+    tagFilters
+  ));
   // When no real campaigns, include mock campaigns for demo/preview
-  if (campaigns.length === 0) {
-    return res.json(MOCK_CAMPAIGNS);
+  if (rows.length === 0) {
+    campaigns = MOCK_CAMPAIGNS.filter((c) => campaignMatchesFilters(
+      { contentTypes: c.contentTypes || [], nicheTags: c.nicheTags || [] },
+      contentTypeFilter,
+      tagFilters
+    ));
   }
   res.json(campaigns);
 });

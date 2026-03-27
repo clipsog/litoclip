@@ -5,6 +5,7 @@ const { v4: uuid } = require('uuid');
 const config = require('../config');
 const { db } = require('../db');
 const { optionalAuth, requireAuth } = require('../middleware/auth');
+const { normalizeContentTypes, normalizeNicheTags, parseJsonArray } = require('../lib/creatorTaxonomy');
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ function generateReferralCode() {
 }
 
 router.post('/signup', async (req, res) => {
-  const { name, email, password, userType, firstName, lastName, position } = req.body || {};
+  const { name, email, password, userType, firstName, lastName, position, creatorContentTypes, creatorNicheTags } = req.body || {};
   const displayName = [firstName, lastName].filter(Boolean).join(' ') || name || '';
   if (!displayName || !email || !password) {
     return res.status(400).json({ error: 'Name, email and password required' });
@@ -26,6 +27,12 @@ router.post('/signup', async (req, res) => {
   const referralCode = generateReferralCode();
   const passwordHash = bcrypt.hashSync(password, 10);
   const ut = ['creator', 'brand', 'sponsor'].includes(userType) ? userType : 'creator';
+  const ct = normalizeContentTypes(creatorContentTypes);
+  const nicheTags = normalizeNicheTags(creatorNicheTags);
+  if (ut === 'creator') {
+    if (ct.length < 1) return res.status(400).json({ error: 'Select at least one content type' });
+    if (nicheTags.length < 1) return res.status(400).json({ error: 'Add at least one niche tag' });
+  }
   try {
     await db.prepare(`
     INSERT INTO users (id, email, password_hash, name, user_type, referral_code, first_name, last_name, user_position)
@@ -45,8 +52,18 @@ router.post('/signup', async (req, res) => {
   if (ut === 'sponsor') {
     try { await db.prepare('INSERT OR IGNORE INTO sponsor_wallets (user_id) VALUES (?)').run(id); } catch (_) {}
   }
+  if (ut === 'creator') {
+    try {
+      await db.prepare('UPDATE users SET creator_content_types = ?, creator_niche_tags = ? WHERE id = ?').run(JSON.stringify(ct), JSON.stringify(nicheTags), id);
+    } catch (_) {}
+  }
   const token = jwt.sign({ userId: id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-  const user = { id, name: displayName, email, userType: ut, referralCode, firstName: firstName || null, lastName: lastName || null, position: position || null };
+  const user = {
+    id, name: displayName, email, userType: ut, referralCode,
+    firstName: firstName || null, lastName: lastName || null, position: position || null,
+    creatorContentTypes: ut === 'creator' ? ct : undefined,
+    creatorNicheTags: ut === 'creator' ? nicheTags : undefined,
+  };
   res.json({ token, user });
 });
 
@@ -68,10 +85,17 @@ router.post('/logout', (req, res) => {
 
 router.get('/me', requireAuth, async (req, res) => {
   const u = req.user;
-  const full = await db.prepare('SELECT is_admin, first_name, last_name, user_position FROM users WHERE id = ?').get(u.id);
+  let full;
+  try {
+    full = await db.prepare('SELECT is_admin, first_name, last_name, user_position, creator_content_types, creator_niche_tags FROM users WHERE id = ?').get(u.id);
+  } catch (_) {
+    full = await db.prepare('SELECT is_admin, first_name, last_name, user_position FROM users WHERE id = ?').get(u.id);
+  }
   const gam = await db.prepare('SELECT level, xp, streak, best_streak FROM gamification WHERE user_id = ?').get(u.id);
   const nextLevelXP = 100 * (gam ? gam.level : 1);
   const position = full && full.user_position ? full.user_position : null;
+  const creatorContentTypes = full && full.creator_content_types != null ? parseJsonArray(full.creator_content_types) : [];
+  const creatorNicheTags = full && full.creator_niche_tags != null ? parseJsonArray(full.creator_niche_tags) : [];
   res.json({
     id: u.id,
     name: u.name,
@@ -83,6 +107,8 @@ router.get('/me', requireAuth, async (req, res) => {
     lastName: full && full.last_name ? full.last_name : null,
     position,
     needsOnboarding: !position || position === '',
+    creatorContentTypes: u.user_type === 'creator' ? creatorContentTypes : undefined,
+    creatorNicheTags: u.user_type === 'creator' ? creatorNicheTags : undefined,
     level: gam ? gam.level : 1,
     xp: gam ? gam.xp : 0,
     xpToNextLevel: nextLevelXP,
@@ -94,7 +120,7 @@ router.get('/me', requireAuth, async (req, res) => {
 router.put('/profile', requireAuth, async (req, res, next) => {
   try {
     const body = req.body || {};
-    const { name, firstName, lastName, position } = body;
+    const { name, firstName, lastName, position, creatorContentTypes, creatorNicheTags } = body;
     const updates = [];
     const vals = [];
     const safeStr = (v) => (v != null && typeof v === 'string' && v.trim()) ? v.trim() : null;
@@ -104,6 +130,18 @@ router.put('/profile', requireAuth, async (req, res, next) => {
     if (firstName !== undefined) { updates.push('first_name = ?'); vals.push(safeStr(firstName)); }
     if (lastName !== undefined) { updates.push('last_name = ?'); vals.push(safeStr(lastName)); }
     if (position !== undefined) { updates.push('user_position = ?'); vals.push(safeStr(position)); }
+    if (req.user.user_type === 'creator') {
+      if (creatorContentTypes !== undefined) {
+        const n = normalizeContentTypes(creatorContentTypes);
+        if (n.length < 1) return res.status(400).json({ error: 'Select at least one content type' });
+        updates.push('creator_content_types = ?'); vals.push(JSON.stringify(n));
+      }
+      if (creatorNicheTags !== undefined) {
+        const n = normalizeNicheTags(creatorNicheTags);
+        if (n.length < 1) return res.status(400).json({ error: 'Add at least one niche tag' });
+        updates.push('creator_niche_tags = ?'); vals.push(JSON.stringify(n));
+      }
+    }
     if (updates.length === 0) return res.status(400).json({ error: 'At least one field required' });
     vals.push(req.user.id);
     await db.prepare('UPDATE users SET ' + updates.join(', ') + ' WHERE id = ?').run(...vals);

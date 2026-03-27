@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuid } = require('uuid');
 const { db } = require('../db');
 const { optionalAuth, requireAuth, requireCreator } = require('../middleware/auth');
+const { normalizeContentTypes, normalizeNicheTags, parseJsonArray } = require('../lib/creatorTaxonomy');
 
 const router = express.Router();
 
@@ -138,6 +139,22 @@ router.post('/', requireAuth, async (req, res) => {
     );
   } catch (e) {
     // Ignore if admin_alerts table doesn't exist yet
+  }
+  try {
+    const ownerRow = await db.prepare('SELECT creator_content_types, creator_niche_tags FROM users WHERE id = ?').get(ownerId);
+    const bodyTypes = normalizeContentTypes(req.body?.contentTypes);
+    const bodyTags = normalizeNicheTags(req.body?.nicheTags);
+    const defTypes = parseJsonArray(ownerRow?.creator_content_types);
+    const defTags = parseJsonArray(ownerRow?.creator_niche_tags);
+    const finalTypes = bodyTypes.length ? bodyTypes : defTypes;
+    const finalTags = bodyTags.length ? bodyTags : defTags;
+    await db.prepare('UPDATE campaigns SET content_types = ?, niche_tags = ? WHERE id = ?').run(
+      JSON.stringify(finalTypes),
+      JSON.stringify(finalTags),
+      id
+    );
+  } catch (_) {
+    /* columns may be missing on very old DBs */
   }
   res.status(201).json({ id, title: title.trim(), status, needsPayment });
 });

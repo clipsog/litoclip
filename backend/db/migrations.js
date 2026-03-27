@@ -101,6 +101,10 @@ function run(sqlite) {
   try { sqlite.prepare('ALTER TABLE campaign_posts ADD COLUMN views_sponsor_credited INTEGER DEFAULT 0').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
   try { sqlite.prepare('ALTER TABLE sponsor_wallets ADD COLUMN watermark_image_mime TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
   try { sqlite.prepare('ALTER TABLE sponsor_wallets ADD COLUMN watermark_image_updated_at TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  try { sqlite.prepare('ALTER TABLE users ADD COLUMN creator_content_types TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  try { sqlite.prepare('ALTER TABLE users ADD COLUMN creator_niche_tags TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  try { sqlite.prepare('ALTER TABLE campaigns ADD COLUMN content_types TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  try { sqlite.prepare('ALTER TABLE campaigns ADD COLUMN niche_tags TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
 }
 
 module.exports = { run };

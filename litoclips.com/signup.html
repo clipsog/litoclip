@@ -27,6 +27,27 @@
     .role-tab:hover { background: rgba(255,255,255,0.08); color: white; }
     .role-tab.selected { background: rgba(37, 99, 235, 0.2); border-color: #2563eb; color: white; }
     .role-tab input { display: none; }
+    .signup-step { display: none; }
+    .signup-step.active { display: block; }
+    .step-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .step-hint { color: rgba(255,255,255,0.55); font-size: 14px; margin-bottom: 20px; line-height: 1.45; }
+    .content-type-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .content-type-option { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); cursor: pointer; text-align: left; color: rgba(255,255,255,0.9); font-size: 15px; }
+    .content-type-option:hover { border-color: rgba(147,197,253,0.4); }
+    .content-type-option.selected { border-color: #2563eb; background: rgba(37, 99, 235, 0.15); }
+    .content-type-option input { width: 18px; height: 18px; accent-color: #2563eb; }
+    .tag-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tag-row input { flex: 1; padding: 10px 12px; border-radius: 10px; font-size: 14px; }
+    .tag-pills { display: flex; flex-wrap: wrap; gap: 8px; min-height: 36px; margin-bottom: 20px; }
+    .tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: rgba(37, 99, 235, 0.25); color: #bfdbfe; font-size: 13px; }
+    .tag-pill button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 16px; line-height: 1; opacity: 0.8; }
+    .tag-pill button:hover { opacity: 1; }
+    .step-actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-secondary-outline { width: 100%; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.85); }
+    .btn-secondary-outline:hover { background: rgba(255,255,255,0.06); }
+    .step-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+    .step-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+    .step-dots span.on { background: #2563eb; }
   </style>
 </head>
 <body class="gradient-section-bg">
@@ -34,39 +55,70 @@
   <main class="signup-page">
     <div class="signup-card">
       <h1>Create your account</h1>
-      <p class="subtitle">Choose your profile and get started</p>
+      <p class="subtitle" id="cardSubtitle">Choose your profile and get started</p>
+      <div class="step-dots" id="stepDots" style="display:none;">
+        <span class="on" data-i="0"></span><span data-i="1"></span><span data-i="2"></span>
+      </div>
       <a href="#" class="oauth-btn google" id="googleSignupBtn" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 20px;margin-bottom:20px;background:#fff;color:#333;border:1px solid rgba(0,0,0,0.1);border-radius:12px;text-decoration:none;font-size:15px;">
         <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Sign up with Google
       </a>
-      <div class="oauth-divider" style="display:flex;align-items:center;gap:16px;margin:20px 0;"><span style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></span><span style="color:rgba(255,255,255,0.4);font-size:13px;">or</span><span style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></span></div>
+      <div class="oauth-divider" id="oauthDivider" style="display:flex;align-items:center;gap:16px;margin:20px 0;"><span style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></span><span style="color:rgba(255,255,255,0.4);font-size:13px;">or</span><span style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></span></div>
       <form id="signupForm" class="auth-form">
-        <div class="role-tabs" role="group" aria-label="Account type">
-          <label class="role-tab selected" data-value="creator">
-            <input type="radio" name="userType" value="creator" checked> Creator
-          </label>
-          <label class="role-tab" data-value="brand">
-            <input type="radio" name="userType" value="brand"> Brand
-          </label>
-          <label class="role-tab" data-value="sponsor">
-            <input type="radio" name="userType" value="sponsor"> Sponsor
-          </label>
+        <div class="signup-step active" id="stepAccount" data-step="account">
+          <div class="role-tabs" role="group" aria-label="Account type">
+            <label class="role-tab selected" data-value="creator">
+              <input type="radio" name="userType" value="creator" checked> Creator
+            </label>
+            <label class="role-tab" data-value="brand">
+              <input type="radio" name="userType" value="brand"> Brand
+            </label>
+            <label class="role-tab" data-value="sponsor">
+              <input type="radio" name="userType" value="sponsor"> Sponsor
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="name">Full name</label>
+            <input type="text" id="name" name="name" required placeholder="Jane Doe">
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required minlength="6" placeholder="At least 6 characters">
+            <small>Must be at least 6 characters</small>
+          </div>
+          <button type="button" class="btn btn-primary btn-full" id="creatorAccountNext" style="display:none;">Continue</button>
+          <button type="submit" class="btn btn-primary btn-full" id="directSignupSubmit">Create account</button>
         </div>
-        <div class="form-group">
-          <label for="name">Full name</label>
-          <input type="text" id="name" name="name" required placeholder="Jane Doe">
+
+        <div class="signup-step" id="stepContent" data-step="content">
+          <p class="step-title">What type of content do you make?</p>
+          <p class="step-hint">Select everything that fits. Sponsors use this to discover campaigns like yours.</p>
+          <div class="content-type-grid" id="contentTypeGrid"></div>
+          <div class="step-actions">
+            <button type="button" class="btn btn-primary btn-full" id="contentNextBtn">Continue</button>
+            <button type="button" class="btn-secondary-outline" id="contentBackBtn">Back</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" required placeholder="you@example.com">
+
+        <div class="signup-step" id="stepNiche" data-step="niche">
+          <p class="step-title">What’s your niche?</p>
+          <p class="step-hint">Add tags that describe your audience or topic (e.g. <em>indie games</em>, <em>true crime</em>, <em>saas</em>). Press Enter or Add after each one. You need at least one tag.</p>
+          <div class="tag-row">
+            <input type="text" id="tagInput" placeholder="Type a tag and press Enter" autocomplete="off">
+            <button type="button" class="btn btn-primary" id="addTagBtn" style="padding:10px 16px;">Add</button>
+          </div>
+          <div class="tag-pills" id="tagPills" aria-live="polite"></div>
+          <div class="step-actions">
+            <button type="submit" class="btn btn-primary btn-full" id="finalSignupSubmit">Create account</button>
+            <button type="button" class="btn-secondary-outline" id="nicheBackBtn">Back</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" required minlength="6" placeholder="At least 6 characters">
-          <small>Must be at least 6 characters</small>
-        </div>
+
         <div class="form-error" id="formError"></div>
-        <button type="submit" class="btn btn-primary btn-full">Create account</button>
       </form>
       <div class="signup-footer">
         <p>Already have an account? <a href="login.html">Sign in</a></p>
@@ -77,13 +129,14 @@
   <script>
     (function() {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const API_URL = isLocal ? 'http://localhost:37373/api/auth' : (window.location.origin + '/api/auth');
-      const AUTH_BASE = isLocal ? 'http://localhost:37373' : window.location.origin;
+      const API_BASE = isLocal ? 'http://localhost:37373/api' : (window.location.origin + '/api');
+      const API_AUTH = API_BASE + '/auth';
       const form = document.getElementById('signupForm');
       const googleBtn = document.getElementById('googleSignupBtn');
+      const oauthDivider = document.getElementById('oauthDivider');
       function updateGoogleHref() {
         const role = (form.querySelector('input[name="userType"]:checked') || {}).value || 'creator';
-        if (googleBtn) googleBtn.href = AUTH_BASE + '/auth/google?state=' + encodeURIComponent(role);
+        if (googleBtn) googleBtn.href = (isLocal ? 'http://localhost:37373' : window.location.origin) + '/auth/google?state=' + encodeURIComponent(role);
       }
       updateGoogleHref();
       const formError = document.getElementById('formError');
@@ -92,52 +145,244 @@
         formError.textContent = 'Sign-in failed. Please try again.';
         window.history.replaceState({}, '', 'signup.html');
       }
-      const tabs = document.querySelectorAll('.role-tab');
 
-      // Role tab selection
+      const stepAccount = document.getElementById('stepAccount');
+      const stepContent = document.getElementById('stepContent');
+      const stepNiche = document.getElementById('stepNiche');
+      const stepDots = document.getElementById('stepDots');
+      const cardSubtitle = document.getElementById('cardSubtitle');
+      const creatorAccountNext = document.getElementById('creatorAccountNext');
+      const directSignupSubmit = document.getElementById('directSignupSubmit');
+      const contentTypeGrid = document.getElementById('contentTypeGrid');
+      const tagInput = document.getElementById('tagInput');
+      const tagPills = document.getElementById('tagPills');
+      const addTagBtn = document.getElementById('addTagBtn');
+
+      let creatorStepIndex = 0;
+      const selectedContentTypes = new Set();
+      let nicheTags = [];
+
+      const DEFAULT_TYPES = [
+        { id: 'youtube_videos', label: 'YouTube videos' },
+        { id: 'music', label: 'Music' },
+        { id: 'podcasts', label: 'Podcasts' },
+        { id: 'apps', label: 'Apps' },
+      ];
+
+      function normalizeTag(raw) {
+        return String(raw || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 40);
+      }
+
+      function renderContentTypes(types) {
+        contentTypeGrid.innerHTML = '';
+        types.forEach(function(t) {
+          const label = document.createElement('label');
+          label.className = 'content-type-option';
+          label.dataset.id = t.id;
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.value = t.id;
+          cb.addEventListener('change', function() {
+            label.classList.toggle('selected', cb.checked);
+            if (cb.checked) selectedContentTypes.add(t.id); else selectedContentTypes.delete(t.id);
+          });
+          label.appendChild(cb);
+          const span = document.createElement('span');
+          span.textContent = t.label;
+          label.appendChild(span);
+          contentTypeGrid.appendChild(label);
+        });
+      }
+
+      fetch(API_BASE + '/sponsors/creator-taxonomy').then(function(r) { return r.ok ? r.json() : null; }).then(function(data) {
+        if (data && data.contentTypes && data.contentTypes.length) renderContentTypes(data.contentTypes);
+        else renderContentTypes(DEFAULT_TYPES);
+      }).catch(function() { renderContentTypes(DEFAULT_TYPES); });
+
+      function renderTagPills() {
+        tagPills.innerHTML = '';
+        nicheTags.forEach(function(tag, i) {
+          const pill = document.createElement('span');
+          pill.className = 'tag-pill';
+          pill.appendChild(document.createTextNode(tag));
+          const rm = document.createElement('button');
+          rm.type = 'button';
+          rm.setAttribute('aria-label', 'Remove tag');
+          rm.textContent = '×';
+          rm.addEventListener('click', function() {
+            nicheTags = nicheTags.filter(function(_, j) { return j !== i; });
+            renderTagPills();
+          });
+          pill.appendChild(rm);
+          tagPills.appendChild(pill);
+        });
+      }
+
+      function addTagFromInput() {
+        const t = normalizeTag(tagInput.value);
+        tagInput.value = '';
+        if (t.length < 2) return;
+        if (nicheTags.includes(t)) return;
+        if (nicheTags.length >= 25) {
+          formError.textContent = 'Maximum 25 tags.';
+          return;
+        }
+        nicheTags.push(t);
+        formError.textContent = '';
+        renderTagPills();
+      }
+
+      addTagBtn.addEventListener('click', addTagFromInput);
+      tagInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); addTagFromInput(); }
+      });
+
+      function getUserType() {
+        return (form.querySelector('input[name="userType"]:checked') || {}).value || 'creator';
+      }
+
+      function updateRoleUi() {
+        const ut = getUserType();
+        const isCreator = ut === 'creator';
+        creatorAccountNext.style.display = isCreator ? 'block' : 'none';
+        directSignupSubmit.style.display = isCreator ? 'none' : 'block';
+        if (googleBtn) googleBtn.style.display = 'flex';
+        oauthDivider.style.display = 'flex';
+        if (!isCreator) {
+          showStep('account');
+          creatorStepIndex = 0;
+        }
+        updateGoogleHref();
+        updateDots();
+      }
+
+      function updateDots() {
+        if (getUserType() !== 'creator') {
+          stepDots.style.display = 'none';
+          return;
+        }
+        stepDots.style.display = 'flex';
+        stepDots.querySelectorAll('span').forEach(function(s, i) {
+          s.classList.toggle('on', i <= creatorStepIndex);
+        });
+      }
+
+      function showStep(name) {
+        stepAccount.classList.toggle('active', name === 'account');
+        stepContent.classList.toggle('active', name === 'content');
+        stepNiche.classList.toggle('active', name === 'niche');
+        if (name === 'account') creatorStepIndex = 0;
+        if (name === 'content') creatorStepIndex = 1;
+        if (name === 'niche') creatorStepIndex = 2;
+        cardSubtitle.textContent = name === 'account' ? 'Choose your profile and get started' : (name === 'content' ? 'Step 2 of 3' : 'Step 3 of 3');
+        updateDots();
+      }
+
+      const tabs = document.querySelectorAll('.role-tab');
       tabs.forEach(function(tab) {
         tab.addEventListener('click', function() {
           tabs.forEach(function(t) { t.classList.remove('selected'); });
           tab.classList.add('selected');
           tab.querySelector('input').checked = true;
-          updateGoogleHref();
+          updateRoleUi();
         });
       });
+
+      creatorAccountNext.addEventListener('click', function() {
+        formError.textContent = '';
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        if (!name || !email || !password || password.length < 6) {
+          formError.textContent = 'Please fill in name, email, and a password of at least 6 characters.';
+          return;
+        }
+        showStep('content');
+      });
+
+      document.getElementById('contentNextBtn').addEventListener('click', function() {
+        formError.textContent = '';
+        if (selectedContentTypes.size < 1) {
+          formError.textContent = 'Select at least one content type.';
+          return;
+        }
+        showStep('niche');
+      });
+
+      document.getElementById('contentBackBtn').addEventListener('click', function() { showStep('account'); });
+      document.getElementById('nicheBackBtn').addEventListener('click', function() { showStep('content'); });
 
       function getDashboardHref(userType) {
         if (userType === 'sponsor') return 'sponsor-dashboard.html';
         return 'brand-overview.html';
       }
 
-      // Pre-select role from URL ?type=sponsor
       const typeParam = params.get('type');
       if (['creator', 'brand', 'sponsor'].includes(typeParam)) {
         tabs.forEach(function(t) {
           t.classList.toggle('selected', t.dataset.value === typeParam);
           t.querySelector('input').checked = (t.dataset.value === typeParam);
         });
-        updateGoogleHref();
       }
+      updateRoleUi();
+
+      form.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') return;
+        if (getUserType() !== 'creator') return;
+        if (stepNiche.classList.contains('active')) return;
+        const t = e.target;
+        if (t && t.tagName === 'TEXTAREA') return;
+        e.preventDefault();
+        if (stepContent.classList.contains('active')) {
+          document.getElementById('contentNextBtn').click();
+        } else if (stepAccount.classList.contains('active')) {
+          creatorAccountNext.click();
+        }
+      });
 
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
         formError.textContent = '';
+        const userType = getUserType();
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
-        const userType = form.querySelector('input[name="userType"]:checked').value;
+
+        if (userType === 'creator') {
+          if (!stepNiche.classList.contains('active')) {
+            formError.textContent = 'Use Continue to complete all steps.';
+            return;
+          }
+          if (nicheTags.length < 1) {
+            formError.textContent = 'Add at least one niche tag.';
+            return;
+          }
+        }
+
+        if (!name || !email || !password || password.length < 6) {
+          formError.textContent = 'Please fill in name, email, and a password of at least 6 characters.';
+          return;
+        }
+
+        const body = { name, email, password, userType };
+        if (userType === 'creator') {
+          body.creatorContentTypes = Array.from(selectedContentTypes);
+          body.creatorNicheTags = nicheTags.slice();
+        }
+
         try {
-          const res = await fetch(API_URL + '/signup', {
+          const res = await fetch(API_AUTH + '/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, userType })
+            body: JSON.stringify(body)
           });
           const data = await res.json().catch(function() { return {}; });
           if (res.ok) {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             localStorage.setItem('userType', data.user.userType || 'creator');
-            window.location.href = getDashboardHref(data.user.userType);
+            const redir = params.get('redirect');
+            window.location.href = (redir && redir.endsWith('.html')) ? redir : getDashboardHref(data.user.userType);
           } else {
             formError.textContent = data.error || 'Something went wrong. Please try again.';
           }
@@ -145,6 +390,7 @@
           formError.textContent = 'Network error. Please try again.';
         }
       });
+
     })();
   </script>
 </body>
