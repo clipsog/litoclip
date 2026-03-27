@@ -218,6 +218,11 @@
     .campaign-card .meta { font-size: 13px; color: #64748b; }
     .campaign-card .status { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
     .campaign-card .status.active { background: #dcfce7; color: #166534; }
+    .campaign-card-pending { cursor: default; }
+    .campaign-card-main { flex: 1; min-width: 0; }
+    .campaign-card-title-link { text-decoration: none; color: inherit; display: block; }
+    .campaign-card-title-link:hover h4 { color: #2563eb; }
+    .campaign-card .btn-start-campaign.btn-pay-pending { flex-shrink: 0; white-space: nowrap; margin-left: 12px; }
     .quick-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
     .quick-actions a { color: #2563eb; text-decoration: none; font-size: 14px; }
     .quick-actions a:hover { text-decoration: underline; }
@@ -822,13 +827,34 @@
           if (startBtn) startBtn.style.display = 'none';
           document.getElementById('campaignList').innerHTML = '';
           campaigns.forEach(c => {
-            const card = document.createElement('a');
-            card.className = 'campaign-card';
-            card.href = 'campaign-track.html?id=' + encodeURIComponent(c.id) + '&name=' + encodeURIComponent(c.title || 'Untitled');
-            card.style.textDecoration = 'none';
-            card.style.color = 'inherit';
-            card.innerHTML = '<div><h4>' + (c.title || 'Untitled') + '</h4><span class="meta">' + (c.platform || '') + ' &middot; $' + (c.budget || 5) + '/wk</span></div><span class="status active">' + (c.status || 'active') + '</span>';
-            document.getElementById('campaignList').appendChild(card);
+            const statusRaw = (c.status || '').toString();
+            const isPendingPay = /^pending[_\s-]?payment$/i.test(statusRaw.trim());
+            const budgetVal = c.budget != null ? Number(c.budget).toFixed(2) : String(c.budget || 5);
+            const title = c.title || 'Untitled';
+            const platform = c.platform || '';
+            const trackHref = 'campaign-track.html?id=' + encodeURIComponent(c.id) + '&name=' + encodeURIComponent(title);
+            if (isPendingPay) {
+              const card = document.createElement('div');
+              card.className = 'campaign-card campaign-card-pending';
+              card.innerHTML =
+                '<div class="campaign-card-main">' +
+                '<a class="campaign-card-title-link" href="' + trackHref + '">' +
+                '<h4>' + title.replace(/</g, '') + '</h4>' +
+                '<span class="meta">' + platform.replace(/</g, '') + ' &middot; $' + budgetVal + '/wk</span>' +
+                '</a></div>' +
+                '<button type="button" class="btn-start-campaign btn-pay-pending" data-campaign-id="' + String(c.id).replace(/"/g, '') + '">Start campaign</button>';
+              document.getElementById('campaignList').appendChild(card);
+            } else {
+              const card = document.createElement('a');
+              card.className = 'campaign-card';
+              card.href = trackHref;
+              card.style.textDecoration = 'none';
+              card.style.color = 'inherit';
+              var statusLabel = statusRaw || 'active';
+              var statusClass = (statusLabel === 'active') ? 'active' : '';
+              card.innerHTML = '<div><h4>' + title.replace(/</g, '') + '</h4><span class="meta">' + platform.replace(/</g, '') + ' &middot; $' + budgetVal + '/wk</span></div><span class="status ' + statusClass + '">' + statusLabel.replace(/</g, '') + '</span>';
+              document.getElementById('campaignList').appendChild(card);
+            }
           });
         } else {
           campaignsSection.style.display = 'none';
@@ -1327,6 +1353,90 @@
         document.body.style.overflow = '';
         startCampaignPendingDate = null;
       }
+
+      async function launchStripeEmbeddedCheckoutForCampaign(campaignId, amountCents) {
+        var payRes = await fetch(API_URL + '/payments/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            campaignId: campaignId,
+            amountCents: amountCents,
+            currency: 'usd',
+            paymentMethod: 'stripe',
+            checkoutMode: 'embedded'
+          })
+        });
+        var payData = null;
+        try {
+          payData = await payRes.json();
+        } catch (parseErr) {}
+        if (!payRes.ok || !payData) {
+          var payErr = (payData && payData.error) ? payData.error : ('Could not start checkout' + (payRes.status ? ' (HTTP ' + payRes.status + ')' : '') + '.');
+          throw new Error(payErr);
+        }
+        if (payData.checkoutMode === 'hosted' && payData.checkoutUrl) {
+          window.location.href = payData.checkoutUrl;
+          return;
+        }
+        if (payData.checkoutUrl && !payData.clientSecret) {
+          window.location.href = payData.checkoutUrl;
+          return;
+        }
+        var pk = payData.stripePublishableKey;
+        var cs = payData.clientSecret;
+        if (!window.LitoClipsStripePay || !pk || !cs) {
+          throw new Error((payData && payData.error) ? payData.error : 'Missing Stripe client setup. Set STRIPE_PUBLISHABLE_KEY on the server.');
+        }
+        var stripeModal = document.getElementById('stripePayModal');
+        var mountEl = document.getElementById('stripePayMount');
+        var loadingEl = document.getElementById('stripePayLoading');
+        if (mountEl) mountEl.innerHTML = '';
+        if (loadingEl) loadingEl.style.display = 'block';
+        if (stripeModal) stripeModal.classList.add('open');
+        if (stripeEmbeddedCheckoutInstance && typeof stripeEmbeddedCheckoutInstance.destroy === 'function') {
+          try { stripeEmbeddedCheckoutInstance.destroy(); } catch (de1) {}
+        }
+        stripeEmbeddedCheckoutInstance = null;
+        stripeEmbeddedCheckoutInstance = await window.LitoClipsStripePay.mountEmbeddedCheckout({
+          publishableKey: pk,
+          clientSecret: cs,
+          mountEl: mountEl,
+          loadingEl: loadingEl
+        });
+      }
+
+      async function startPendingCampaignCheckout(campaignId, btn) {
+        if (bypass) {
+          var t = campaignsList.find(function(x) { return x.id === campaignId; });
+          var nm = (t && t.title) ? t.title : 'Campaign';
+          window.location.href = 'campaign-track.html?id=' + encodeURIComponent(campaignId) + '&name=' + encodeURIComponent(nm);
+          return;
+        }
+        var prevText = btn ? btn.textContent : '';
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Opening…';
+        }
+        try {
+          var qRes = await fetch(API_URL + '/campaigns/' + encodeURIComponent(campaignId) + '/renewal-quote', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          var qData = null;
+          try { qData = await qRes.json(); } catch (qe) {}
+          if (!qRes.ok || !qData || qData.amountCents == null) {
+            throw new Error((qData && qData.error) ? qData.error : 'Could not load payment amount.');
+          }
+          await launchStripeEmbeddedCheckoutForCampaign(campaignId, qData.amountCents);
+        } catch (err) {
+          alert(err && err.message ? err.message : 'Checkout failed.');
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = prevText || 'Start campaign';
+          }
+        }
+      }
+
       async function startCampaignAndPayWithStripe() {
         for (var vi = 0; vi < START_CAMPAIGN_WIZARD_STEPS; vi++) {
           if (!validateStartCampaignWizardStep(vi)) {
@@ -1407,56 +1517,9 @@
             return;
           }
 
-          var payRes = await fetch(API_URL + '/payments/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({
-              campaignId: createData.id,
-              amountCents: amountCents,
-              currency: 'usd',
-              paymentMethod: 'stripe',
-              checkoutMode: 'embedded'
-            })
-          });
-          var payData = null;
-          try {
-            payData = await payRes.json();
-          } catch (parseErr) {}
-          if (!payRes.ok || !payData) {
-            var payErr = (payData && payData.error) ? payData.error : ('Could not start checkout' + (payRes.status ? ' (HTTP ' + payRes.status + ')' : '') + '.');
-            throw new Error(payErr);
-          }
-          if (payData.checkoutMode === 'hosted' && payData.checkoutUrl) {
-            window.location.href = payData.checkoutUrl;
-            return;
-          }
-          if (payData.checkoutUrl && !payData.clientSecret) {
-            window.location.href = payData.checkoutUrl;
-            return;
-          }
-          var pk = payData.stripePublishableKey;
-          var cs = payData.clientSecret;
-          if (!window.LitoClipsStripePay || !pk || !cs) {
-            throw new Error((payData && payData.error) ? payData.error : 'Missing Stripe client setup. Set STRIPE_PUBLISHABLE_KEY on the server.');
-          }
           closeStartCampaignModal();
-          var stripeModal = document.getElementById('stripePayModal');
-          var mountEl = document.getElementById('stripePayMount');
-          var loadingEl = document.getElementById('stripePayLoading');
-          if (mountEl) mountEl.innerHTML = '';
-          if (loadingEl) loadingEl.style.display = 'block';
-          if (stripeModal) stripeModal.classList.add('open');
           try {
-            if (stripeEmbeddedCheckoutInstance && typeof stripeEmbeddedCheckoutInstance.destroy === 'function') {
-              try { stripeEmbeddedCheckoutInstance.destroy(); } catch (de1) {}
-            }
-            stripeEmbeddedCheckoutInstance = null;
-            stripeEmbeddedCheckoutInstance = await window.LitoClipsStripePay.mountEmbeddedCheckout({
-              publishableKey: pk,
-              clientSecret: cs,
-              mountEl: mountEl,
-              loadingEl: loadingEl
-            });
+            await launchStripeEmbeddedCheckoutForCampaign(createData.id, amountCents);
           } catch (stripeErr) {
             closeStripePayModal();
             throw stripeErr;
@@ -1513,6 +1576,14 @@
         }
       });
       document.getElementById('startCampaignModalFinish')?.addEventListener('click', startCampaignAndPayWithStripe);
+      document.getElementById('campaignList')?.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-pay-pending');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var cid = btn.getAttribute('data-campaign-id');
+        if (cid) startPendingCampaignCheckout(cid, btn);
+      });
       document.getElementById('startCampaignModal')?.addEventListener('click', function(e) {
         if (e.target.id === 'startCampaignModal') closeStartCampaignModal();
       });
