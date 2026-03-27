@@ -7,7 +7,7 @@ const router = express.Router();
 
 // POST /api/campaigns – create a new campaign (authenticated)
 router.post('/', requireAuth, async (req, res) => {
-  const { title, description, niche, platform, budget, rpm, content_link, content_links, platforms, num_accounts, goal, payment_schedule, requirePayment, posts_per_day, acceptSponsorOffers } = req.body || {};
+  const { title, description, niche, platform, budget, rpm, content_link, content_links, platforms, num_accounts, goal, payment_schedule, requirePayment, posts_per_day, acceptSponsorOffers, allowWatermark, watermarkCouponPercent } = req.body || {};
   let contentLinkStored = (content_link || '').trim();
   if (Array.isArray(content_links) && content_links.length) {
     const merged = content_links.map((u) => String(u || '').trim()).filter(Boolean);
@@ -26,10 +26,12 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     const postsPerDayVal = posts_per_day != null ? Math.min(10, Math.max(1, parseInt(posts_per_day, 10))) : null;
     const acceptSponsor = !!acceptSponsorOffers;
+    const allowWatermarkVal = allowWatermark ? 1 : 0;
+    const watermarkCouponVal = allowWatermark ? Math.min(100, Math.max(0, parseFloat(watermarkCouponPercent) || 10)) : 0;
     try {
       await db.prepare(`
-        INSERT INTO campaigns (id, title, description, niche, platform, budget, rpm, status, owner_id, content_link, platforms, num_accounts, goal, payment_schedule, payment_status, posts_per_day, accept_sponsor_offers)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO campaigns (id, title, description, niche, platform, budget, rpm, status, owner_id, content_link, platforms, num_accounts, goal, payment_schedule, payment_status, posts_per_day, accept_sponsor_offers, allow_watermark, watermark_coupon_percent)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         id,
         title.trim(),
@@ -47,10 +49,16 @@ router.post('/', requireAuth, async (req, res) => {
         (payment_schedule || '').trim() || null,
         paymentStatus,
         postsPerDayVal,
-        acceptSponsor ? 1 : 0
+        acceptSponsor ? 1 : 0,
+        allowWatermarkVal,
+        watermarkCouponVal
       );
     } catch (colErr) {
-      if (colErr.message && colErr.message.includes('posts_per_day')) {
+      if (colErr.message && (
+        colErr.message.includes('posts_per_day') ||
+        colErr.message.includes('allow_watermark') ||
+        colErr.message.includes('watermark_coupon_percent')
+      )) {
         await db.prepare(`
           INSERT INTO campaigns (id, title, description, niche, platform, budget, rpm, status, owner_id, content_link, platforms, num_accounts, goal, payment_schedule, payment_status)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

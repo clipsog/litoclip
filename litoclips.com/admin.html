@@ -589,8 +589,8 @@
         function has(re) { return re.test(s); }
         if (!s) return '';
 
-        if (has(/pricing|price|cost|how much|\$5|\$10|budget/)) {
-          return 'Pricing (simple): Week 1-3 is $5 per account/week. Days 1-2 are warm-up (we interact with your niche), then it is 1 post/day on TikTok. Week 4+ is $10 per account/week, and it becomes 3 posts/day per account.';
+        if (has(/pricing|price|cost|how much|\$8\.99|\$13\.99|budget/)) {
+          return 'Pricing (simple): First month is $8.99 per account/week. Days 1-2 are warm-up (we interact with your niche), then it is 1 post/day. Month 2+ is $13.99 per account/week, and it becomes 3 posts/day per account.';
         }
         if (has(/warm.?up|warming up/)) {
           return 'Warm-up is the first 2 days: we interact with accounts in your niche (likes/comments/follows). This helps your first real posts reach people who care.';

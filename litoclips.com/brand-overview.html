@@ -67,6 +67,28 @@
     .start-campaign-wiz-check { display: flex; align-items: flex-start; gap: 12px; margin-top: 20px; margin-bottom: 0; cursor: pointer; }
     .start-campaign-wiz-check input { width: auto; margin-top: 2px; flex-shrink: 0; accent-color: #60a5fa; }
     .start-campaign-wiz-check span { font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.5; }
+    .start-campaign-watermark-preview {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid rgba(96,165,250,0.35);
+      border-radius: 10px;
+      background: rgba(15,23,42,0.45);
+    }
+    .start-campaign-watermark-preview img {
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #020617;
+    }
+    .start-campaign-watermark-preview .caption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.62);
+      line-height: 1.45;
+    }
     .start-campaign-wiz-hint { font-size: 12px; color: rgba(255,255,255,0.5); margin: 8px 0 0 0; line-height: 1.5; }
     .start-campaign-step > .start-campaign-wiz-hint:not(.start-campaign-wiz-lead) { margin-top: 14px; }
     .start-campaign-wiz-lead { font-size: 13px; color: rgba(255,255,255,0.58); line-height: 1.55; margin: 0 0 18px 0; }
@@ -530,6 +552,14 @@
             <input type="checkbox" id="wzSponsor" name="wzSponsor">
             <span>Allow sponsors to view and offer on this campaign</span>
           </label>
+          <label class="start-campaign-wiz-check">
+            <input type="checkbox" id="wzWatermark" name="wzWatermark">
+            <span>Include LitoClips watermark and get 10% off</span>
+          </label>
+          <div class="start-campaign-watermark-preview">
+            <img src="assets/logo-litoclips.png" alt="LitoClips watermark preview">
+            <div class="caption">Preview watermark placement. Enabling this option applies a 10% discount to your first-week checkout.</div>
+          </div>
           <p class="start-campaign-wiz-hint">You can add more platforms and adjust everything on the next screen before anything is saved.</p>
         </div>
 
@@ -571,7 +601,7 @@
           <div class="start-campaign-wiz-pricing">
             <div class="start-campaign-wiz-price-line" id="wzPriceLine"></div>
             <div class="start-campaign-wiz-price-note" id="wzPriceNote"></div>
-            <strong>Pricing</strong> — First month: <strong>$7.99</strong> per account per week (1 post/day). Month 2+: <strong>$12.99</strong> per account per week (3 posts/day); +$2 per extra post/day.
+            <strong>Pricing</strong> — First month: <strong>$8.99</strong> per account per week (1 post/day). Month 2+: <strong>$13.99</strong> per account per week (3 posts/day); +$2 per extra post/day.
           </div>
         </div>
       </form>
@@ -733,8 +763,8 @@
       let startCampaignWizardStep = 0;
       const SAVED_CAMPAIGNS_KEY = 'litoclips_saved_campaigns_v1';
 
-      const WZ_FEE_FIRST_MONTH = 7.99;
-      const WZ_FEE_MONTH2_BASE = 12.99;
+      const WZ_FEE_FIRST_MONTH = 8.99;
+      const WZ_FEE_MONTH2_BASE = 13.99;
       const WZ_FEE_EXTRA_POST = 2;
 
       function calcWzMonth2Total(numAccounts, postsPerDay) {
@@ -793,9 +823,11 @@
           totalAccounts += parseInt(inp.value, 10) || 0;
         });
         var posts = parseInt(postsEl.value, 10) || 3;
-        var firstMonth = (totalAccounts * WZ_FEE_FIRST_MONTH).toFixed(2);
+        var includeWatermark = !!(document.getElementById('wzWatermark') && document.getElementById('wzWatermark').checked);
+        var firstMonthRaw = totalAccounts * WZ_FEE_FIRST_MONTH;
+        var firstMonth = (includeWatermark ? (firstMonthRaw * 0.9) : firstMonthRaw).toFixed(2);
         var month2 = calcWzMonth2Total(totalAccounts, posts);
-        lineEl.textContent = '$' + firstMonth + '/wk — 1st month (1 post/day per account)';
+        lineEl.textContent = '$' + firstMonth + '/wk — 1st month (1 post/day per account)' + (includeWatermark ? ' · 10% watermark discount' : '');
         if (noteEl) {
           noteEl.textContent = 'Month 2+: $' + month2 + '/wk' + (posts > 3 ? ' (' + posts + ' posts/day)' : ' (3 posts/day)');
         }
@@ -858,6 +890,8 @@
         if (t) t.value = '';
         var s = document.getElementById('wzSponsor');
         if (s) s.checked = false;
+        var w = document.getElementById('wzWatermark');
+        if (w) w.checked = false;
         setWzContentLinkRows(['']);
         var n = document.getElementById('wzNarrative');
         if (n) n.value = '';
@@ -974,6 +1008,7 @@
       function saveWizardForLater() {
         var title = (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '';
         var acceptSponsorOffers = !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked);
+        var includeWatermark = !!(document.getElementById('wzWatermark') && document.getElementById('wzWatermark').checked);
         var contentUrls = getWzContentLinkUrls();
         var content = contentUrls.join('\n');
         var narrative = (document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim()) || '';
@@ -999,6 +1034,7 @@
           step: startCampaignWizardStep,
           title: title,
           acceptSponsorOffers: acceptSponsorOffers,
+          includeWatermark: includeWatermark,
           content: content,
           contentLinks: contentUrls,
           narrative: narrative,
@@ -1025,6 +1061,8 @@
         if (t) t.value = saved.title || '';
         var s = document.getElementById('wzSponsor');
         if (s) s.checked = !!saved.acceptSponsorOffers;
+        var w = document.getElementById('wzWatermark');
+        if (w) w.checked = !!saved.includeWatermark;
         var linkList = Array.isArray(saved.contentLinks) ? saved.contentLinks.slice() : [];
         if (!linkList.length && saved.content) {
           linkList = String(saved.content).split(/\n+/).map(function(x) { return x.trim(); }).filter(Boolean);
@@ -1182,6 +1220,7 @@
         var goal = (document.getElementById('wzGoal') && document.getElementById('wzGoal').value) || '';
         var posts = parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3;
         var acceptSponsor = !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked);
+        var includeWatermark = !!(document.getElementById('wzWatermark') && document.getElementById('wzWatermark').checked);
 
         var rowEls = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
         var rows = [];
@@ -1202,7 +1241,8 @@
         var platforms = rows.map(function(r) { return r.platform; });
         var primaryPlatform = platforms[0] || null;
 
-        var budgetDollars = parseFloat((totalAccounts * WZ_FEE_FIRST_MONTH).toFixed(2));
+        var firstWeekRaw = totalAccounts * WZ_FEE_FIRST_MONTH;
+        var budgetDollars = parseFloat((includeWatermark ? (firstWeekRaw * 0.9) : firstWeekRaw).toFixed(2));
         var amountCents = Math.max(100, Math.round(budgetDollars * 100));
 
         try {
@@ -1222,7 +1262,9 @@
               requirePayment: true,
               posts_per_day: posts,
               budget: budgetDollars,
-              acceptSponsorOffers: acceptSponsor
+              acceptSponsorOffers: acceptSponsor,
+              allowWatermark: includeWatermark,
+              watermarkCouponPercent: includeWatermark ? 10 : 0
             })
           });
 
@@ -1278,6 +1320,7 @@
         syncWzContentLinkRemoveButtons();
       });
       document.getElementById('wzPostsPerDay')?.addEventListener('input', updateModalWizardPrice);
+      document.getElementById('wzWatermark')?.addEventListener('change', updateModalWizardPrice);
 
       updateSavedCampaignsButton();
 
@@ -1911,8 +1954,8 @@
         if (!s) return '';
 
         // Pricing / payment / schedule
-        if (has(/pricing|price|cost|how much|\$5|\$10|budget/)) {
-          return 'Pricing (simple): Week 1-3 is $5 per account/week. Days 1-2 are warm-up (we interact with your niche), then it is 1 post/day on TikTok. Week 4+ is $10 per account/week, and it becomes 3 posts/day per account.';
+        if (has(/pricing|price|cost|how much|\$8\.99|\$13\.99|budget/)) {
+          return 'Pricing (simple): First month is $8.99 per account/week. Days 1-2 are warm-up (we interact with your niche), then it is 1 post/day. Month 2+ is $13.99 per account/week, and it becomes 3 posts/day per account.';
         }
         if (has(/warm.?up|warming up/)) {
           return 'Warm-up is the first 2 days: we interact with accounts in your niche (likes/comments/follows). This helps your first real posts reach people who care.';
