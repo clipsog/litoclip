@@ -19,6 +19,7 @@ const adminRoutes = require('./routes/admin');
 const brandApplicationsRoutes = require('./routes/brandApplications');
 const paymentsRoutes = require('./routes/payments');
 const supportRoutes = require('./routes/support');
+const { optionalAuth } = require('./middleware/auth');
 
 const app = express();
 app.use(cors({ origin: config.frontendOrigin, credentials: true }));
@@ -91,6 +92,10 @@ if (config.stripe.secretKey && config.stripe.webhookSecret) {
 }
 
 app.use(express.json());
+
+// Attach req.user from Bearer JWT for all JSON API routes (requireAuth only checks req.user).
+// Stripe webhook and /api/health are registered above and skip this.
+app.use('/api', optionalAuth);
 
 // OAuth callback routes at /auth/discord, /auth/google (must be before /api so redirects work)
 try {
