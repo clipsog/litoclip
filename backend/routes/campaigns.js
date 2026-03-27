@@ -288,6 +288,55 @@ router.get('/:id/sponsor-settings', requireAuth, async (req, res) => {
   });
 });
 
+// GET /api/campaigns/:id/renewal-quote – next-week amount for owner (Stripe renewal on campaign-track)
+router.get('/:id/renewal-quote', requireAuth, async (req, res) => {
+  const WZ_FIRST = 8.99;
+  const WZ_M2 = 13.99;
+  const WZ_EXTRA = 2;
+  const id = req.params.id;
+  let row;
+  try {
+    row = await db.prepare(`
+      SELECT id, owner_id, num_accounts, posts_per_day, allow_watermark, started_at
+      FROM campaigns WHERE id = ?
+    `).get(id);
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to load campaign' });
+  }
+  if (!row) return res.status(404).json({ error: 'Campaign not found' });
+  if (row.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+
+  const n = Math.max(1, parseInt(row.num_accounts, 10) || 1);
+  const postsRaw = parseInt(row.posts_per_day, 10);
+  const posts = Number.isFinite(postsRaw) ? Math.min(10, Math.max(3, postsRaw)) : 3;
+
+  let inFirstPricingWindow = true;
+  if (row.started_at) {
+    const startMs = new Date(row.started_at).getTime();
+    if (!Number.isNaN(startMs)) {
+      inFirstPricingWindow = (Date.now() - startMs) < 7 * 24 * 60 * 60 * 1000;
+    }
+  }
+
+  let amountUsd;
+  if (inFirstPricingWindow) {
+    let base = n * WZ_FIRST;
+    if (row.allow_watermark) base *= 0.9;
+    amountUsd = base;
+  } else {
+    amountUsd = n * (WZ_M2 + Math.max(0, posts - 3) * WZ_EXTRA);
+  }
+
+  const amountCents = Math.max(100, Math.round(amountUsd * 100));
+  res.json({
+    amountCents,
+    amountUsd: Math.round(amountUsd * 100) / 100,
+    numAccounts: n,
+    postsPerDay: posts,
+    pricingTier: inFirstPricingWindow ? 'first_week' : 'month_2_plus',
+  });
+});
+
 // PUT /api/campaigns/:id/sponsor-settings – update (creator, own campaign)
 router.put('/:id/sponsor-settings', requireAuth, async (req, res) => {
   const { acceptSponsorOffers, allowWatermark, watermarkCouponPercent } = req.body || {};

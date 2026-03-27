@@ -144,6 +144,7 @@
           <input type="checkbox" id="autoCharge" checked>
           Automatically charge me each week so I don't have to pay manually
         </label>
+        <p id="autoChargeNote" style="font-size:12px;color:#0c4a6e;margin:-8px 0 12px 0;line-height:1.45;">True card auto-billing each week is not wired yet. We save this preference on this device for now. Use the button below to pay the next week with Stripe when you are ready.</p>
         <button type="button" class="btn-pay" id="payBtn">Pay for next week</button>
       </div>
     </div>
@@ -313,6 +314,16 @@
       loadSponsorSettings();
       document.getElementById('acceptSponsorOffers')?.addEventListener('change', saveSponsorSettings);
 
+      (function initAutoChargeCheckbox() {
+        var ac = document.getElementById('autoCharge');
+        if (!ac || bypass || !campaignId || campaignId === 'demo') return;
+        try {
+          var saved = localStorage.getItem('litoclips_auto_charge_' + campaignId);
+          if (saved === '0') ac.checked = false;
+          if (saved === '1') ac.checked = true;
+        } catch (e) {}
+      })();
+
       function formatDateKey(d) {
         const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
         return y + '-' + m + '-' + day;
@@ -402,13 +413,55 @@
 
       buildCalendar();
 
-      document.getElementById('payBtn').addEventListener('click', function() {
+      document.getElementById('payBtn').addEventListener('click', async function() {
         const autoCharge = document.getElementById('autoCharge').checked;
         if (bypass) {
-          alert('Demo: Payment would be processed. Auto-charge ' + (autoCharge ? 'enabled' : 'disabled') + '.');
+          alert('Demo: In production this opens Stripe Checkout. Auto-charge preference: ' + (autoCharge ? 'on' : 'off') + '.');
           return;
         }
-        alert('Payment would be processed. Auto-charge ' + (autoCharge ? 'enabled' : 'disabled') + '.');
+        if (!campaignId || campaignId === 'demo') {
+          alert('Open this page from your dashboard with a real campaign to pay.');
+          return;
+        }
+        var payBtn = this;
+        var prevText = payBtn.textContent;
+        payBtn.disabled = true;
+        payBtn.textContent = 'Opening checkout…';
+        try {
+          if (autoCharge) {
+            try { localStorage.setItem('litoclips_auto_charge_' + campaignId, '1'); } catch (e0) {}
+          } else {
+            try { localStorage.removeItem('litoclips_auto_charge_' + campaignId); } catch (e1) {}
+          }
+          var qRes = await fetch(API_URL + '/campaigns/' + encodeURIComponent(campaignId) + '/renewal-quote', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          var qData = null;
+          try { qData = await qRes.json(); } catch (e2) {}
+          if (!qRes.ok || !qData || qData.amountCents == null) {
+            throw new Error((qData && qData.error) ? qData.error : 'Could not calculate your renewal amount.');
+          }
+          var payRes = await fetch(API_URL + '/payments/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+              campaignId: campaignId,
+              amountCents: qData.amountCents,
+              currency: 'usd',
+              paymentMethod: 'stripe'
+            })
+          });
+          var payData = null;
+          try { payData = await payRes.json(); } catch (e3) {}
+          if (!payRes.ok || !payData || !payData.checkoutUrl) {
+            throw new Error((payData && payData.error) ? payData.error : ('Could not start checkout' + (payRes.status ? ' (HTTP ' + payRes.status + ')' : '') + '.'));
+          }
+          window.location.href = payData.checkoutUrl;
+        } catch (err) {
+          alert(err && err.message ? err.message : 'Payment could not be started.');
+          payBtn.disabled = false;
+          payBtn.textContent = prevText;
+        }
       });
     })();
   </script>
