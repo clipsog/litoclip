@@ -886,12 +886,25 @@ body.dashboard-theme.gradient-section-bg .day-modal .warmup-desc {
 .hero-title {
   font-family: 'Poppins', sans-serif;
     font-weight: 600;
-  font-size: clamp(36px, 5vw, 58px);
-  line-height: 1.15;
-  letter-spacing: -1.5px;
-  text-transform: capitalize;
+  font-size: clamp(28px, 4.2vw, 52px);
+  line-height: 1.18;
+  letter-spacing: -1.2px;
+  text-transform: none;
   animation: fadeInUp 0.8s ease forwards;
   animation-delay: 0.3s;
+  opacity: 0;
+}
+
+.hero-sublead {
+  margin: -8px 0 0 0;
+  max-width: 640px;
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(17px, 2.2vw, 22px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.88);
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0.4s;
   opacity: 0;
 }
 
