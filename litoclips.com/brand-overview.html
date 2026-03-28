@@ -820,6 +820,8 @@
       const bypass = token === 'demo-bypass-token';
       loadAccountBalance();
 
+      let campaignsList = [];
+
       function renderCampaigns(campaigns) {
         const campaignsSection = document.getElementById('campaignsSection');
         const startBtn = document.getElementById('startCampaignBtn');
@@ -901,11 +903,29 @@
         }).then(r => r.ok ? r.json() : []).catch(() => []).then(renderSponsorOffers);
       }
 
-      let campaignsList = [];
       let startCampaignPendingDate = null;
       const START_CAMPAIGN_WIZARD_STEPS = 4;
       let startCampaignWizardStep = 0;
-      const SAVED_CAMPAIGNS_KEY = 'litoclips_saved_campaigns_v1';
+      /** From GET /campaigns/saved-drafts; demo bypass uses session-only entries. */
+      var savedCampaignsCache = [];
+
+      async function refreshSavedCampaigns() {
+        if (bypass) {
+          updateSavedCampaignsButton();
+          return;
+        }
+        try {
+          var r = await fetch(API_URL + '/campaigns/saved-drafts', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (!r.ok) throw new Error('Failed to load saved campaigns');
+          savedCampaignsCache = await r.json();
+        } catch (err) {
+          console.error(err);
+          savedCampaignsCache = [];
+        }
+        updateSavedCampaignsButton();
+      }
 
       const WZ_FEE_FIRST_MONTH = 8.99;
       const WZ_FEE_MONTH2_BASE = 13.99;
@@ -1057,19 +1077,7 @@
       }
 
       function getSavedCampaigns() {
-        var raw = localStorage.getItem(SAVED_CAMPAIGNS_KEY);
-        if (!raw) return [];
-        try {
-          var parsed = JSON.parse(raw);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-          return [];
-        }
-      }
-      function setSavedCampaigns(list) {
-        try {
-          localStorage.setItem(SAVED_CAMPAIGNS_KEY, JSON.stringify(list));
-        } catch (e) {}
+        return savedCampaignsCache;
       }
       function updateSavedCampaignsButton() {
         var list = getSavedCampaigns();
@@ -1129,11 +1137,28 @@
           deleteBtn.type = 'button';
           deleteBtn.className = 'btn-saved-delete';
           deleteBtn.textContent = 'Delete';
-          deleteBtn.addEventListener('click', function() {
-            var current = getSavedCampaigns().filter(function(x) { return x.id !== saved.id; });
-            setSavedCampaigns(current);
-            updateSavedCampaignsButton();
-            renderSavedCampaignsList();
+          deleteBtn.addEventListener('click', async function() {
+            if (bypass) {
+              savedCampaignsCache = getSavedCampaigns().filter(function(x) { return x.id !== saved.id; });
+              updateSavedCampaignsButton();
+              renderSavedCampaignsList();
+              return;
+            }
+            try {
+              var delRes = await fetch(API_URL + '/campaigns/saved-drafts/' + encodeURIComponent(saved.id), {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+              });
+              if (!delRes.ok) {
+                var delErr = await delRes.json().catch(function() { return {}; });
+                throw new Error(delErr.error || 'Could not delete saved campaign');
+              }
+              savedCampaignsCache = getSavedCampaigns().filter(function(x) { return x.id !== saved.id; });
+              updateSavedCampaignsButton();
+              renderSavedCampaignsList();
+            } catch (err) {
+              alert(err && err.message ? err.message : 'Could not delete saved campaign');
+            }
           });
 
           actions.appendChild(resumeBtn);
@@ -1144,7 +1169,8 @@
           listEl.appendChild(item);
         });
       }
-      function openSavedCampaignsModal() {
+      async function openSavedCampaignsModal() {
+        await refreshSavedCampaigns();
         renderSavedCampaignsList();
         var modal = document.getElementById('savedCampaignsModal');
         if (modal) modal.classList.add('open');
@@ -1153,7 +1179,7 @@
         var modal = document.getElementById('savedCampaignsModal');
         if (modal) modal.classList.remove('open');
       }
-      function saveWizardForLater() {
+      async function saveWizardForLater() {
         var title = (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '';
         var acceptSponsorOffers = !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked);
         var includeWatermark = !!(document.getElementById('wzWatermark') && document.getElementById('wzWatermark').checked);
@@ -1176,9 +1202,7 @@
           });
         }
 
-        var saved = {
-          id: 'saved-' + Date.now() + '-' + Math.random().toString(16).slice(2),
-          savedAt: Date.now(),
+        var payload = {
           step: startCampaignWizardStep,
           title: title,
           acceptSponsorOffers: acceptSponsorOffers,
@@ -1191,12 +1215,39 @@
           rows: rows
         };
 
-        var list = getSavedCampaigns();
-        list.unshift(saved);
-        setSavedCampaigns(list);
-        updateSavedCampaignsButton();
-        renderSavedCampaignsList();
-        closeStartCampaignModal();
+        if (bypass) {
+          var demoSaved = Object.assign({}, payload, {
+            id: 'saved-' + Date.now() + '-' + Math.random().toString(16).slice(2),
+            savedAt: Date.now()
+          });
+          savedCampaignsCache.unshift(demoSaved);
+          updateSavedCampaignsButton();
+          renderSavedCampaignsList();
+          closeStartCampaignModal();
+          return;
+        }
+
+        try {
+          var res = await fetch(API_URL + '/campaigns/saved-drafts', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) {
+            var errBody = await res.json().catch(function() { return {}; });
+            throw new Error(errBody.error || 'Could not save campaign');
+          }
+          var saved = await res.json();
+          savedCampaignsCache.unshift(saved);
+          updateSavedCampaignsButton();
+          renderSavedCampaignsList();
+          closeStartCampaignModal();
+        } catch (err) {
+          alert(err && err.message ? err.message : 'Could not save campaign');
+        }
       }
 
       function applySavedCampaignToWizard(saved) {
@@ -1550,7 +1601,7 @@
       document.getElementById('wzPostsPerDay')?.addEventListener('input', updateModalWizardPrice);
       document.getElementById('wzWatermark')?.addEventListener('change', updateModalWizardPrice);
 
-      updateSavedCampaignsButton();
+      refreshSavedCampaigns();
 
       document.getElementById('startCampaignBtn')?.addEventListener('click', function() { openStartCampaignModal(null); });
       document.getElementById('newCampaignQuickLink')?.addEventListener('click', function(e) {

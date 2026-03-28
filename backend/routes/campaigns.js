@@ -6,6 +6,27 @@ const { normalizeContentTypes, normalizeNicheTags, parseJsonArray } = require('.
 
 const router = express.Router();
 
+function mapDraftRowToClient(r) {
+  if (!r) return null;
+  let p = {};
+  try {
+    p = typeof r.payload === 'string' ? JSON.parse(r.payload || '{}') : (r.payload || {});
+  } catch (e) {
+    p = {};
+  }
+  const ts = r.updated_at != null ? r.updated_at : r.created_at;
+  let savedAt = Date.now();
+  try {
+    if (ts != null) savedAt = new Date(ts).getTime();
+  } catch (e) {}
+  const titleFromRow = (r.title != null && String(r.title).trim()) ? String(r.title).trim() : '';
+  return Object.assign({}, p, {
+    id: r.id,
+    savedAt,
+    title: titleFromRow || (p.title || ''),
+  });
+}
+
 // POST /api/campaigns – create a new campaign (authenticated)
 router.post('/', requireAuth, async (req, res) => {
   const { title, description, niche, platform, budget, rpm, content_link, content_links, platforms, num_accounts, goal, payment_schedule, requirePayment, posts_per_day, acceptSponsorOffers, allowWatermark, watermarkCouponPercent } = req.body || {};
@@ -252,6 +273,68 @@ router.get('/my-sponsor-offers', requireAuth, async (req, res) => {
     })));
   } catch (e) {
     res.json([]);
+  }
+});
+
+// GET /api/campaigns/saved-drafts — start-campaign wizard drafts (authenticated owner)
+router.get('/saved-drafts', requireAuth, async (req, res) => {
+  try {
+    const rows = await db.prepare(`
+      SELECT id, title, payload, created_at, updated_at FROM campaign_drafts WHERE owner_id = ? ORDER BY updated_at DESC
+    `).all(req.user.id);
+    res.json(rows.map(mapDraftRowToClient));
+  } catch (e) {
+    console.error('saved-drafts list', e);
+    res.status(500).json({ error: 'Failed to load saved drafts' });
+  }
+});
+
+// POST /api/campaigns/saved-drafts
+router.post('/saved-drafts', requireAuth, async (req, res) => {
+  const body = req.body || {};
+  const id = uuid();
+  const rawTitle = body.title != null ? String(body.title).trim() : '';
+  const title = rawTitle || 'Untitled campaign';
+  const payloadObj = {
+    step: body.step,
+    title: body.title,
+    acceptSponsorOffers: body.acceptSponsorOffers,
+    includeWatermark: body.includeWatermark,
+    content: body.content,
+    contentLinks: body.contentLinks,
+    narrative: body.narrative,
+    goal: body.goal,
+    postsPerDay: body.postsPerDay,
+    rows: body.rows,
+  };
+  const payload = JSON.stringify(payloadObj);
+  try {
+    await db.prepare(`
+      INSERT INTO campaign_drafts (id, owner_id, title, payload) VALUES (?, ?, ?, ?)
+    `).run(id, req.user.id, title, payload);
+    const row = await db.prepare(`
+      SELECT id, title, payload, created_at, updated_at FROM campaign_drafts WHERE id = ?
+    `).get(id);
+    res.status(201).json(mapDraftRowToClient(row));
+  } catch (e) {
+    console.error('saved-drafts create', e);
+    res.status(500).json({ error: 'Failed to save draft' });
+  }
+});
+
+// DELETE /api/campaigns/saved-drafts/:draftId
+router.delete('/saved-drafts/:draftId', requireAuth, async (req, res) => {
+  const draftId = req.params.draftId;
+  try {
+    const result = await db.prepare(`
+      DELETE FROM campaign_drafts WHERE id = ? AND owner_id = ?
+    `).run(draftId, req.user.id);
+    const n = result.changes != null ? result.changes : 0;
+    if (!n) return res.status(404).json({ error: 'Draft not found' });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('saved-drafts delete', e);
+    res.status(500).json({ error: 'Failed to delete draft' });
   }
 });
 

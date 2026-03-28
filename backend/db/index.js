@@ -43,6 +43,17 @@ if (config.databaseUrl) {
       await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS creator_niche_tags TEXT');
       await pool.query('ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS content_types TEXT');
       await pool.query('ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS niche_tags TEXT');
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS campaign_drafts (
+          id TEXT PRIMARY KEY,
+          owner_id TEXT NOT NULL REFERENCES users(id),
+          title TEXT,
+          payload TEXT NOT NULL,
+          created_at TIMESTAMPTZ DEFAULT NOW(),
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        )
+      `);
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_campaign_drafts_owner ON campaign_drafts(owner_id)');
     }
     ensureSchemaFn = runSchemaPg;
     return db;

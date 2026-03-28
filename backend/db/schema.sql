@@ -150,6 +150,18 @@ CREATE TABLE IF NOT EXISTS affiliate_commissions (
   FOREIGN KEY (referred_id) REFERENCES users(id)
 );
 
+-- Brand "save for later" wizard drafts (per user, not localStorage)
+CREATE TABLE IF NOT EXISTS campaign_drafts (
+  id TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL,
+  title TEXT,
+  payload TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now')),
+  FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+CREATE INDEX IF NOT EXISTS idx_campaign_drafts_owner ON campaign_drafts(owner_id);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_submissions_user ON submissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_campaign ON submissions(campaign_id);

@@ -105,6 +105,18 @@ function run(sqlite) {
   try { sqlite.prepare('ALTER TABLE users ADD COLUMN creator_niche_tags TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
   try { sqlite.prepare('ALTER TABLE campaigns ADD COLUMN content_types TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
   try { sqlite.prepare('ALTER TABLE campaigns ADD COLUMN niche_tags TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS campaign_drafts (
+      id TEXT PRIMARY KEY,
+      owner_id TEXT NOT NULL,
+      title TEXT,
+      payload TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (owner_id) REFERENCES users(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_campaign_drafts_owner ON campaign_drafts(owner_id);
+  `);
 }
 
 module.exports = { run };

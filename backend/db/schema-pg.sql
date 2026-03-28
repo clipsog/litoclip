@@ -241,6 +241,15 @@ CREATE TABLE IF NOT EXISTS sponsor_deals (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS campaign_drafts (
+  id TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL REFERENCES users(id),
+  title TEXT,
+  payload TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_submissions_user ON submissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_campaign ON submissions(campaign_id);
@@ -258,3 +267,4 @@ CREATE INDEX IF NOT EXISTS idx_campaign_posts_campaign ON campaign_posts(campaig
 CREATE INDEX IF NOT EXISTS idx_campaign_posts_date ON campaign_posts(post_date);
 CREATE INDEX IF NOT EXISTS idx_sponsor_deals_campaign ON sponsor_deals(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_sponsor_deals_offer ON sponsor_deals(offer_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_drafts_owner ON campaign_drafts(owner_id);
