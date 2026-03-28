@@ -1881,6 +1881,14 @@ body.dashboard-theme.gradient-section-bg .day-modal .warmup-desc {
   gap: 24px;
 }
 
+/* Two visible cards (e.g. Earn From Sponsors): use 2 columns, centered — not 3 cols with empty third */
+.selfserve-grid--cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 880px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .selfserve-item {
   padding: 24px;
   background: rgba(255, 255, 255, 0.02);
@@ -2150,6 +2158,9 @@ body.dashboard-theme.gradient-section-bg .day-modal .warmup-desc {
 @media (max-width: 768px) {
   .selfserve-grid {
     grid-template-columns: 1fr;
+  }
+  .selfserve-grid--cols-2 {
+    max-width: none;
   }
   .dp-cal-month .dp-day {
     min-height: 32px;
