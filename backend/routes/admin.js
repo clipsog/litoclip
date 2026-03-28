@@ -72,7 +72,8 @@ router.post('/campaigns', async (req, res) => {
 
 // PUT /api/admin/campaigns/:id
 router.put('/campaigns/:id', async (req, res) => {
-  const { title, description, niche, platform, budget, rpm, status, cover_image } = req.body || {};
+  const body = req.body || {};
+  const { title, description, niche, platform, budget, rpm, status, cover_image, content_bank } = body;
   const id = req.params.id;
   const row = await db.prepare('SELECT id FROM campaigns WHERE id = ?').get(id);
   if (!row) return res.status(404).json({ error: 'Campaign not found' });
@@ -91,6 +92,14 @@ router.put('/campaigns/:id', async (req, res) => {
     title ?? null, description ?? null, niche ?? null, platform ?? null,
     budget ?? null, rpm ?? null, status ?? null, cover_image ?? null, id
   );
+  if (content_bank !== undefined) {
+    const v = content_bank === null || String(content_bank).trim() === '' ? null : String(content_bank).trim();
+    try {
+      await db.prepare('UPDATE campaigns SET content_bank = ? WHERE id = ?').run(v, id);
+    } catch (e) {
+      if (!e.message || !e.message.includes('no such column')) throw e;
+    }
+  }
   const updated = await db.prepare('SELECT * FROM campaigns WHERE id = ?').get(id);
   res.json(updated);
 });
@@ -384,20 +393,27 @@ router.get('/users-with-campaigns', async (req, res) => {
     let campaigns;
     try {
       campaigns = await db.prepare(`
-        SELECT id, title, platform, platforms, status, owner_id, content_link, num_accounts, goal, created_at, started_at
+        SELECT id, title, platform, platforms, status, owner_id, content_link, content_bank, num_accounts, goal, created_at, started_at
         FROM campaigns WHERE owner_id IS NOT NULL ORDER BY created_at DESC
       `).all();
     } catch (e) {
       try {
         campaigns = await db.prepare(`
-          SELECT id, title, platform, platforms, status, owner_id, content_link, num_accounts, goal, created_at
+          SELECT id, title, platform, platforms, status, owner_id, content_link, num_accounts, goal, created_at, started_at
           FROM campaigns WHERE owner_id IS NOT NULL ORDER BY created_at DESC
         `).all();
       } catch (e2) {
-        campaigns = await db.prepare(`
-          SELECT id, title, platform, status, owner_id, content_link, num_accounts, goal, created_at
-          FROM campaigns WHERE owner_id IS NOT NULL ORDER BY created_at DESC
-        `).all();
+        try {
+          campaigns = await db.prepare(`
+            SELECT id, title, platform, platforms, status, owner_id, content_link, num_accounts, goal, created_at
+            FROM campaigns WHERE owner_id IS NOT NULL ORDER BY created_at DESC
+          `).all();
+        } catch (e3) {
+          campaigns = await db.prepare(`
+            SELECT id, title, platform, status, owner_id, content_link, num_accounts, goal, created_at
+            FROM campaigns WHERE owner_id IS NOT NULL ORDER BY created_at DESC
+          `).all();
+        }
       }
     }
     const byUser = {};
@@ -412,7 +428,7 @@ router.get('/users-with-campaigns', async (req, res) => {
         }
         byUser[c.owner_id].campaigns.push({
           id: c.id, title: c.title, platform: c.platform, platforms: platformsStr || c.platform,
-          contentLink: c.content_link, numAccounts: c.num_accounts, goal: c.goal, createdAt: c.created_at,
+          contentLink: c.content_link, contentBank: c.content_bank || '', numAccounts: c.num_accounts, goal: c.goal, createdAt: c.created_at,
           startedAt: c.started_at || c.created_at
         });
       }

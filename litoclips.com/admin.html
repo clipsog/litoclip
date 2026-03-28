@@ -735,8 +735,8 @@
         { id: 'u2', name: 'Jules Park', email: 'jules@label.com', isAdmin: false }
       ],
       withCampaigns: [
-        { id: 'u1', campaigns: [{ id: 'c1', title: 'Summer single launch', platforms: 'tiktok, instagram', platform: 'tiktok', contentLink: 'https://youtube.com/watch?v=demo1', numAccounts: 3, goal: 'awareness', createdAt: new Date().toISOString(), startedAt: new Date().toISOString() }] },
-        { id: 'u2', campaigns: [{ id: 'c2', title: 'Podcast guest run', platforms: 'x, youtube', platform: 'youtube', contentLink: 'https://drive.google.com/demo2', numAccounts: 2, goal: 'pr', createdAt: new Date().toISOString(), startedAt: new Date().toISOString() }] }
+        { id: 'u1', campaigns: [{ id: 'c1', title: 'Summer single launch', platforms: 'tiktok, instagram', platform: 'tiktok', contentLink: 'https://youtube.com/watch?v=demo1', contentBank: '', numAccounts: 3, goal: 'awareness', createdAt: new Date().toISOString(), startedAt: new Date().toISOString() }] },
+        { id: 'u2', campaigns: [{ id: 'c2', title: 'Podcast guest run', platforms: 'x, youtube', platform: 'youtube', contentLink: 'https://drive.google.com/demo2', contentBank: 'https://drive.google.com/drive/folders/demo-clips', numAccounts: 2, goal: 'pr', createdAt: new Date().toISOString(), startedAt: new Date().toISOString() }] }
       ],
       submissions: [
         { id: 's1', userId: 'u1', campaignId: 'c1', campaignTitle: 'Summer single launch', postUrl: 'https://tiktok.com/@demo/video/1', views: 12500, earnings: 62.5, status: 'pending' }
@@ -1209,6 +1209,7 @@
                   if (c.platforms) infoParts.push('Platforms: ' + c.platforms);
                   if (c.numAccounts) infoParts.push(numAccts + ' account' + (numAccts !== 1 ? 's' : ''));
                   if (c.contentLink) infoParts.push('Content: ' + c.contentLink);
+                  if (c.contentBank) infoParts.push('Content bank: ' + c.contentBank);
                   if (c.goal) infoParts.push('Goal: ' + c.goal);
                   const infoText = infoParts.join(' · ');
                   const safeInfo = infoText.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -1251,7 +1252,14 @@
                   const linksHtml = contentLinks.length
                     ? '<ul class="content-links-list">' + contentLinks.map(link => '<li><a href="' + link.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener" style="color:var(--teal);">' + link.replace(/</g, '&lt;') + '</a></li>').join('') + '</ul>'
                     : '<p style="font-size:12px;color:var(--text-muted);margin:8px 0 0;">No content links uploaded yet.</p>';
-                  return '<div class="campaign-block" style="margin-bottom:20px;"><div class="campaign-row" style="margin-bottom:8px;"><strong>' + c.title + '</strong></div><div style="font-size:12px;color:var(--text-secondary);margin:4px 0 10px;"><strong>Platform:</strong> ' + getPrimaryPlatform(c) + ' · <strong>Content links:</strong>' + linksHtml + '</div>' + calHtml + '</div>';
+                  const bankEsc = String(c.contentBank || '').replace(/"/g, '&quot;');
+                  const bankRow = '<div class="content-bank-block" style="margin:10px 0 12px;padding:10px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;">'
+                    + '<label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">Content bank <span style="color:var(--text-muted);font-weight:400;">— Pre-clipped clips (e.g. Google Drive folder)</span></label>'
+                    + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
+                    + '<input type="url" class="content-bank-input" data-campaign-id="' + c.id + '" value="' + bankEsc + '" placeholder="https://drive.google.com/..." style="flex:1;min-width:220px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);font-size:13px;">'
+                    + '<button type="button" class="btn-sm btn-primary-sm save-content-bank" data-campaign-id="' + c.id + '">Save</button>'
+                    + '</div></div>';
+                  return '<div class="campaign-block" style="margin-bottom:20px;"><div class="campaign-row" style="margin-bottom:8px;"><strong>' + c.title + '</strong></div><div style="font-size:12px;color:var(--text-secondary);margin:4px 0 10px;"><strong>Platform:</strong> ' + getPrimaryPlatform(c) + ' · <strong>Content links:</strong>' + linksHtml + '</div>' + bankRow + calHtml + '</div>';
                 }).join('')}
               </div>
             ` : ''}
@@ -1275,6 +1283,33 @@
           const title = btn.getAttribute('data-title') || 'Campaign info';
           const info = btn.getAttribute('data-info') || 'No extra info';
           openInfoModal(title, info);
+        };
+      });
+      el.querySelectorAll('.save-content-bank').forEach(btn => {
+        btn.onclick = async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const cid = btn.getAttribute('data-campaign-id');
+          const input = el.querySelector('.content-bank-input[data-campaign-id="' + cid + '"]');
+          const val = input ? input.value.trim() : '';
+          try {
+            const res = await fetch(API + '/admin/campaigns/' + encodeURIComponent(cid), {
+              method: 'PUT',
+              headers: headers(),
+              body: JSON.stringify({ content_bank: val || null })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Save failed');
+            if (window.__adminCampaignMap && window.__adminCampaignMap[cid]) {
+              window.__adminCampaignMap[cid].contentBank = val;
+            }
+            const prev = btn.textContent;
+            btn.textContent = 'Saved';
+            btn.disabled = true;
+            setTimeout(function () { btn.textContent = prev; btn.disabled = false; }, 1600);
+          } catch (err) {
+            alert(err.message || 'Could not save');
+          }
         };
       });
       el.querySelectorAll('details.user-card').forEach(details => {

@@ -60,6 +60,7 @@ if (config.databaseUrl) {
         )
       `);
       await pool.query('CREATE INDEX IF NOT EXISTS idx_campaign_drafts_owner ON campaign_drafts(owner_id)');
+      await pool.query('ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS content_bank TEXT');
     }
     ensureSchemaFn = runSchemaPg;
     return db;

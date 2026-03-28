@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS campaigns (
   watermark_coupon_percent REAL DEFAULT 0,
   content_types TEXT,
   niche_tags TEXT,
+  content_bank TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
