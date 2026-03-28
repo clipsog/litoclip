@@ -127,9 +127,6 @@
           <button type="button" class="nav-avatar" id="userAvatar" title="Profile & settings" aria-haspopup="true" aria-expanded="false">SP</button>
           <div class="nav-avatar-dropdown" id="userAvatarDropdown">
             <button type="button" class="nav-dd-item" id="navSwitchCreator" hidden>Switch to Creator dashboard</button>
-            <button type="button" class="nav-dd-item" id="navBecomeCreator" hidden>Become a creator</button>
-            <button type="button" class="nav-dd-item" id="navSwitchSponsor" hidden>Switch to Sponsor dashboard</button>
-            <button type="button" class="nav-dd-item" id="navBecomeSponsor" hidden>Become a sponsor</button>
             <a href="settings.html#profile">Edit profile</a>
             <a href="settings.html">Settings</a>
           </div>
@@ -291,29 +288,10 @@
       function setupRoleNav() {
         var R = window.LitoUserRoles;
         var swC = document.getElementById('navSwitchCreator');
-        var bc = document.getElementById('navBecomeCreator');
-        var swS = document.getElementById('navSwitchSponsor');
-        var bs = document.getElementById('navBecomeSponsor');
         if (swC) {
           swC.hidden = !R.hasCreatorRole(user);
           swC.onclick = function () {
             R.switchToRole('creator', 'brand-overview.html');
-          };
-        }
-        if (bc) {
-          bc.hidden = R.hasCreatorRole(user);
-          bc.onclick = function () { window.location.href = 'onboarding.html'; };
-        }
-        if (swS) swS.hidden = true;
-        if (bs) {
-          bs.hidden = R.hasSponsorRole(user);
-          bs.onclick = async function () {
-            try {
-              await R.addSponsorRole(API_URL, token);
-              R.switchToRole('sponsor', 'sponsor-dashboard.html');
-            } catch (e) {
-              alert(e.message || 'Could not enable sponsor');
-            }
           };
         }
       }
