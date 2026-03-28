@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   user_position TEXT,
   creator_content_types TEXT,
   creator_niche_tags TEXT,
+  user_roles TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

@@ -43,6 +43,12 @@ if (config.databaseUrl) {
       await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS creator_niche_tags TEXT');
       await pool.query('ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS content_types TEXT');
       await pool.query('ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS niche_tags TEXT');
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS user_roles TEXT');
+      await pool.query(`
+        UPDATE users
+        SET user_roles = (json_build_array(user_type))::text
+        WHERE user_roles IS NULL OR TRIM(COALESCE(user_roles, '')) = ''
+      `).catch(() => {});
       await pool.query(`
         CREATE TABLE IF NOT EXISTS campaign_drafts (
           id TEXT PRIMARY KEY,

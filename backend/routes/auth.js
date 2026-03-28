@@ -6,6 +6,7 @@ const config = require('../config');
 const { db } = require('../db');
 const { optionalAuth, requireAuth } = require('../middleware/auth');
 const { normalizeContentTypes, normalizeNicheTags, parseJsonArray } = require('../lib/creatorTaxonomy');
+const { parseUserRoles, hasCreatorRole } = require('../lib/userRoles');
 
 const router = express.Router();
 
@@ -57,10 +58,14 @@ router.post('/signup', async (req, res) => {
       await db.prepare('UPDATE users SET creator_content_types = ?, creator_niche_tags = ? WHERE id = ?').run(JSON.stringify(ct), JSON.stringify(nicheTags), id);
     } catch (_) {}
   }
+  try {
+    await db.prepare('UPDATE users SET user_roles = ? WHERE id = ?').run(JSON.stringify([ut]), id);
+  } catch (_) {}
   const token = jwt.sign({ userId: id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
   const user = {
     id, name: displayName, email, userType: ut, referralCode,
     firstName: firstName || null, lastName: lastName || null, position: position || null,
+    userRoles: [ut],
     creatorContentTypes: ut === 'creator' ? ct : undefined,
     creatorNicheTags: ut === 'creator' ? nicheTags : undefined,
   };
@@ -70,12 +75,21 @@ router.post('/signup', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-  const row = await db.prepare('SELECT id, password_hash, name, email, user_type, referral_code FROM users WHERE email = ?').get(email);
+  let row;
+  try {
+    row = await db.prepare('SELECT id, password_hash, name, email, user_type, referral_code, user_roles FROM users WHERE email = ?').get(email);
+  } catch (e) {
+    row = await db.prepare('SELECT id, password_hash, name, email, user_type, referral_code FROM users WHERE email = ?').get(email);
+  }
   if (!row || !bcrypt.compareSync(password, row.password_hash || '')) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
   const token = jwt.sign({ userId: row.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-  const user = { id: row.id, name: row.name, email: row.email, userType: row.user_type, referralCode: row.referral_code };
+  const userRoles = parseUserRoles(row);
+  const user = {
+    id: row.id, name: row.name, email: row.email, userType: row.user_type, referralCode: row.referral_code,
+    userRoles,
+  };
   res.json({ token, user });
 });
 
@@ -130,7 +144,7 @@ router.put('/profile', requireAuth, async (req, res, next) => {
     if (firstName !== undefined) { updates.push('first_name = ?'); vals.push(safeStr(firstName)); }
     if (lastName !== undefined) { updates.push('last_name = ?'); vals.push(safeStr(lastName)); }
     if (position !== undefined) { updates.push('user_position = ?'); vals.push(safeStr(position)); }
-    if (req.user.user_type === 'creator') {
+    if (hasCreatorRole(req.user)) {
       if (creatorContentTypes !== undefined) {
         const n = normalizeContentTypes(creatorContentTypes);
         if (n.length < 1) return res.status(400).json({ error: 'Select at least one content type' });
@@ -171,6 +185,53 @@ router.put('/password', requireAuth, async (req, res) => {
   const hash = bcrypt.hashSync(newPassword, 10);
   await db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.user.id);
   res.json({ ok: true });
+});
+
+// POST /api/auth/add-role — add sponsor or creator role (dual-role accounts)
+router.post('/add-role', requireAuth, async (req, res) => {
+  const { role, creatorContentTypes, creatorNicheTags } = req.body || {};
+  if (!['sponsor', 'creator'].includes(role)) {
+    return res.status(400).json({ error: 'role must be sponsor or creator' });
+  }
+  let row;
+  try {
+    row = await db.prepare('SELECT id, user_type, user_roles FROM users WHERE id = ?').get(req.user.id);
+  } catch (e) {
+    row = await db.prepare('SELECT id, user_type FROM users WHERE id = ?').get(req.user.id);
+  }
+  let roles = parseUserRoles(row);
+  if (role === 'sponsor') {
+    if (roles.includes('sponsor')) {
+      return res.json({ ok: true, userRoles: roles });
+    }
+    roles = [...new Set([...roles, 'sponsor'])];
+    await db.prepare('UPDATE users SET user_roles = ? WHERE id = ?').run(JSON.stringify(roles), req.user.id);
+    try { await db.prepare('INSERT OR IGNORE INTO sponsor_wallets (user_id) VALUES (?)').run(req.user.id); } catch (_) {}
+    req.user.roles = roles;
+    return res.json({ ok: true, userRoles: roles });
+  }
+  if (role === 'creator') {
+    if (hasCreatorRole({ roles })) {
+      return res.json({ ok: true, userRoles: roles });
+    }
+    const ct = normalizeContentTypes(creatorContentTypes || []);
+    const nt = normalizeNicheTags(creatorNicheTags || []);
+    if (ct.length < 1 || nt.length < 1) {
+      return res.status(400).json({
+        error: 'Adding creator role requires creatorContentTypes and creatorNicheTags (at least one each). Use onboarding or Settings.',
+      });
+    }
+    roles = [...new Set([...roles, 'creator'])];
+    await db.prepare('UPDATE users SET user_roles = ?, creator_content_types = ?, creator_niche_tags = ? WHERE id = ?').run(
+      JSON.stringify(roles),
+      JSON.stringify(ct),
+      JSON.stringify(nt),
+      req.user.id
+    );
+    req.user.roles = roles;
+    return res.json({ ok: true, userRoles: roles });
+  }
+  res.status(400).json({ error: 'Invalid role' });
 });
 
 router.delete('/account', requireAuth, async (req, res) => {

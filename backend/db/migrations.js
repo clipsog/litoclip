@@ -105,6 +105,14 @@ function run(sqlite) {
   try { sqlite.prepare('ALTER TABLE users ADD COLUMN creator_niche_tags TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
   try { sqlite.prepare('ALTER TABLE campaigns ADD COLUMN content_types TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
   try { sqlite.prepare('ALTER TABLE campaigns ADD COLUMN niche_tags TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  try { sqlite.prepare('ALTER TABLE users ADD COLUMN user_roles TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  try {
+    const need = sqlite.prepare(`SELECT id, user_type FROM users WHERE user_roles IS NULL OR TRIM(COALESCE(user_roles, '')) = ''`).all();
+    need.forEach((u) => {
+      const t = u.user_type && ['creator', 'brand', 'sponsor'].includes(u.user_type) ? u.user_type : 'creator';
+      sqlite.prepare('UPDATE users SET user_roles = ? WHERE id = ?').run(JSON.stringify([t]), u.id);
+    });
+  } catch (e) { /* ignore */ }
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS campaign_drafts (
       id TEXT PRIMARY KEY,

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { db } = require('../db');
+const { parseUserRoles, hasCreatorRole, hasSponsorRole } = require('../lib/userRoles');
 
 async function optionalAuth(req, res, next) {
   const auth = req.headers.authorization;
@@ -13,7 +14,15 @@ async function optionalAuth(req, res, next) {
   }
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
-    const user = await db.prepare('SELECT id, email, name, user_type, referral_code FROM users WHERE id = ?').get(decoded.userId);
+    let user;
+    try {
+      user = await db.prepare('SELECT id, email, name, user_type, referral_code, user_roles FROM users WHERE id = ?').get(decoded.userId);
+    } catch (e) {
+      user = await db.prepare('SELECT id, email, name, user_type, referral_code FROM users WHERE id = ?').get(decoded.userId);
+    }
+    if (user) {
+      user.roles = parseUserRoles(user);
+    }
     req.user = user || null;
   } catch (e) {
     req.user = null;
@@ -32,14 +41,14 @@ function requireAuth(req, res, next) {
 }
 
 function requireCreator(req, res, next) {
-  if (!req.user || req.user.user_type !== 'creator') {
+  if (!req.user || !hasCreatorRole(req.user)) {
     return res.status(403).json({ error: 'Creator access required' });
   }
   next();
 }
 
 function requireSponsor(req, res, next) {
-  if (!req.user || req.user.user_type !== 'sponsor') {
+  if (!req.user || !hasSponsorRole(req.user)) {
     return res.status(403).json({ error: 'Sponsor access required' });
   }
   next();
@@ -58,4 +67,4 @@ async function requireAdmin(req, res, next) {
   }
 }
 
-module.exports = { optionalAuth, requireAuth, requireCreator, requireSponsor, requireAdmin };
+module.exports = { optionalAuth, requireAuth, requireCreator, requireSponsor, requireAdmin, parseUserRoles, hasCreatorRole, hasSponsorRole };

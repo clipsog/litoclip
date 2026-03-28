@@ -38,6 +38,8 @@
     .nav-avatar-dropdown.open { display: block; }
     .nav-avatar-dropdown a { display: block; padding: 10px 16px; color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px; }
     .nav-avatar-dropdown a:hover { background: rgba(255,255,255,0.08); color: white; }
+    .nav-dd-item { display: block; width: 100%; text-align: left; padding: 10px 16px; background: none; border: none; color: rgba(255,255,255,0.9); font-size: 14px; cursor: pointer; font-family: inherit; }
+    .nav-dd-item:hover { background: rgba(255,255,255,0.08); color: white; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
     .form-group input { width: 100%; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
@@ -124,6 +126,10 @@
         <div class="nav-avatar-wrap">
           <button type="button" class="nav-avatar" id="userAvatar" title="Profile & settings" aria-haspopup="true" aria-expanded="false">SP</button>
           <div class="nav-avatar-dropdown" id="userAvatarDropdown">
+            <button type="button" class="nav-dd-item" id="navSwitchCreator" hidden>Switch to Creator dashboard</button>
+            <button type="button" class="nav-dd-item" id="navBecomeCreator" hidden>Become a creator</button>
+            <button type="button" class="nav-dd-item" id="navSwitchSponsor" hidden>Switch to Sponsor dashboard</button>
+            <button type="button" class="nav-dd-item" id="navBecomeSponsor" hidden>Become a sponsor</button>
             <a href="settings.html#profile">Edit profile</a>
             <a href="settings.html">Settings</a>
           </div>
@@ -260,23 +266,63 @@
     </div>
   </div>
 
+  <script src="user-roles-nav.js"></script>
   <script>
     (function() {
       const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:37373/api' : (window.location.origin + '/api');
       const token = localStorage.getItem('token');
-      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      let user = JSON.parse(localStorage.getItem('user') || 'null');
 
       if (!token || !user) {
         window.location.href = 'signup.html?redirect=sponsor-dashboard.html';
         return;
       }
 
-      if (user.userType !== 'sponsor' && user.user_type !== 'sponsor') {
-        if (confirm('This dashboard is for sponsors. Redirect to sign up as sponsor?')) {
-          window.location.href = 'signup.html?type=sponsor';
+      function finishRoleGate(syncedUser) {
+        user = syncedUser || user;
+        if (!window.LitoUserRoles.hasSponsorRole(user)) {
+          window.location.replace('brand-overview.html');
+          return;
+        }
+        setupRoleNav();
+      }
+
+      function setupRoleNav() {
+        var R = window.LitoUserRoles;
+        var swC = document.getElementById('navSwitchCreator');
+        var bc = document.getElementById('navBecomeCreator');
+        var swS = document.getElementById('navSwitchSponsor');
+        var bs = document.getElementById('navBecomeSponsor');
+        if (swC) {
+          swC.hidden = !R.hasCreatorRole(user);
+          swC.onclick = function () {
+            R.switchToRole('creator', 'brand-overview.html');
+          };
+        }
+        if (bc) {
+          bc.hidden = R.hasCreatorRole(user);
+          bc.onclick = function () { window.location.href = 'onboarding.html'; };
+        }
+        if (swS) swS.hidden = true;
+        if (bs) {
+          bs.hidden = R.hasSponsorRole(user);
+          bs.onclick = async function () {
+            try {
+              await R.addSponsorRole(API_URL, token);
+              R.switchToRole('sponsor', 'sponsor-dashboard.html');
+            } catch (e) {
+              alert(e.message || 'Could not enable sponsor');
+            }
+          };
         }
       }
+
+      window.LitoUserRoles.syncUserFromApi(API_URL, token).then(function (u) {
+        finishRoleGate(u);
+      }).catch(function () {
+        finishRoleGate(null);
+      });
 
       const avatarEl = document.getElementById('userAvatar');
       const avatarDropdown = document.getElementById('userAvatarDropdown');

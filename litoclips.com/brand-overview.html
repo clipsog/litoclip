@@ -411,6 +411,8 @@
     .nav-avatar-dropdown.open { display: block; }
     .nav-avatar-dropdown a { display: block; padding: 10px 16px; color: rgba(255,255,255,0.9); text-decoration: none; font-size: 14px; }
     .nav-avatar-dropdown a:hover { background: rgba(255,255,255,0.08); color: white; }
+    .nav-dd-item { display: block; width: 100%; text-align: left; padding: 10px 16px; background: none; border: none; color: rgba(255,255,255,0.9); font-size: 14px; cursor: pointer; font-family: inherit; }
+    .nav-dd-item:hover { background: rgba(255,255,255,0.08); color: white; }
     .stripe-pay-modal-overlay {
       display: none;
       position: fixed;
@@ -503,6 +505,10 @@
         <div class="nav-avatar-wrap">
           <button type="button" class="nav-avatar" id="userAvatar" title="Profile & settings" aria-haspopup="true" aria-expanded="false">DU</button>
           <div class="nav-avatar-dropdown" id="userAvatarDropdown">
+            <button type="button" class="nav-dd-item" id="navSwitchCreator" hidden>Switch to Creator dashboard</button>
+            <button type="button" class="nav-dd-item" id="navBecomeCreator" hidden>Become a creator</button>
+            <button type="button" class="nav-dd-item" id="navSwitchSponsor" hidden>Switch to Sponsor dashboard</button>
+            <button type="button" class="nav-dd-item" id="navBecomeSponsor" hidden>Become a sponsor</button>
             <a href="settings.html#profile">Edit profile</a>
             <a href="settings.html">Settings</a>
           </div>
@@ -717,6 +723,7 @@
     </div>
   </div>
 
+  <script src="user-roles-nav.js"></script>
   <script src="stripe-embedded-pay.js"></script>
   <script>
     (function() {
@@ -724,9 +731,11 @@
       const bypassParam = params.get('bypass') === '1' || params.get('demo') === '1';
       let token = localStorage.getItem('token');
       let user = JSON.parse(localStorage.getItem('user') || 'null');
+      const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:37373/api' : (window.location.origin + '/api');
 
       if (bypassParam && (!token || !user)) {
-        user = { id: 'demo', name: 'Demo User', email: 'demo@litoclips.com', userType: 'creator', firstName: 'Demo' };
+        user = { id: 'demo', name: 'Demo User', email: 'demo@litoclips.com', userType: 'creator', firstName: 'Demo', userRoles: ['creator'] };
         localStorage.setItem('token', 'demo-bypass-token');
         localStorage.setItem('user', JSON.stringify(user));
         token = 'demo-bypass-token';
@@ -735,6 +744,50 @@
       if (!token || !user) {
         window.location.href = 'signup.html';
         return;
+      }
+
+      function setupBrandRoleNav() {
+        user = JSON.parse(localStorage.getItem('user') || 'null') || user;
+        var R = window.LitoUserRoles;
+        if (!R) return;
+        var swC = document.getElementById('navSwitchCreator');
+        var bc = document.getElementById('navBecomeCreator');
+        var swS = document.getElementById('navSwitchSponsor');
+        var bs = document.getElementById('navBecomeSponsor');
+        if (swC) swC.hidden = true;
+        if (bc) {
+          bc.hidden = R.hasCreatorRole(user);
+          bc.onclick = function () { window.location.href = 'onboarding.html'; };
+        }
+        if (swS) {
+          swS.hidden = !R.hasSponsorRole(user);
+          swS.onclick = function () { R.switchToRole('sponsor', 'sponsor-dashboard.html'); };
+        }
+        if (bs) {
+          bs.hidden = R.hasSponsorRole(user);
+          bs.onclick = async function () {
+            try {
+              await R.addSponsorRole(API_URL, token);
+              R.switchToRole('sponsor', 'sponsor-dashboard.html');
+            } catch (e) {
+              alert(e.message || 'Could not enable sponsor');
+            }
+          };
+        }
+      }
+
+      if (!bypassParam) {
+        window.LitoUserRoles.syncUserFromApi(API_URL, token).then(function (u) {
+          if (u) user = u;
+          user = JSON.parse(localStorage.getItem('user') || 'null') || user;
+          if (window.LitoUserRoles.hasSponsorRole(user) && !window.LitoUserRoles.hasCreatorRole(user)) {
+            window.location.replace('sponsor-dashboard.html');
+            return;
+          }
+          setupBrandRoleNav();
+        }).catch(function () { setupBrandRoleNav(); });
+      } else {
+        setupBrandRoleNav();
       }
 
       const isWelcome = params.get('welcome') === '1';
@@ -768,11 +821,9 @@
         e.preventDefault();
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('userType');
         window.location.href = 'index.html';
       });
-
-      const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:37373/api' : (window.location.origin + '/api');
 
       var stripeEmbeddedCheckoutInstance = null;
       function closeStripePayModal() {

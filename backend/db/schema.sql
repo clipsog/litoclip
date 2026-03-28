@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT,
   name TEXT NOT NULL,
   user_type TEXT NOT NULL DEFAULT 'creator',
+  user_roles TEXT,
   is_admin INTEGER DEFAULT 0,
   referral_code TEXT UNIQUE,
   referred_by TEXT,
