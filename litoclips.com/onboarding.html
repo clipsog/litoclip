@@ -10,16 +10,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
-    body.onboarding-theme { background: #f8fafc; color: #0f172a; }
-    body.onboarding-theme .header { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
-    body.onboarding-theme .header .logo-text { color: #0f172a; }
-    body.onboarding-theme .nav-links a { color: #475569; }
-    body.onboarding-theme .nav-links a:hover { color: #2563eb; }
-    body.onboarding-theme .nav-cta { color: #2563eb !important; }
+    /* Light fallback when gradient background is not used */
+    body.onboarding-theme:not(.gradient-section-bg) { background: #f8fafc; color: #0f172a; }
+    body.onboarding-theme:not(.gradient-section-bg) .header { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+    body.onboarding-theme:not(.gradient-section-bg) .header .logo-text { color: #0f172a; }
+    body.onboarding-theme:not(.gradient-section-bg) .nav-links a { color: #475569; }
+    body.onboarding-theme:not(.gradient-section-bg) .nav-cta { color: #2563eb !important; }
     .onboarding-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
-    .onboarding-card { width: 100%; max-width: 480px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-    .onboarding-card h1 { font-size: 24px; margin-bottom: 8px; color: #0f172a; }
-    .onboarding-card .subtitle { color: #64748b; font-size: 15px; margin-bottom: 24px; }
+    /* Card: no solid white — glass styling comes from styles.css when .gradient-section-bg is on body */
+    .onboarding-card { width: 100%; max-width: 480px; border-radius: 24px; padding: 40px; }
+    body.onboarding-theme:not(.gradient-section-bg) .onboarding-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .onboarding-card h1 { font-size: 24px; margin-bottom: 8px; }
+    .onboarding-card .subtitle { font-size: 15px; margin-bottom: 24px; }
     body.onboarding-theme .form-group label { color: #334155; }
     body.onboarding-theme .form-group input,
     body.onboarding-theme .form-group select { background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; width: 100%; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
@@ -45,12 +51,22 @@
     .tag-row { display: flex; gap: 8px; margin-bottom: 12px; }
     .tag-row input { flex: 1; }
     .tag-pills { display: flex; flex-wrap: wrap; gap: 8px; min-height: 36px; margin-bottom: 16px; }
-    .tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: #dbeafe; color: #1e40af; font-size: 13px; }
+    .tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: 13px; }
     .tag-pill button { background: none; border: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 16px; line-height: 1; }
     .step-actions { display: flex; flex-direction: column; gap: 10px; }
-    .btn-outline { width: 100%; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; background: transparent; border: 1px solid #e2e8f0; color: #475569; }
-    .btn-outline:hover { background: #f8fafc; }
-    .step-hint { color: #64748b; font-size: 14px; margin-bottom: 16px; line-height: 1.5; }
+    .btn-outline { width: 100%; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+    .step-hint { font-size: 14px; margin-bottom: 16px; line-height: 1.5; }
+    .step-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #0f172a; }
+    body.onboarding-theme.gradient-section-bg .step-title { color: rgba(255, 255, 255, 0.95); }
+    body.onboarding-theme:not(.gradient-section-bg) .content-type-option {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+    }
+    body.onboarding-theme:not(.gradient-section-bg) .content-type-option.selected {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
   </style>
 </head>
 <body class="onboarding-theme gradient-section-bg">
@@ -134,7 +150,7 @@
 
         <!-- Step 3: content types -->
         <div class="onboarding-step" id="stepContent" data-step="3">
-          <p class="step-title" style="font-size:18px;font-weight:600;color:#0f172a;margin-bottom:8px;">What do you produce?</p>
+          <p class="step-title">What do you produce?</p>
           <p class="step-hint">Select everything that fits. Sponsors use this to find campaigns like yours.</p>
           <div class="content-type-grid" id="contentTypeGrid"></div>
           <div class="step-actions">
@@ -145,7 +161,7 @@
 
         <!-- Step 4: niche tags -->
         <div class="onboarding-step" id="stepNiche" data-step="4">
-          <p class="step-title" style="font-size:18px;font-weight:600;color:#0f172a;margin-bottom:8px;">What’s your niche?</p>
+          <p class="step-title">What’s your niche?</p>
           <p class="step-hint">Add tags (e.g. jazz, indie games, true crime). Press Enter or Add after each. At least one tag required.</p>
           <div class="tag-row">
             <input type="text" id="tagInput" placeholder="Type a tag and press Enter" autocomplete="off">
@@ -202,10 +218,21 @@
         { id: 'music', label: 'Music' },
         { id: 'podcasts', label: 'Podcasts' },
         { id: 'apps', label: 'Apps' },
+        { id: 'tv_shows', label: 'TV shows' },
+        { id: 'movies', label: 'Movies' },
       ];
 
       function normalizeTag(raw) {
         return String(raw || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 40);
+      }
+
+      function mergeTaxonomy(apiList) {
+        const map = new Map();
+        DEFAULT_TYPES.forEach(function(t) { map.set(t.id, { id: t.id, label: t.label }); });
+        (apiList || []).forEach(function(t) {
+          if (t && t.id && t.label) map.set(t.id, { id: t.id, label: t.label });
+        });
+        return DEFAULT_TYPES.map(function(d) { return map.get(d.id) || d; });
       }
 
       function renderContentTypes(types) {
@@ -230,9 +257,9 @@
 
       fetch(API_BASE + '/sponsors/creator-taxonomy').then(function(r) { return r.ok ? r.json() : null; })
         .then(function(data) {
-          if (data && data.contentTypes && data.contentTypes.length) renderContentTypes(data.contentTypes);
-          else renderContentTypes(DEFAULT_TYPES);
-        }).catch(function() { renderContentTypes(DEFAULT_TYPES); });
+          var list = (data && data.contentTypes && data.contentTypes.length) ? mergeTaxonomy(data.contentTypes) : DEFAULT_TYPES.slice();
+          renderContentTypes(list);
+        }).catch(function() { renderContentTypes(DEFAULT_TYPES.slice()); });
 
       function renderTagPills() {
         tagPills.innerHTML = '';

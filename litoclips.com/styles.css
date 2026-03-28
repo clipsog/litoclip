@@ -412,14 +412,86 @@ body.onboarding-theme.gradient-section-bg .onboarding-page {
   padding-top: 120px; /* clear fixed header */
 }
 body.onboarding-theme.gradient-section-bg .onboarding-card {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
 }
 body.onboarding-theme.gradient-section-bg .onboarding-card h1 {
   color: white;
 }
 body.onboarding-theme.gradient-section-bg .onboarding-card .subtitle {
   color: rgba(255,255,255,0.8);
+}
+/* Onboarding: glass chips (content types) — blue transparent, not solid white */
+body.onboarding-theme.gradient-section-bg .content-type-grid {
+  gap: 10px;
+}
+body.onboarding-theme.gradient-section-bg .content-type-option {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+body.onboarding-theme.gradient-section-bg .content-type-option:hover {
+  border-color: rgba(147, 197, 253, 0.45);
+  background: rgba(37, 99, 235, 0.18);
+}
+body.onboarding-theme.gradient-section-bg .content-type-option.selected {
+  border-color: rgba(96, 165, 250, 0.85);
+  background: rgba(37, 99, 235, 0.28);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+}
+body.onboarding-theme.gradient-section-bg .content-type-option input {
+  accent-color: #60a5fa;
+}
+body.onboarding-theme.gradient-section-bg .step-hint {
+  color: rgba(255, 255, 255, 0.65);
+}
+body.onboarding-theme.gradient-section-bg .onboarding-card .step-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+body.onboarding-theme.gradient-section-bg .step-dots span {
+  background: rgba(255, 255, 255, 0.2);
+}
+body.onboarding-theme.gradient-section-bg .step-dots span.on {
+  background: #3b82f6;
+}
+body.onboarding-theme.gradient-section-bg .onboarding-card .form-group label {
+  color: rgba(255, 255, 255, 0.88);
+}
+body.onboarding-theme.gradient-section-bg .onboarding-card .form-group input,
+body.onboarding-theme.gradient-section-bg .onboarding-card .form-group select {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.95);
+}
+body.onboarding-theme.gradient-section-bg .onboarding-card .form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+body.onboarding-theme.gradient-section-bg .onboarding-card .form-group input:focus,
+body.onboarding-theme.gradient-section-bg .onboarding-card .form-group select:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(147, 197, 253, 0.55);
+}
+body.onboarding-theme.gradient-section-bg .btn-outline {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+}
+body.onboarding-theme.gradient-section-bg .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+body.onboarding-theme.gradient-section-bg .tag-pill {
+  background: rgba(37, 99, 235, 0.35);
+  color: #bfdbfe;
+  border: 1px solid rgba(147, 197, 253, 0.25);
+}
+body.onboarding-theme.gradient-section-bg .tag-row input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: white;
 }
 body.onboarding-theme.gradient-section-bg .onboarding-footer a {
   color: #93c5fd;

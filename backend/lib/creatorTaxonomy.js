@@ -1,11 +1,13 @@
 /** Allowed creator "content type" slugs (signup + campaign browse). */
-const ALLOWED_CONTENT_TYPE_IDS = ['youtube_videos', 'music', 'podcasts', 'apps'];
+const ALLOWED_CONTENT_TYPE_IDS = ['youtube_videos', 'music', 'podcasts', 'apps', 'tv_shows', 'movies'];
 
 const CONTENT_TYPE_LABELS = {
   youtube_videos: 'YouTube videos',
   music: 'Music',
   podcasts: 'Podcasts',
   apps: 'Apps',
+  tv_shows: 'TV shows',
+  movies: 'Movies',
 };
 
 function parseJsonArray(s) {
