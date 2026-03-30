@@ -38,7 +38,16 @@ Render deploys from Git. If you haven’t already:
    - **Runtime:** **Node**.
    - **Build Command:** `npm install`
    - **Start Command:** `npm start`
-6. Under **Instance Type**, pick **Free** to start (or a paid plan for no cold starts and a persistent disk).
+6. Under **Instance Type**, pick **Starter** (or higher) for production so the API **stays running** when idle. **Free** instances spin down after ~15 minutes without traffic; the next request can take about a minute while the service wakes. See [Render pricing](https://render.com/pricing#services).
+
+---
+
+## 2a. Always-on API (no cold starts)
+
+For clients and production traffic you want a **paid** web instance. Options:
+
+1. **Dashboard:** Open your web service → **Settings** → **Instance Type** → choose **Starter** (or higher) and add a payment method if Render asks.
+2. **Blueprint:** This repo’s root `render.yaml` sets `plan: starter` for the backend. After you add a card in Render, sync the Blueprint (or merge a branch that updates `render.yaml`) so the service upgrades. Do not rely on free “ping” sites as a long-term fix; they are fragile and still leave you on a tier not meant for production.
 
 ---
 

@@ -5,6 +5,9 @@
 services:
   - type: web
     name: litoclips-backend
+    # Paid instance — does not spin down when idle. Free tier sleeps after ~15 min of no traffic.
+    # Requires a payment method on Render; see https://render.com/pricing#services
+    plan: starter
     runtime: node
     rootDir: backend
 
