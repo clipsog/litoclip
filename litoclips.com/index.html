@@ -181,24 +181,10 @@
           <p>We do the opposite: long-term, controlled omnipresence. Your message shows up consistently across platforms so people keep seeing you, trusting you, and remembering you.</p>
           <p>We set up and manage branded accounts, publish with your angle, and track every post and view in your calendar so your growth compounds over time.</p>
           <p>You build your story message by message, and your legacy is lived over time.</p>
-          <p>After week 1, pay to keep going or turn on auto-charge.</p>
           <div class="dashboard-preview">
             <p class="dashboard-preview-label">Example of what you'll see</p>
             <div class="dashboard-preview-inner">
-              <div class="dp-accounts">
-                <span class="dp-pill">@your_account_1</span>
-                <span class="dp-pill">@your_account_2</span>
-                <span class="dp-pill pending">@account_3 (linking)</span>
-              </div>
-              <div class="dp-calendar">
-                <div class="dp-cal-nav">
-                  <button type="button" class="dp-cal-arrow" id="dpCalPrev" aria-label="Previous month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
-                  <span class="dp-cal-month-label" id="dpCalMonthLabel">Month 1</span>
-                  <button type="button" class="dp-cal-arrow" id="dpCalNext" aria-label="Next month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
-                </div>
-                <div class="dp-cal-header"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
-                <div class="dp-cal-grid dp-cal-month" id="dpCalGrid"></div>
-              </div>
+              <video src="assets/home-preview.mp4" autoplay loop muted playsinline controls style="width:100%; border-radius:16px; border:1px solid rgba(255,255,255,0.08); background:#000;"></video>
             </div>
           </div>
         </div>
@@ -262,55 +248,6 @@
     window.addEventListener('scroll', handleHeaderScroll, { passive: true });
     handleHeaderScroll();
 
-    // Dashboard preview calendar: month nav + posts per day
-    (function() {
-      const grid = document.getElementById('dpCalGrid');
-      const label = document.getElementById('dpCalMonthLabel');
-      const prevBtn = document.getElementById('dpCalPrev');
-      const nextBtn = document.getElementById('dpCalNext');
-      if (!grid || !label) return;
-
-      let currentMonth = 1;
-      const VIEWS_M1 = [0,0,1200,2400,3100,4800,5200,6100,7300,8900,10200,11500,13100,14800,16200,18400,20100,22300,24600,27200,29800,32100,35400,38200,41500,45100,48300,51200,54800,58100];
-      const VIEWS_M2 = [60100,63400,67100,71200,75800,80100,84800,89100,93800,98500,103200,108100,113400,118200,123500,128800,134100,139500,145200,150800,156500,162300,168100,174000,180200,186400,192600,198900,205200,211600];
-
-      function postsPerDay(dayNum) {
-        if (dayNum <= 2) return 0;
-        if (dayNum <= 21) return 1;
-        return 3;
-      }
-
-      function formatViews(v) {
-        if (v >= 1000) return (v/1000).toFixed(1) + 'k';
-        return String(v);
-      }
-
-      function render() {
-        const start = (currentMonth - 1) * 30 + 1;
-        const days = [];
-        const viewsArr = currentMonth === 1 ? VIEWS_M1 : VIEWS_M2;
-        for (let i = 0; i < 30; i++) {
-          const dayNum = start + i;
-          const isWarmup = dayNum <= 2;
-          const posts = postsPerDay(dayNum);
-          const views = viewsArr[i];
-          days.push({ dayNum, isWarmup, posts, views });
-        }
-        grid.innerHTML = days.map(function(d) {
-          if (d.isWarmup) {
-            return '<div class="dp-day warmup"><span class="dp-day-num">' + d.dayNum + '</span><span class="dp-badge">Warm</span></div>';
-          }
-          return '<div class="dp-day post"><span class="dp-day-num">' + d.dayNum + '</span><span class="dp-posts">' + d.posts + ' post' + (d.posts > 1 ? 's' : '') + '/day</span><span class="dp-views">' + formatViews(d.views) + '</span></div>';
-        }).join('');
-        label.textContent = 'Month ' + currentMonth;
-        prevBtn.disabled = currentMonth <= 1;
-        nextBtn.disabled = currentMonth >= 2;
-      }
-
-      if (prevBtn) prevBtn.addEventListener('click', function() { if (currentMonth > 1) { currentMonth--; render(); } });
-      if (nextBtn) nextBtn.addEventListener('click', function() { if (currentMonth < 2) { currentMonth++; render(); } });
-      render();
-    })();
   </script>
 
   <!-- Footer -->
