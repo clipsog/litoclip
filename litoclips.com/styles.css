@@ -1945,26 +1945,6 @@ body.dashboard-theme.gradient-section-bg .day-modal .warmup-desc {
 .dashboard-preview {
   margin-top: 24px;
   text-align: left;
-  position: relative;
-  padding: 28px;
-  border-radius: 16px;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse at 50% 20%, rgba(45, 212, 191, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 0%, rgba(37, 99, 235, 0.25) 0%, transparent 55%),
-    linear-gradient(165deg, #0f172a 0%, #111D3C 30%, #0e4d5c 55%, #165C7C 80%, #0f172a 100%);
-}
-
-.dashboard-preview::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-  background-size: 12.5% 25%;
-  pointer-events: none;
-  border-radius: inherit;
 }
 
 .dashboard-preview-label {
@@ -1979,13 +1959,11 @@ body.dashboard-theme.gradient-section-bg .day-modal .warmup-desc {
 }
 
 .dashboard-preview-inner {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  position: relative;
-  z-index: 1;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
 }
 
 .dp-accounts {
