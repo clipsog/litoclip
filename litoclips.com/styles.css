@@ -1947,6 +1947,12 @@ body.dashboard-theme.gradient-section-bg .day-modal .warmup-desc {
   text-align: left;
 }
 
+.dashboard-preview-wide {
+  width: min(96vw, 1600px);
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
 .dashboard-preview-label {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
