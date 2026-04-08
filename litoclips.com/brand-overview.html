@@ -684,6 +684,9 @@
           <h4>Review &amp; pay</h4>
           <p class="start-campaign-wiz-lead">You are about to start secure checkout for your first week. Optional: include the LitoClips watermark and save <strong>10%</strong> on this payment.</p>
           <div class="start-campaign-wiz-pricing" style="margin-bottom: 10px;">
+            <div style="font-weight: 600; margin-bottom: 6px; color: #0f172a;">Accounts configuration:</div>
+            <ul class="start-campaign-wiz-accounts-summary" id="wzCheckoutAccountsSummary" style="margin-top: 0px; padding-left: 20px; font-size: 14px; color: #475569; margin-bottom: 15px;"></ul>
+            <hr style="border:0; border-top: 1px solid #e2e8f0; margin-bottom: 12px;"/>
             <div class="start-campaign-wiz-price-line" id="wzCheckoutPriceLine"></div>
             <div class="start-campaign-wiz-price-note" id="wzCheckoutPriceNote"></div>
           </div>
@@ -1106,8 +1109,34 @@
         }
         var checkoutLineEl = document.getElementById('wzCheckoutPriceLine');
         var checkoutNoteEl = document.getElementById('wzCheckoutPriceNote');
+        var checkoutAccountsSum = document.getElementById('wzCheckoutAccountsSummary');
         if (checkoutLineEl) checkoutLineEl.textContent = lineEl.textContent;
         if (checkoutNoteEl && noteEl) checkoutNoteEl.textContent = noteEl.textContent;
+        if (checkoutAccountsSum) {
+          checkoutAccountsSum.innerHTML = '';
+          var totalAccSum = 0;
+          document.querySelectorAll('#wzPlatformRows .wz-platform-row').forEach(function(r) {
+            var sel = r.querySelector('select[data-wz-platform]');
+            var inp = r.querySelector('input[data-wz-accounts]');
+            if (sel && inp && sel.value) {
+               var cnt = parseInt(inp.value, 10) || 0;
+               if (cnt > 0) {
+                 totalAccSum += cnt;
+                 var li = document.createElement('li');
+                 li.textContent = cnt + 'x ' + (sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : sel.value) + ' account' + (cnt===1?'':'s');
+                 checkoutAccountsSum.appendChild(li);
+               }
+            }
+          });
+          var finalLi = document.createElement('li');
+          finalLi.style.fontWeight = '600';
+          finalLi.style.marginTop = '6px';
+          finalLi.style.listStyle = 'none';
+          finalLi.style.marginLeft = '-20px';
+          finalLi.style.color = '#0f172a';
+          finalLi.textContent = 'Total accounts attached: ' + totalAccSum;
+          checkoutAccountsSum.appendChild(finalLi);
+        }
       }
 
       function getWzContentLinkUrls() {
