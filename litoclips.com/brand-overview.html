@@ -888,7 +888,7 @@
               delBtn.style.padding = '8px 12px';
               delBtn.addEventListener('click', function() {
                 const overlay = document.createElement('div');
-                overlay.style = 'position:fixed; inset:0; background:rgba(15,23,42,0.8); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(4px); padding: 20px;';
+                overlay.style = 'position:fixed; inset:0; background:rgba(0,0,0,0.15); z-index:9999; display:flex; align-items:center; justify-content:center; padding: 20px;';
                 const box = document.createElement('div');
                 box.style = 'background:#fff; padding:24px 30px; border-radius:16px; width:400px; max-width:100%; box-shadow:0 25px 80px rgba(0,0,0,0.35); position:relative;';
                 box.innerHTML = '<h3 style="margin:0 0 10px 0;font-size:20px;color:#0f172a;">Remove configuration</h3><p style="color:#475569;margin:0 0 24px 0;line-height:1.5;">Are you sure you want to completely remove this draft? This cannot be undone.</p>';
@@ -913,10 +913,14 @@
                   yBtn.textContent = 'Removing...';
                   yBtn.disabled = true;
                   try {
-                    await fetch(API_URL + '/campaigns/' + encodeURIComponent(c.id), {
+                    const res = await fetch(API_URL + '/campaigns/' + encodeURIComponent(c.id), {
                       method: 'DELETE',
                       headers: { 'Authorization': 'Bearer ' + token }
                     });
+                    if (!res.ok) {
+                       const errData = await res.json().catch(() => ({}));
+                       throw new Error(errData.error || 'Server rejected removal');
+                    }
                     if (bypass) {
                       campaignsList = campaignsList.filter(function(x) { return x.id !== c.id; });
                       renderCampaigns(campaignsList);
@@ -925,8 +929,9 @@
                       window.location.reload();
                     }
                   } catch (e) {
-                    alert('Could not remove configuration');
-                    overlay.remove();
+                    alert('Could not remove configuration: ' + e.message);
+                    yBtn.textContent = 'Remove forever';
+                    yBtn.disabled = false;
                   }
                 };
                 
