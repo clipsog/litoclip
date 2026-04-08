@@ -207,7 +207,7 @@ router.get('/', optionalAuth, async (req, res) => {
 router.get('/created', requireAuth, async (req, res) => {
   try {
     const rows = await db.prepare(`
-      SELECT id, title, description, niche, platform, platforms, num_accounts, budget, rpm, status, created_at
+      SELECT id, title, description, niche, platform, platforms, num_accounts, budget, rpm, status, created_at, content_link
       FROM campaigns WHERE owner_id = ? ORDER BY created_at DESC
     `).all(req.user.id);
     res.json(rows.map(r => ({
@@ -220,6 +220,7 @@ router.get('/created', requireAuth, async (req, res) => {
       num_accounts: r.num_accounts,
       budget: r.budget,
       status: r.status,
+      contentLinks: r.content_link,
       createdAt: r.created_at,
     })));
   } catch (e) {
