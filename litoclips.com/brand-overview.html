@@ -634,27 +634,32 @@
         </div>
 
         <div class="start-campaign-step" data-wizard-step="1">
-          <h4>Content</h4>
+          <h4>Strategy &amp; Content</h4>
+          
+          <div class="start-campaign-wiz-field">
+            <label for="wzGoal">What is the goal of the campaign?</label>
+            <select id="wzGoal" name="wzGoal">
+              <option value="">Select a goal...</option>
+              <option value="Sales or traffic">Increase product or services sales</option>
+              <option value="Narrative building">Narrative building</option>
+              <option value="Positioning">Positioning</option>
+              <option value="Brand deals">Brand deals</option>
+              <option value="PR">PR / Reputation</option>
+              <option value="Awareness">General Awareness</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="start-campaign-wiz-field" id="wzGoalDetailsBlock" style="display: none;">
+            <label for="wzNarrative" id="wzGoalDetailsLabel">Details</label>
+            <input type="text" id="wzNarrative" name="wzNarrative" placeholder="Please specify..." autocomplete="off">
+          </div>
+
           <div class="start-campaign-wiz-field">
             <label>Content links we’ll create the clips from</label>
             <div class="wz-content-links-block" id="wzContentLinksWrap"></div>
             <button type="button" class="wz-add-content-link" id="wzAddContentLink">+ Add another link</button>
             <p class="start-campaign-wiz-hint">Add one or more URLs: YouTube, Google Drive, Dropbox, or any public link.</p>
-          </div>
-          <div class="start-campaign-wiz-field">
-            <label for="wzNarrative">Narrative / angle</label>
-            <input type="text" id="wzNarrative" name="wzNarrative" placeholder="How should we frame your clips?" autocomplete="off">
-          </div>
-          <div class="start-campaign-wiz-field">
-            <label for="wzGoal">Goal</label>
-            <input type="text" id="wzGoal" name="wzGoal" list="goalOptions" placeholder="e.g. Sales, Narrative, PR..." autocomplete="off">
-            <datalist id="goalOptions">
-              <option value="Awareness"></option>
-              <option value="Brand deals"></option>
-              <option value="Sales / traffic"></option>
-              <option value="Narrative building"></option>
-              <option value="Positioning"></option>
-            </datalist>
           </div>
         </div>
 
@@ -1374,7 +1379,17 @@
         var n = document.getElementById('wzNarrative');
         if (n) n.value = saved.narrative || '';
         var g = document.getElementById('wzGoal');
-        if (g) g.value = saved.goal || '';
+        if (g) {
+          var matched = false;
+          for (var gi = 0; gi < g.options.length; gi++) {
+            if (g.options[gi].value === saved.goal) {
+              matched = true; break;
+            }
+          }
+          if (!matched && saved.goal) g.value = 'Other';
+          else g.value = saved.goal || '';
+          g.dispatchEvent(new Event('change'));
+        }
         var pd = document.getElementById('wzPostsPerDay');
         if (pd && saved.postsPerDay != null) pd.value = String(saved.postsPerDay);
 
@@ -2501,6 +2516,39 @@
       inputEl.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') sendMessage();
       });
+      // Goal selection handler logic
+      function setupGoalDynamics() {
+        var sg = document.getElementById('wzGoal');
+        var stl = document.getElementById('wzGoalDetailsLabel');
+        var stf = document.getElementById('wzGoalDetailsBlock');
+        var stn = document.getElementById('wzNarrative');
+        if (!sg || !stf || !stl || !stn) return;
+        
+        function updateGoalUI() {
+          var g = sg.value;
+          if (!g) {
+            stf.style.display = 'none';
+          } else {
+            stf.style.display = 'block';
+            if (g === 'Sales or traffic') {
+              stl.textContent = 'What are you selling?';
+              stn.placeholder = 'e.g. My new fitness program, merchandise, booking page...';
+            } else if (g === 'Narrative building') {
+              stl.textContent = 'What is the narrative?';
+              stn.placeholder = 'e.g. Overcoming adversity, industry leader, underdog...';
+            } else if (g === 'Positioning') {
+              stl.textContent = 'What positioning?';
+              stn.placeholder = 'e.g. Premium quality, accessible for everyone, innovative...';
+            } else {
+              stl.textContent = 'Please provide details';
+              stn.placeholder = 'Enter details...';
+            }
+          }
+        }
+        sg.addEventListener('change', updateGoalUI);
+        updateGoalUI();
+      }
+      setupGoalDynamics();
     })();
   </script>
 </body>
