@@ -903,14 +903,13 @@
                 
                 const yBtn = document.createElement('button');
                 yBtn.textContent = 'Remove forever';
-                yBtn.className = 'btn-primary';
+                yBtn.className = 'btn-saved-delete';
                 yBtn.type = 'button';
-                yBtn.style.background = '#dc2626';
-                yBtn.style.borderColor = '#dc2626';
                 
                 cBtn.onclick = function() { overlay.remove(); };
                 yBtn.onclick = async function() {
                   yBtn.textContent = 'Removing...';
+                  yBtn.style.opacity = '0.7';
                   yBtn.disabled = true;
                   try {
                     const res = await fetch(API_URL + '/campaigns/' + encodeURIComponent(c.id), {
@@ -1094,8 +1093,8 @@
         });
         var posts = parseInt(postsEl.value, 10) || 3;
         var includeWatermark = !!(document.getElementById('wzWatermark') && document.getElementById('wzWatermark').checked);
-        var rawTotal = calcWzTotal(totalAccounts, posts);
-        var finalTotal = (includeWatermark ? (rawTotal * 0.9) : rawTotal).toFixed(2);
+        var rawTotalNum = parseFloat(calcWzTotal(totalAccounts, posts)) || 0;
+        var finalTotal = (includeWatermark ? (rawTotalNum * 0.9) : rawTotalNum).toFixed(2);
         lineEl.textContent = '$' + finalTotal + '/wk per account' + (includeWatermark ? ' · 10% watermark discount' : '');
         if (noteEl) {
           noteEl.textContent = 'Day 3+: ' + posts + ' posts/day';
