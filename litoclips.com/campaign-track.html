@@ -399,12 +399,14 @@
       async function loadCampaignData() {
         if (bypass || !campaignId || campaignId === 'demo') return;
         try {
-          const [accRes, postsRes] = await Promise.all([
+          const [accRes, postsRes, myCampsRes] = await Promise.all([
             fetch(API_URL + '/campaigns/' + campaignId + '/accounts', { headers: { Authorization: 'Bearer ' + token } }),
-            fetch(API_URL + '/campaigns/' + campaignId + '/posts', { headers: { Authorization: 'Bearer ' + token } })
+            fetch(API_URL + '/campaigns/' + campaignId + '/posts', { headers: { Authorization: 'Bearer ' + token } }),
+            fetch(API_URL + '/campaigns/created', { headers: { Authorization: 'Bearer ' + token } })
           ]);
           if (accRes.ok) accounts = await accRes.json();
           if (postsRes.ok) posts = await postsRes.json();
+          if (myCampsRes.ok) window._myCampaignsCache = await myCampsRes.json();
           renderAccounts();
           buildCalendar();
         } catch (e) { console.warn('Could not load campaign data', e); }
@@ -495,11 +497,19 @@
           if (bypass || (!Array.isArray(posts) || posts.length === 0)) {
             isWarmup = i < 2;
             isPost = i >= 2;
-            dayPosts = isPost ? [
-              { platform: 'TikTok', postUrl: '#', isMock: true, accountHandle: '@account_1' },
-              { platform: 'Instagram Reels', postUrl: '#', isMock: true, accountHandle: '@account_1' },
-              { platform: 'YouTube Shorts', postUrl: '#', isMock: true, accountHandle: '@account_1' }
-            ] : [];
+            var mockPlats = ['TikTok', 'Instagram Reels', 'YouTube Shorts'];
+            if (window._myCampaignsCache && Array.isArray(window._myCampaignsCache)) {
+              var mc = window._myCampaignsCache.find(function(x) { return String(x.id) === String(campaignId); });
+              if (mc && mc.platforms) {
+                var pSplit = mc.platforms.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+                if (pSplit.length > 0) mockPlats = pSplit;
+              }
+            }
+            var mappedDayPosts = [];
+            mockPlats.forEach(function(plat) {
+              mappedDayPosts.push({ platform: plat, postUrl: '#', isMock: true, accountHandle: '@account_1' });
+            });
+            dayPosts = isPost ? mappedDayPosts : [];
             totalViews = dayPosts.reduce(function(s, p) { return s + (p.views || 0); }, 0);
           }
           dayData.push({ dayIndex: i + 1, date: d, dayNum, month: monthNames[d.getMonth()], dateKey, isWarmup, isPost, dayPosts, totalViews });
