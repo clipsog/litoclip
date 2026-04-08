@@ -23,8 +23,7 @@ function parseUserRoles(row) {
 }
 
 function hasCreatorRole(user) {
-  const roles = user.roles || parseUserRoles(user);
-  return roles.includes('creator') || roles.includes('brand');
+  return true; // All authenticated users are natively creators
 }
 
 function hasSponsorRole(user) {
