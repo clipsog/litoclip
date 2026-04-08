@@ -215,6 +215,10 @@
     <div class="calendar-section">
       <h3>Calendar</h3>
       <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;"><strong>Days 1–2:</strong> Warming up — we interact with your niche so when we start posting we have more reach and target the right audience. <strong>Day 3+:</strong> See what was posted and the views. 3 posts/day per account (or more for +$2/post/day).</p>
+      <div id="calendarContentLinksWrap" style="display:none; margin-bottom: 24px; padding: 12px 14px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0;">
+        <h4 style="font-size:13px; margin:0 0 6px 0; color:#0f172a;">Content links provided:</h4>
+        <div id="calendarContentLinksList" style="font-size:13px; line-height: 1.6; word-break: break-all;"></div>
+      </div>
       <div class="cal-header">
         <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
       </div>
@@ -406,7 +410,30 @@
           ]);
           if (accRes.ok) accounts = await accRes.json();
           if (postsRes.ok) posts = await postsRes.json();
-          if (myCampsRes.ok) window._myCampaignsCache = await myCampsRes.json();
+          if (myCampsRes.ok) {
+            window._myCampaignsCache = await myCampsRes.json();
+            var mc = window._myCampaignsCache.find(function(x) { return String(x.id) === String(campaignId); });
+            if (mc && mc.contentLinks) {
+              var linkWrap = document.getElementById('calendarContentLinksWrap');
+              var linkList = document.getElementById('calendarContentLinksList');
+              if (linkWrap && linkList) {
+                try {
+                  var rawArr = JSON.parse(mc.contentLinks);
+                  if (Array.isArray(rawArr)) mc.contentLinks = rawArr.join(' ');
+                } catch(e) {}
+                var links = mc.contentLinks.split(/\s+/).filter(Boolean);
+                if (links.length) {
+                  linkWrap.style.display = 'block';
+                  linkList.innerHTML = links.map(function(l) {
+                    var sanitized = String(l).replace(/["'[\]]/g, '').trim();
+                    if (!sanitized) return '';
+                    var href = sanitized.startsWith('http') ? sanitized : 'https://' + sanitized;
+                    return '<a href="' + href + '" target="_blank" rel="noopener" style="color:#2563eb; text-decoration:none; display:inline-block; margin-right:12px; margin-bottom:4px;">&#8594; ' + sanitized + '</a>';
+                  }).join('');
+                }
+              }
+            }
+          }
           renderAccounts();
           buildCalendar();
         } catch (e) { console.warn('Could not load campaign data', e); }
@@ -501,13 +528,15 @@
             if (window._myCampaignsCache && Array.isArray(window._myCampaignsCache)) {
               var mc = window._myCampaignsCache.find(function(x) { return String(x.id) === String(campaignId); });
               if (mc && mc.platforms) {
-                var pSplit = mc.platforms.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+                var pSplit = mc.platforms.split(',').map(function(s) { return s.replace(/["']/g, '').trim(); }).filter(Boolean);
                 if (pSplit.length > 0) mockPlats = pSplit;
               }
             }
             var mappedDayPosts = [];
             mockPlats.forEach(function(plat) {
-              mappedDayPosts.push({ platform: plat, postUrl: '#', isMock: true, accountHandle: '@account_1' });
+              for (var c = 0; c < 3; c++) {
+                mappedDayPosts.push({ platform: plat, postUrl: '#', isMock: true, accountHandle: '@account_1' });
+              }
             });
             dayPosts = isPost ? mappedDayPosts : [];
             totalViews = dayPosts.reduce(function(s, p) { return s + (p.views || 0); }, 0);
