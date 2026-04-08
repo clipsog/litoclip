@@ -15,6 +15,13 @@ window.AUTH_API_URL_LOCAL = window.AUTH_API_URL;
 (function() {
   const API_URL = window.AUTH_API_URL_LOCAL;
 
+  // Keep Render server awake
+  setInterval(() => {
+    try {
+      fetch(`${API_URL}/ping`, { method: 'GET' }).catch(() => {});
+    } catch (e) {}
+  }, 5 * 60 * 1000);
+
 // ---------- LOGIN BYPASS (demo mode): add ?bypass=1 or ?demo=1 to URL to view as logged in ----------
 function isBypassMode() {
   const params = new URLSearchParams(window.location.search);

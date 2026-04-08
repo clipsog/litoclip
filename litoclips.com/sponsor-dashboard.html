@@ -126,7 +126,7 @@
         <div class="nav-avatar-wrap">
           <button type="button" class="nav-avatar" id="userAvatar" title="Profile & settings" aria-haspopup="true" aria-expanded="false">SP</button>
           <div class="nav-avatar-dropdown" id="userAvatarDropdown">
-            <button type="button" class="nav-dd-item" id="navSwitchCreator" hidden>Switch to Creator dashboard</button>
+            <button type="button" class="nav-dd-item" id="navSwitchCreator">Switch to Creator dashboard</button>
             <a href="settings.html#profile">Edit profile</a>
             <a href="settings.html">Settings</a>
           </div>
@@ -289,7 +289,7 @@
         var R = window.LitoUserRoles;
         var swC = document.getElementById('navSwitchCreator');
         if (swC) {
-          swC.hidden = !R.hasCreatorRole(user);
+          swC.hidden = false;
           swC.onclick = function () {
             R.switchToRole('creator', 'brand-overview.html');
           };

@@ -14,8 +14,8 @@
   }
 
   function hasCreatorRole(u) {
-    var r = getRoles(u);
-    return r.indexOf('creator') >= 0 || r.indexOf('brand') >= 0;
+    if (!u) return false;
+    return true; // All authenticated users are natively creators
   }
 
   function persistUser(u) {
@@ -43,7 +43,7 @@
       var raw = localStorage.getItem('user');
       var u = raw ? JSON.parse(raw) : {};
       u.userRoles = me.userRoles || getRoles(me);
-      u.userType = me.userType;
+      u.userType = u.userType || me.userType || 'creator';
       u.isAdmin = me.isAdmin;
       if (me.firstName != null) u.firstName = me.firstName;
       if (me.lastName != null) u.lastName = me.lastName;

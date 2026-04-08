@@ -671,7 +671,7 @@
           <div class="start-campaign-wiz-pricing">
             <div class="start-campaign-wiz-price-line" id="wzPriceLine"></div>
             <div class="start-campaign-wiz-price-note" id="wzPriceNote"></div>
-            <strong>Pricing</strong> — First month: <strong>$8.99</strong> per account per week (1 post/day). Month 2+: <strong>$13.99</strong> per account per week (3 posts/day); +$2 per extra post/day.
+            <strong>Pricing</strong> — $19.99 per account per week (3 posts/day after warm up); +$2 per extra post/day.
           </div>
         </div>
 
@@ -956,15 +956,14 @@
         updateSavedCampaignsButton();
       }
 
-      const WZ_FEE_FIRST_MONTH = 8.99;
-      const WZ_FEE_MONTH2_BASE = 13.99;
+      const WZ_FEE_BASE = 19.99;
       const WZ_FEE_EXTRA_POST = 2;
 
-      function calcWzMonth2Total(numAccounts, postsPerDay) {
+      function calcWzTotal(numAccounts, postsPerDay) {
         var n = parseInt(numAccounts, 10) || 0;
         var posts = Math.max(3, parseInt(postsPerDay, 10) || 3);
         var extra = Math.max(0, posts - 3);
-        var perAccount = WZ_FEE_MONTH2_BASE + extra * WZ_FEE_EXTRA_POST;
+        var perAccount = WZ_FEE_BASE + extra * WZ_FEE_EXTRA_POST;
         return (n * perAccount).toFixed(2);
       }
 
@@ -1017,12 +1016,11 @@
         });
         var posts = parseInt(postsEl.value, 10) || 3;
         var includeWatermark = !!(document.getElementById('wzWatermark') && document.getElementById('wzWatermark').checked);
-        var firstMonthRaw = totalAccounts * WZ_FEE_FIRST_MONTH;
-        var firstMonth = (includeWatermark ? (firstMonthRaw * 0.9) : firstMonthRaw).toFixed(2);
-        var month2 = calcWzMonth2Total(totalAccounts, posts);
-        lineEl.textContent = '$' + firstMonth + '/wk — 1st month (1 post/day per account)' + (includeWatermark ? ' · 10% watermark discount' : '');
+        var rawTotal = calcWzTotal(totalAccounts, posts);
+        var finalTotal = (includeWatermark ? (rawTotal * 0.9) : rawTotal).toFixed(2);
+        lineEl.textContent = '$' + finalTotal + '/wk per account' + (includeWatermark ? ' · 10% watermark discount' : '');
         if (noteEl) {
-          noteEl.textContent = 'Month 2+: $' + month2 + '/wk' + (posts > 3 ? ' (' + posts + ' posts/day)' : ' (3 posts/day)');
+          noteEl.textContent = 'Day 3+: ' + posts + ' posts/day';
         }
         var checkoutLineEl = document.getElementById('wzCheckoutPriceLine');
         var checkoutNoteEl = document.getElementById('wzCheckoutPriceNote');
@@ -1558,8 +1556,8 @@
         if (!totalAccounts) return;
         var platforms = rows.map(function(r) { return r.platform; });
         var primaryPlatform = platforms[0] || null;
-
-        var firstWeekRaw = totalAccounts * WZ_FEE_FIRST_MONTH;
+        var posts = parseInt(document.getElementById('wzPostsPerDay')?.value, 10) || 3;
+        var firstWeekRaw = parseFloat(calcWzTotal(totalAccounts, posts));
         var budgetDollars = parseFloat((includeWatermark ? (firstWeekRaw * 0.9) : firstWeekRaw).toFixed(2));
         var amountCents = Math.max(100, Math.round(budgetDollars * 100));
 
@@ -2271,7 +2269,7 @@
 
         // Pricing / payment / schedule
         if (has(/pricing|price|cost|how much|\$8\.99|\$13\.99|budget/)) {
-          return 'Pricing (simple): First month is $8.99 per account/week. Days 1-2 are warm-up (we interact with your niche), then it is 1 post/day. Month 2+ is $13.99 per account/week, and it becomes 3 posts/day per account.';
+          return 'Pricing (simple): $19.99 per account/week. Days 1-2 are warm-up (we interact with your niche). Day 3+ is 3 posts/day per account.';
         }
         if (has(/warm.?up|warming up/)) {
           return 'Warm-up is the first 2 days: we interact with accounts in your niche (likes/comments/follows). This helps your first real posts reach people who care.';

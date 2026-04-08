@@ -260,13 +260,10 @@
           Add another platform
         </button>
         <div class="pricing-box" style="margin-top: 20px;">
-          <strong>Pricing</strong>
-          <p style="margin: 12px 0 4px 0;"><strong>First month: $8.99 per account per week.</strong></p>
-          <p style="margin: 0 0 4px 0;">Days 1–2: we warm up (talk to people in your niche).</p>
-          <p style="margin: 0 0 12px 0;">Day 3+: 1 post per day per account.</p>
-          <p style="margin: 0 0 4px 0;"><strong>Month 2+: $13.99 per account per week.</strong></p>
-          <p style="margin: 0 0 8px 0;">3 posts per day per account.</p>
-          <p style="margin: 0; font-size: 13px;">Upscale: +$2 per extra post per day (e.g. 5 posts/day = $17.99 per account per week).</p>
+          <strong>Pricing: $19.99 per account per week</strong>
+          <p style="margin: 12px 0 4px 0;">Days 1–2: we warm up (talk to people in your niche).</p>
+          <p style="margin: 0 0 12px 0;">Day 3+: 3 posts per day per account.</p>
+          <p style="margin: 0; font-size: 13px;">Upscale: +$2 per extra post per day (e.g. 5 posts/day = $23.99 per account per week).</p>
         </div>
       </div>
 
@@ -367,20 +364,14 @@
         }
       });
 
-      const FEE_FIRST_MONTH = 8.99;   // per account per week, 1 post/day
-      const FEE_MONTH2_BASE = 13.99;  // per account per week, 3 posts/day
+      const FEE_BASE = 19.99;   // per account per week, 3 posts/day
       const FEE_EXTRA_POST_PER_DAY = 2; // add per post/day above 3
 
-      function calcPriceFirstMonth(numAccounts) {
-        const n = parseInt(numAccounts, 10) || 0;
-        return (n * FEE_FIRST_MONTH).toFixed(2);
-      }
-
-      function calcPriceMonth2Plus(numAccounts, postsPerDay) {
+      function calcPrice(numAccounts, postsPerDay) {
         const n = parseInt(numAccounts, 10) || 0;
         const posts = Math.max(3, parseInt(postsPerDay, 10) || 3);
         const extra = Math.max(0, posts - 3);
-        const perAccount = FEE_MONTH2_BASE + extra * FEE_EXTRA_POST_PER_DAY;
+        const perAccount = FEE_BASE + extra * FEE_EXTRA_POST_PER_DAY;
         return (n * perAccount).toFixed(2);
       }
 
@@ -391,10 +382,9 @@
         const noteEl = row.querySelector('[data-price-note]');
         const num = parseInt(numInput?.value, 10) || 0;
         const postsPerDay = parseInt(postsInput?.value, 10) || 3;
-        const firstMonth = (num * FEE_FIRST_MONTH).toFixed(2);
-        const month2 = calcPriceMonth2Plus(num, postsPerDay);
-        if (priceEl) priceEl.textContent = '$' + firstMonth + '/wk';
-        if (noteEl) noteEl.textContent = '1st month: $' + firstMonth + ' (1 post/day) · Month 2+: $' + month2 + '/wk' + (postsPerDay > 3 ? ' (' + postsPerDay + ' posts/day)' : ' (3 posts/day)');
+        const price = calcPrice(num, postsPerDay);
+        if (priceEl) priceEl.textContent = '$' + price + '/wk';
+        if (noteEl) noteEl.textContent = 'Day 3+: ' + postsPerDay + ' posts/day';
       }
 
       function getRowContentLinks(row) {
@@ -578,7 +568,7 @@
           goal,
           num_accounts: numAccounts,
           posts_per_day: postsPerDay,
-          budget: parseFloat(calcPriceFirstMonth(numAccounts)),
+          budget: parseFloat(calcPrice(numAccounts, postsPerDay)),
           platforms: [platform],
           requirePayment: false,
           acceptSponsorOffers: acceptSponsor

@@ -204,7 +204,7 @@
 
     <div class="accounts-section">
       <div class="accounts-section-top">
-        <h3>Linked accounts</h3>
+      <h3>Linked accounts</h3>
         <button type="button" class="btn-pay" id="payBtn">Start campaign</button>
       </div>
       <div id="accountsList">
@@ -214,7 +214,7 @@
 
     <div class="calendar-section">
       <h3>Calendar</h3>
-      <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;"><strong>Days 1–2:</strong> Warming up — we interact with your niche so when we start posting we have more reach and target the right audience. <strong>Day 3+:</strong> See what was posted and the views. First month: 1 post/day per account. Month 2+: 3 posts/day (or more for +$2/post/day).</p>
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;"><strong>Days 1–2:</strong> Warming up — we interact with your niche so when we start posting we have more reach and target the right audience. <strong>Day 3+:</strong> See what was posted and the views. 3 posts/day per account (or more for +$2/post/day).</p>
       <div class="cal-header">
         <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
       </div>
@@ -231,7 +231,7 @@
 
       <div class="pay-section" id="paySection">
         <h3>Keep it going</h3>
-        <p><strong>First month:</strong> $8.99 per account per week (1 post/day). <strong>Month 2+:</strong> $13.99 per account per week (3 posts/day). Want more? +$2 per extra post per day (e.g. 5 posts/day = $17.99 per account per week).</p>
+        <p><strong>Pricing:</strong> $19.99 per account per week (3 posts/day after warm up). Want more? +$2 per extra post per day (e.g. 5 posts/day = $23.99 per account per week).</p>
         <label class="auto-charge">
           <input type="checkbox" id="autoCharge" checked>
           Automatically charge me each week so I don't have to pay manually
@@ -891,7 +891,7 @@
         if (!s) return '';
 
         if (has(/pricing|price|cost|how much|\$8\.99|\$13\.99|budget/)) {
-          return 'Pricing (simple): First month is $8.99 per account/week. Days 1-2 are warm-up (we interact with your niche), then it is 1 post/day. Month 2+ is $13.99 per account/week, and it becomes 3 posts/day per account.';
+          return 'Pricing (simple): $19.99 per account/week. Days 1-2 are warm-up (we interact with your niche). Day 3+ is 3 posts/day per account.';
         }
         if (has(/warm.?up|warming up/)) {
           return 'Warm-up is the first 2 days: we interact with accounts in your niche (likes/comments/follows). This helps your first real posts reach people who care.';
