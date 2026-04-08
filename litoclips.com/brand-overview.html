@@ -886,8 +886,32 @@
               delBtn.className = 'btn-saved-delete';
               delBtn.innerHTML = 'Remove';
               delBtn.style.padding = '8px 12px';
-              delBtn.addEventListener('click', async function() {
-                if (confirm('Are you sure you want to remove this pending configuration?')) {
+              delBtn.addEventListener('click', function() {
+                const overlay = document.createElement('div');
+                overlay.style = 'position:fixed; inset:0; background:rgba(15,23,42,0.8); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(4px); padding: 20px;';
+                const box = document.createElement('div');
+                box.style = 'background:#fff; padding:24px 30px; border-radius:16px; width:400px; max-width:100%; box-shadow:0 25px 80px rgba(0,0,0,0.35); position:relative;';
+                box.innerHTML = '<h3 style="margin:0 0 10px 0;font-size:20px;color:#0f172a;">Remove configuration</h3><p style="color:#475569;margin:0 0 24px 0;line-height:1.5;">Are you sure you want to completely remove this draft? This cannot be undone.</p>';
+                
+                const btnRow = document.createElement('div');
+                btnRow.style = 'display:flex; justify-content:flex-end; gap:12px;';
+                
+                const cBtn = document.createElement('button');
+                cBtn.textContent = 'Cancel';
+                cBtn.className = 'btn-secondary';
+                cBtn.type = 'button';
+                
+                const yBtn = document.createElement('button');
+                yBtn.textContent = 'Remove forever';
+                yBtn.className = 'btn-primary';
+                yBtn.type = 'button';
+                yBtn.style.background = '#dc2626';
+                yBtn.style.borderColor = '#dc2626';
+                
+                cBtn.onclick = function() { overlay.remove(); };
+                yBtn.onclick = async function() {
+                  yBtn.textContent = 'Removing...';
+                  yBtn.disabled = true;
                   try {
                     await fetch(API_URL + '/campaigns/' + encodeURIComponent(c.id), {
                       method: 'DELETE',
@@ -896,13 +920,21 @@
                     if (bypass) {
                       campaignsList = campaignsList.filter(function(x) { return x.id !== c.id; });
                       renderCampaigns(campaignsList);
+                      overlay.remove();
                     } else {
                       window.location.reload();
                     }
                   } catch (e) {
                     alert('Could not remove configuration');
+                    overlay.remove();
                   }
-                }
+                };
+                
+                btnRow.appendChild(cBtn);
+                btnRow.appendChild(yBtn);
+                box.appendChild(btnRow);
+                overlay.appendChild(box);
+                document.body.appendChild(overlay);
               });
 
               const startBtnEl = document.createElement('button');
