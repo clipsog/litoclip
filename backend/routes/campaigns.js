@@ -346,10 +346,23 @@ router.delete('/:id', requireAuth, async (req, res) => {
     if (!campaign) return res.status(404).json({ error: 'Not found' });
     if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
     
+    // Postgres strict foreign-key cleanup
+    try { await db.prepare('DELETE FROM payments WHERE campaign_id = ?').run(id); } catch (e) {}
+    try { await db.prepare('DELETE FROM sponsor_deals WHERE campaign_id = ?').run(id); } catch (e) {}
+    try { await db.prepare('DELETE FROM submissions WHERE campaign_id = ?').run(id); } catch (e) {}
+    try { await db.prepare('DELETE FROM campaign_joins WHERE campaign_id = ?').run(id); } catch (e) {}
+    try { await db.prepare('DELETE FROM campaign_posts WHERE campaign_id = ?').run(id); } catch (e) {}
+    try { await db.prepare('DELETE FROM campaign_accounts WHERE campaign_id = ?').run(id); } catch (e) {}
+    
     await db.prepare('DELETE FROM campaigns WHERE id = ?').run(id);
-    res.json({ ok: true });
+    
+    // Also cleanup alerts which might reference its ID (no foreign key check, but good hygiene)
+    try { await db.prepare("DELETE FROM admin_alerts WHERE entity_id = ? AND entity_type = 'campaign'").run(id); } catch (e) {}
+
+    res.json({ ok: true, deleted: true });
   } catch (e) {
-    res.status(500).json({ error: 'Failed to delete' });
+    console.error('DELETE /campaigns/:id 500 Error:', e);
+    res.status(500).json({ error: e.message || 'Failed to delete' });
   }
 });
 
