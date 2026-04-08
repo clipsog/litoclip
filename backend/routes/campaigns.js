@@ -338,6 +338,21 @@ router.delete('/saved-drafts/:draftId', requireAuth, async (req, res) => {
   }
 });
 
+// DELETE /api/campaigns/:id (for pending campaigns)
+router.delete('/:id', requireAuth, async (req, res) => {
+  const id = req.params.id;
+  try {
+    const campaign = await db.prepare('SELECT owner_id, status FROM campaigns WHERE id = ?').get(id);
+    if (!campaign) return res.status(404).json({ error: 'Not found' });
+    if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
+    
+    await db.prepare('DELETE FROM campaigns WHERE id = ?').run(id);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to delete' });
+  }
+});
+
 // GET /api/campaigns/:id/accounts – linked accounts (creator must own campaign)
 router.get('/:id/accounts', requireAuth, async (req, res) => {
   const campaignId = req.params.id;
