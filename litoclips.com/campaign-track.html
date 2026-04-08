@@ -495,7 +495,11 @@
           if (bypass || (!Array.isArray(posts) || posts.length === 0)) {
             isWarmup = i < 2;
             isPost = i >= 2;
-            dayPosts = isPost ? [{ platform: 'tiktok', postUrl: '#', views: 800 + Math.floor(Math.random() * 2500) * (i - 1), accountHandle: '@account_1' }] : [];
+            dayPosts = isPost ? [
+              { platform: 'tiktok', postUrl: '#', views: 800 + Math.floor(Math.random() * 2500) * (i - 1), accountHandle: '@account_1' },
+              { platform: 'instagram', postUrl: '#', views: 600 + Math.floor(Math.random() * 1500) * (i - 1), accountHandle: '@account_1' },
+              { platform: 'youtube shorts', postUrl: '#', views: 1200 + Math.floor(Math.random() * 3200) * (i - 1), accountHandle: '@account_1' }
+            ] : [];
             totalViews = dayPosts.reduce(function(s, p) { return s + (p.views || 0); }, 0);
           }
           dayData.push({ dayIndex: i + 1, date: d, dayNum, month: monthNames[d.getMonth()], dateKey, isWarmup, isPost, dayPosts, totalViews });
