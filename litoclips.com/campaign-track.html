@@ -551,7 +551,12 @@
           }
           if (isPost && dayPosts.length) {
             inner += '<span class="badge">' + dayPosts.length + ' post' + (dayPosts.length > 1 ? 's' : '') + '</span>';
+            var seenPlatUI = {};
             dayPosts.forEach(function(p) {
+              if (p.isMock) {
+                if (seenPlatUI[p.platform]) return;
+                seenPlatUI[p.platform] = true;
+              }
               var viewHtml = p.isMock ? '' : ' &middot; <span class="views">' + (p.views || 0) + ' views</span>';
               inner += '<div class="post-item">' + (p.platform || 'TikTok') + viewHtml + '</div>';
             });
@@ -572,7 +577,12 @@
           bodyEl.innerHTML = '<span class="badge" style="margin-bottom:12px;">Warming up</span><p class="warmup-desc">We interacted with your niche — liking, commenting, and following accounts in your space. This helps us target the right audience so when we start posting, your clips reach people who care.</p>';
         } else if (d.dayPosts && d.dayPosts.length) {
           var html = '<p style="margin-bottom:16px; font-size:14px;">' + d.dayPosts.length + ' post' + (d.dayPosts.length > 1 ? 's' : '') + ' published.</p>';
+          var seenModalUI = {};
           d.dayPosts.forEach(function(p) {
+            if (p.isMock) {
+              if (seenModalUI[p.platform]) return;
+              seenModalUI[p.platform] = true;
+            }
             var handle = p.accountHandle ? '<div class="account-name">@' + String(p.accountHandle).replace(/^@/, '') + '</div>' : '';
             var link = (p.postUrl && p.postUrl !== '#') ? '<a href="' + p.postUrl.replace(/"/g, '&quot;') + '" class="post-card" target="_blank" rel="noopener">' : '<div class="post-card">';
             var linkEnd = (p.postUrl && p.postUrl !== '#') ? '</a>' : '</div>';
