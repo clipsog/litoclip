@@ -496,9 +496,9 @@
             isWarmup = i < 2;
             isPost = i >= 2;
             dayPosts = isPost ? [
-              { platform: 'tiktok', postUrl: '#', views: 800 + Math.floor(Math.random() * 2500) * (i - 1), accountHandle: '@account_1' },
-              { platform: 'instagram', postUrl: '#', views: 600 + Math.floor(Math.random() * 1500) * (i - 1), accountHandle: '@account_1' },
-              { platform: 'youtube shorts', postUrl: '#', views: 1200 + Math.floor(Math.random() * 3200) * (i - 1), accountHandle: '@account_1' }
+              { platform: 'TikTok', postUrl: '#', isMock: true, accountHandle: '@account_1' },
+              { platform: 'Instagram Reels', postUrl: '#', isMock: true, accountHandle: '@account_1' },
+              { platform: 'YouTube Shorts', postUrl: '#', isMock: true, accountHandle: '@account_1' }
             ] : [];
             totalViews = dayPosts.reduce(function(s, p) { return s + (p.views || 0); }, 0);
           }
@@ -513,7 +513,8 @@
           if (isPost && dayPosts.length) {
             inner += '<span class="badge">' + dayPosts.length + ' post' + (dayPosts.length > 1 ? 's' : '') + '</span>';
             dayPosts.forEach(function(p) {
-              inner += '<div class="post-item">' + (p.platform || 'TikTok') + ' &middot; <span class="views">' + (p.views || 0) + ' views</span></div>';
+              var viewHtml = p.isMock ? '' : ' &middot; <span class="views">' + (p.views || 0) + ' views</span>';
+              inner += '<div class="post-item">' + (p.platform || 'TikTok') + viewHtml + '</div>';
             });
           }
           dayEl.innerHTML = inner;
@@ -536,7 +537,8 @@
             var handle = p.accountHandle ? '<div class="account-name">@' + String(p.accountHandle).replace(/^@/, '') + '</div>' : '';
             var link = (p.postUrl && p.postUrl !== '#') ? '<a href="' + p.postUrl.replace(/"/g, '&quot;') + '" class="post-card" target="_blank" rel="noopener">' : '<div class="post-card">';
             var linkEnd = (p.postUrl && p.postUrl !== '#') ? '</a>' : '</div>';
-            html += '<div class="account-group">' + handle + link + '<div class="platform">' + (p.platform || 'TikTok') + '</div><div class="views">' + (p.views || 0) + ' views</div><div class="view-link">' + (p.postUrl && p.postUrl !== '#' ? 'View on ' + (p.platform || 'TikTok') + ' →' : '') + '</div>' + linkEnd + '</div>';
+            var viewHtml = p.isMock ? '' : '<div class="views">' + (p.views || 0) + ' views</div>';
+            html += '<div class="account-group">' + handle + link + '<div class="platform">' + (p.platform || 'TikTok') + '</div>' + viewHtml + '<div class="view-link">' + (p.postUrl && p.postUrl !== '#' ? 'View on ' + (p.platform || 'TikTok') + ' →' : '') + '</div>' + linkEnd + '</div>';
           });
           bodyEl.innerHTML = html;
         } else {
