@@ -537,14 +537,14 @@
       <div class="calendar-toolbar" id="calendarToolbar">
         <div>
           <h3 style="margin:0 0 4px 0;">Accounts Calendar</h3>
-          <p style="font-size: 13px; color: #64748b; margin: 0;"><strong>Days 1–2:</strong> Warming up. <strong>Day 3+:</strong> Posts and views. Click a date or Launch Campaign to begin.</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0;"><strong>Days 1–2:</strong> Warming up. <strong>Day 3+:</strong> Posts and views. Click a date or Start campaign to begin.</p>
         </div>
         <div class="calendar-toolbar-actions">
           <button type="button" class="btn-saved-campaigns" id="savedCampaignsBtn" disabled>
             Saved campaigns <span id="savedCampaignsCount" class="saved-pill">0</span>
           </button>
           <button type="button" class="btn-start-campaign" id="startCampaignBtn">
-            Launch Accounts
+            Start campaign
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
@@ -615,10 +615,10 @@
             <button type="button" class="btn-secondary" id="startCampaignModalCancel">Save for later</button>
             <button type="button" class="btn-secondary" id="startCampaignWizardBack" style="display:none;">Back</button>
             <button type="button" class="btn-primary" id="startCampaignWizardNext">Next</button>
-            <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Launch Campaign</button>
+            <button type="button" class="btn-primary" id="startCampaignModalFinish" style="display:none;">Start campaign</button>
           </div>
         </div>
-        <h3 id="startCampaignModalTitle">Launch your campaign</h3>
+        <h3 id="startCampaignModalTitle">Start your campaign</h3>
 
         <div class="start-campaign-step active" data-wizard-step="0">
           <h4>Campaign name</h4>
@@ -953,7 +953,7 @@
               startBtnEl.type = 'button';
               startBtnEl.className = 'btn-start-campaign btn-pay-pending';
               startBtnEl.setAttribute('data-campaign-id', String(c.id).replace(/"/g, ''));
-              startBtnEl.innerHTML = 'Launch Campaign';
+              startBtnEl.innerHTML = 'Start campaign';
 
               actionsDiv.appendChild(delBtn);
               actionsDiv.appendChild(startBtnEl);
