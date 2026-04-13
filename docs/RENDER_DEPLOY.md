@@ -76,6 +76,17 @@ In your Render service, open **Environment** (left sidebar or tab) and add these
 
 In Google Cloud Console → APIs & Credentials → your OAuth client → **Authorized redirect URIs**, add the same URL as `GOOGLE_CALLBACK_URL`.
 
+**Email (support replies + admin alerts for new campaigns):**
+
+| Key | Value |
+|-----|--------|
+| `ADMIN_NOTIFY_EMAILS` | Comma-separated inbox(es) for ops alerts (e.g. `litowz12@gmail.com`). Also set in `render.yaml` if you use Blueprint. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` | e.g. Gmail: `smtp.gmail.com`, `587`, `false` |
+| `SMTP_USER`, `SMTP_PASS` | Sending mailbox (use an [App Password](https://support.google.com/accounts/answer/185833) for Gmail, not your normal login password) |
+| `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME` | From address shown to recipients (often same as `SMTP_USER`) |
+
+Without SMTP, in-app **admin alerts** still work; **email** notifications are skipped until SMTP is set.
+
 Optional (add when you use them):
 
 - `DATABASE_URL` (Supabase PostgreSQL) or `DATABASE_PATH` — see **Step 4**.
