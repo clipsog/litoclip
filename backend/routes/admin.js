@@ -393,7 +393,8 @@ router.get('/users-with-campaigns', async (req, res) => {
     let campaigns;
     try {
       campaigns = await db.prepare(`
-        SELECT id, title, platform, platforms, status, owner_id, content_link, content_bank, num_accounts, goal, created_at, started_at
+        SELECT id, title, platform, platforms, status, owner_id, content_link, content_bank, num_accounts, goal, created_at, started_at,
+               accept_sponsor_offers, allow_watermark, watermark_coupon_percent
         FROM campaigns WHERE owner_id IS NOT NULL ORDER BY created_at DESC
       `).all();
     } catch (e) {
@@ -429,7 +430,10 @@ router.get('/users-with-campaigns', async (req, res) => {
         byUser[c.owner_id].campaigns.push({
           id: c.id, title: c.title, platform: c.platform, platforms: platformsStr || c.platform,
           contentLink: c.content_link, contentBank: c.content_bank || '', numAccounts: c.num_accounts, goal: c.goal, createdAt: c.created_at,
-          startedAt: c.started_at || c.created_at
+          startedAt: c.started_at || c.created_at,
+          acceptSponsorOffers: c.accept_sponsor_offers != null ? !!c.accept_sponsor_offers : undefined,
+          allowWatermark: c.allow_watermark != null ? !!c.allow_watermark : undefined,
+          watermarkCouponPercent: c.watermark_coupon_percent != null ? c.watermark_coupon_percent : undefined,
         });
       }
     });

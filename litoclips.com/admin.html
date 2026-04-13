@@ -1069,7 +1069,19 @@
 
         if (unread.length === 0) { banner.style.display = 'none'; return; }
         banner.style.display = 'flex';
-        textEl.textContent = unread.length + ' new item' + (unread.length > 1 ? 's' : '') + ' to act on';
+        function isCampaignAlert(a) {
+          const t = String(a?.type || '').toLowerCase();
+          return t === 'campaign_created' || (t.includes('campaign') && !t.includes('support'));
+        }
+        const nCampaign = unread.filter(isCampaignAlert).length;
+        const nOther = unread.length - nCampaign;
+        if (nCampaign > 0 && nOther > 0) {
+          textEl.textContent = nCampaign + ' new campaign alert' + (nCampaign !== 1 ? 's' : '') + ', ' + nOther + ' other item' + (nOther !== 1 ? 's' : '') + ' to act on';
+        } else if (nCampaign > 0) {
+          textEl.textContent = nCampaign + ' new campaign' + (nCampaign !== 1 ? 's' : '') + ' to review';
+        } else {
+          textEl.textContent = unread.length + ' new item' + (unread.length > 1 ? 's' : '') + ' to act on';
+        }
       } catch (e) {
         banner.style.display = 'none';
         if (badgeEl) badgeEl.style.display = 'none';
@@ -1211,6 +1223,12 @@
                   if (c.contentLink) infoParts.push('Content: ' + c.contentLink);
                   if (c.contentBank) infoParts.push('Content bank: ' + c.contentBank);
                   if (c.goal) infoParts.push('Goal: ' + c.goal);
+                  if (c.allowWatermark === true || c.allowWatermark === false) {
+                    infoParts.push('Watermark: ' + (c.allowWatermark ? ('Yes — ' + (c.watermarkCouponPercent != null ? c.watermarkCouponPercent : 10) + '% coupon') : 'No'));
+                  }
+                  if (c.acceptSponsorOffers === true || c.acceptSponsorOffers === false) {
+                    infoParts.push('Sponsor offers: ' + (c.acceptSponsorOffers ? 'On' : 'Off'));
+                  }
                   const infoText = infoParts.join(' · ');
                   const safeInfo = infoText.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
                   const safeTitle = (c.title || 'Campaign').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');

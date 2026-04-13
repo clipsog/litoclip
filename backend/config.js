@@ -46,6 +46,11 @@ module.exports = {
     usdtAddress: process.env.CRYPTO_USDT_ADDRESS || '',
     network: process.env.CRYPTO_NETWORK || 'ethereum',
   },
+  /** Comma-separated admin emails for operational alerts (e.g. new campaign). Uses SMTP when configured. */
+  adminNotifyEmails: (process.env.ADMIN_NOTIFY_EMAILS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
   smtp: {
     host: process.env.SMTP_HOST || '',
     port: parseInt(process.env.SMTP_PORT || '587', 10),

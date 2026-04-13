@@ -3,6 +3,7 @@ const { v4: uuid } = require('uuid');
 const { db } = require('../db');
 const { optionalAuth, requireAuth, requireCreator } = require('../middleware/auth');
 const { normalizeContentTypes, normalizeNicheTags, parseJsonArray } = require('../lib/creatorTaxonomy');
+const { sendAdminNewCampaignEmail } = require('../services/mailer');
 
 const router = express.Router();
 
@@ -44,6 +45,13 @@ router.post('/', requireAuth, async (req, res) => {
   const needsPayment = !!requirePayment;
   const status = needsPayment ? 'pending_payment' : 'active';
   const paymentStatus = needsPayment ? 'pending' : 'paid';
+  const notifyAcceptSponsor = !!acceptSponsorOffers;
+  const notifyAllowWm = !!allowWatermark;
+  const notifyWmPct = notifyAllowWm ? Math.min(100, Math.max(0, parseFloat(watermarkCouponPercent) || 10)) : 0;
+  const platformsForEmail =
+    Array.isArray(platforms) && platforms.length
+      ? platforms.join(', ')
+      : ((platform || '').trim() || '—');
 
   try {
     const postsPerDayVal = posts_per_day != null ? Math.min(10, Math.max(1, parseInt(posts_per_day, 10))) : null;
@@ -158,6 +166,22 @@ router.post('/', requireAuth, async (req, res) => {
       'New campaign: ' + title.trim(),
       (owner ? owner.name + ' (' + owner.email + ')' : 'User') + ' started campaign "' + title.trim() + '"'
     );
+    try {
+      await sendAdminNewCampaignEmail({
+        campaignId: id,
+        campaignTitle: title.trim(),
+        ownerName: owner && owner.name,
+        ownerEmail: owner && owner.email,
+        contentLink: contentLinkStored,
+        platforms: platformsForEmail,
+        numAccounts: num_accounts != null ? parseInt(num_accounts, 10) : null,
+        allowWatermark: notifyAllowWm,
+        watermarkCouponPercent: notifyWmPct,
+        acceptSponsorOffers: notifyAcceptSponsor,
+      });
+    } catch (_) {
+      /* optional email — ignore transport errors */
+    }
   } catch (e) {
     // Ignore if admin_alerts table doesn't exist yet
   }
@@ -206,10 +230,21 @@ router.get('/', optionalAuth, async (req, res) => {
 // GET /api/campaigns/created – campaigns the user created (as owner)
 router.get('/created', requireAuth, async (req, res) => {
   try {
-    const rows = await db.prepare(`
-      SELECT id, title, description, niche, platform, platforms, num_accounts, budget, rpm, status, created_at, content_link
-      FROM campaigns WHERE owner_id = ? ORDER BY created_at DESC
-    `).all(req.user.id);
+    let rows;
+    try {
+      rows = await db.prepare(`
+        SELECT id, title, description, niche, platform, platforms, num_accounts, budget, rpm, status, created_at, content_link,
+               accept_sponsor_offers, allow_watermark, watermark_coupon_percent
+        FROM campaigns WHERE owner_id = ? ORDER BY created_at DESC
+      `).all(req.user.id);
+    } catch (colErr) {
+      if (colErr.message && colErr.message.includes('no such column')) {
+        rows = await db.prepare(`
+          SELECT id, title, description, niche, platform, platforms, num_accounts, budget, rpm, status, created_at, content_link
+          FROM campaigns WHERE owner_id = ? ORDER BY created_at DESC
+        `).all(req.user.id);
+      } else throw colErr;
+    }
     res.json(rows.map(r => ({
       id: r.id,
       title: r.title,
@@ -222,6 +257,9 @@ router.get('/created', requireAuth, async (req, res) => {
       status: r.status,
       contentLinks: r.content_link,
       createdAt: r.created_at,
+      acceptSponsorOffers: r.accept_sponsor_offers != null ? !!r.accept_sponsor_offers : undefined,
+      allowWatermark: r.allow_watermark != null ? !!r.allow_watermark : undefined,
+      watermarkCouponPercent: r.watermark_coupon_percent != null ? r.watermark_coupon_percent : undefined,
     })));
   } catch (e) {
     if (e.message && e.message.includes('no such column') && e.message.includes('owner_id')) {
@@ -409,13 +447,30 @@ router.get('/:id/posts', requireAuth, async (req, res) => {
 
 // GET /api/campaigns/:id/sponsor-settings – sponsor opt-in (creator, own campaign)
 router.get('/:id/sponsor-settings', requireAuth, async (req, res) => {
-  const campaign = await db.prepare('SELECT owner_id, accept_sponsor_offers, allow_watermark, watermark_coupon_percent FROM campaigns WHERE id = ?').get(req.params.id);
+  let campaign;
+  try {
+    campaign = await db.prepare(
+      'SELECT owner_id, accept_sponsor_offers, allow_watermark, watermark_coupon_percent FROM campaigns WHERE id = ?'
+    ).get(req.params.id);
+  } catch (e) {
+    if (e.message && e.message.includes('no such column')) {
+      campaign = await db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(req.params.id);
+      if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+      if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+      return res.json({
+        acceptSponsorOffers: false,
+        allowWatermark: false,
+        watermarkCouponPercent: 0,
+      });
+    }
+    throw e;
+  }
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
   res.json({
     acceptSponsorOffers: !!campaign.accept_sponsor_offers,
     allowWatermark: !!campaign.allow_watermark,
-    watermarkCouponPercent: campaign.watermark_coupon_percent || 0,
+    watermarkCouponPercent: campaign.watermark_coupon_percent != null ? campaign.watermark_coupon_percent : 0,
   });
 });
 

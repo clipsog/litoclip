@@ -212,6 +212,12 @@
       </div>
     </div>
 
+    <div class="sponsor-settings-section" id="campaignChoicesStrip" style="display:none; margin-top: 24px;">
+      <h3>Your campaign choices</h3>
+      <p id="watermarkChoiceLine" style="font-size: 14px; color: #0f172a; margin: 0 0 8px 0;"></p>
+      <p id="sponsorChoiceLine" style="font-size: 14px; color: #64748b; margin: 0;"></p>
+    </div>
+
     <div class="calendar-section">
       <h3>Calendar</h3>
       <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;"><strong>Days 1–2:</strong> Warming up — we interact with your niche so when we start posting we have more reach and target the right audience. <strong>Day 3+:</strong> See what was posted and the views. 3 posts/day per account (or more for +$2/post/day).</p>
@@ -464,6 +470,21 @@
           .then(data => {
             const cb = document.getElementById('acceptSponsorOffers');
             if (cb) cb.checked = !!data?.acceptSponsorOffers;
+            var strip = document.getElementById('campaignChoicesStrip');
+            var wmLine = document.getElementById('watermarkChoiceLine');
+            var spLine = document.getElementById('sponsorChoiceLine');
+            if (strip && wmLine && data) {
+              strip.style.display = 'block';
+              var pct = data.watermarkCouponPercent != null ? Number(data.watermarkCouponPercent) : 10;
+              wmLine.innerHTML = data.allowWatermark
+                ? '<strong>Watermark pricing:</strong> Yes — you agreed to run sponsor watermarks for a <strong>' + pct + '%</strong> discount on weekly pricing.'
+                : '<strong>Watermark pricing:</strong> No — standard weekly pricing (no watermark discount).';
+              if (spLine) {
+                spLine.textContent = data.acceptSponsorOffers
+                  ? 'Sponsor offers: enabled — brands can discover and send offers on this campaign.'
+                  : 'Sponsor offers: disabled.';
+              }
+            }
           })
           .catch(() => {});
       }
