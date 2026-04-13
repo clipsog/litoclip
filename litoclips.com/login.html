@@ -63,7 +63,9 @@
       const googleBtn = document.getElementById('googleLoginBtn');
       const params = new URLSearchParams(window.location.search);
       const wantsAdmin = params.get('next') === 'admin';
-      if (googleBtn) googleBtn.href = AUTH_BASE + '/auth/google';
+      if (googleBtn) {
+        googleBtn.href = AUTH_BASE + '/auth/google' + (wantsAdmin ? '?state=admin' : '');
+      }
 
       function getDashboardHref(userType) {
         if (userType === 'sponsor') return 'sponsor-dashboard.html';
@@ -107,7 +109,7 @@
       const err = params.get('error');
       if (err) {
         formError.textContent = err === 'google_not_configured' ? 'Google sign-in is not set up yet.' : 'Sign-in failed. Please try again.';
-        window.history.replaceState({}, '', 'login.html');
+        window.history.replaceState({}, '', wantsAdmin ? 'login.html?next=admin' : 'login.html');
       }
       const token = params.get('token');
       if (token) {

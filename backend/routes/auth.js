@@ -77,9 +77,13 @@ router.post('/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
   let row;
   try {
-    row = await db.prepare('SELECT id, password_hash, name, email, user_type, referral_code, user_roles FROM users WHERE email = ?').get(email);
+    row = await db.prepare('SELECT id, password_hash, name, email, user_type, referral_code, user_roles, is_admin FROM users WHERE email = ?').get(email);
   } catch (e) {
-    row = await db.prepare('SELECT id, password_hash, name, email, user_type, referral_code FROM users WHERE email = ?').get(email);
+    try {
+      row = await db.prepare('SELECT id, password_hash, name, email, user_type, referral_code, user_roles FROM users WHERE email = ?').get(email);
+    } catch (e2) {
+      row = await db.prepare('SELECT id, password_hash, name, email, user_type, referral_code FROM users WHERE email = ?').get(email);
+    }
   }
   if (!row || !bcrypt.compareSync(password, row.password_hash || '')) {
     return res.status(401).json({ error: 'Invalid email or password' });
@@ -89,6 +93,7 @@ router.post('/login', async (req, res) => {
   const user = {
     id: row.id, name: row.name, email: row.email, userType: row.user_type, referralCode: row.referral_code,
     userRoles,
+    isAdmin: !!(row.is_admin === 1 || row.is_admin === true),
   };
   res.json({ token, user });
 });

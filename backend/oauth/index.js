@@ -110,7 +110,10 @@ router.get('/discord/callback', (req, res, next) => {
 
 router.get('/google', (req, res, next) => {
   if (!config.google.clientID) return res.redirect(`${config.frontendOrigin}?error=google_not_configured`);
-  const state = ['creator', 'brand', 'sponsor'].includes(req.query.state) ? req.query.state : 'creator';
+  const q = req.query.state;
+  const typeStates = ['creator', 'brand', 'sponsor'];
+  // `admin` = user started from Admin login; callback sends them to login.html?next=admin with token
+  const state = q === 'admin' || typeStates.includes(q) ? q : 'creator';
   passport.authenticate('google', { scope: ['profile', 'email'], state })(req, res, next);
 });
 
@@ -122,14 +125,15 @@ router.get('/google/callback', (req, res, next) => {
       const msg = (info && info.message) || 'google_failed';
       return res.redirect(`${config.frontendOrigin}?error=${msg}`);
     }
-    const state = ['creator', 'brand', 'sponsor'].includes(req.query.state) ? req.query.state : null;
-    if (state) {
+    const oauthState = req.query.state;
+    const typeState = ['creator', 'brand', 'sponsor'].includes(oauthState) ? oauthState : null;
+    if (typeState) {
       try {
         const row = await db.prepare('SELECT password_hash, user_type FROM users WHERE id = ?').get(user.id);
         if (row && (!row.password_hash || row.password_hash === '') && row.user_type === 'creator') {
-          await db.prepare('UPDATE users SET user_type = ? WHERE id = ?').run(state, user.id);
-          user.userType = state;
-          if (state === 'sponsor') {
+          await db.prepare('UPDATE users SET user_type = ? WHERE id = ?').run(typeState, user.id);
+          user.userType = typeState;
+          if (typeState === 'sponsor') {
             try { await db.prepare('INSERT OR IGNORE INTO sponsor_wallets (user_id) VALUES (?)').run(user.id); } catch (_) {}
           }
         }
@@ -138,6 +142,9 @@ router.get('/google/callback', (req, res, next) => {
     const token = jwt.sign({ userId: user.id }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
     const userType = user.userType || 'creator';
     const base = (config.frontendOrigin || '').replace(/\/$/, '');
+    if (oauthState === 'admin') {
+      return res.redirect(`${base}/login.html?token=${encodeURIComponent(token)}&next=admin`);
+    }
     res.redirect(`${base}/index.html?token=${token}&userType=${userType}`);
   })(req, res, next);
 });
