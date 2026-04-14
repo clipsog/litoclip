@@ -289,15 +289,20 @@
           </div>
           <label>
             Purpose
-            <input type="text" id="settingsGoal" placeholder="e.g. Drive leads, grow followers">
+            <select id="settingsGoal" style="width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;color:#0f172a;background:#fff;">
+              <option value="">Select a goal...</option>
+              <option value="Sales or traffic">Increase product or services sales</option>
+              <option value="Narrative building">Narrative building</option>
+              <option value="Positioning">Positioning</option>
+              <option value="Brand deals">Brand deals</option>
+              <option value="PR">PR / Reputation</option>
+              <option value="Awareness">General Awareness</option>
+              <option value="Other">Other</option>
+            </select>
           </label>
-          <label>
-            Angle
-            <input type="text" id="settingsAngle" placeholder="Your campaign angle">
-          </label>
-          <label>
-            Narrative
-            <textarea id="settingsNarrative" placeholder="Describe the story/message to push"></textarea>
+          <label id="settingsGoalDetailsWrap" style="display:none;">
+            <span id="settingsGoalDetailsLabel">Details</span>
+            <input type="text" id="settingsGoalDetails" placeholder="Please specify..." autocomplete="off">
           </label>
           <div id="settingsQuoteLine" style="font-size:12px;color:#475569;"></div>
         </div>
@@ -498,6 +503,32 @@
       var paymentSettingsState = { accounts: [] };
       var quotePreviewState = { postsPerDay: 3, watermarkCouponPercent: 10 };
       var campaignDetailsState = { loaded: false };
+      function updateSettingsGoalDetailsUi() {
+        var goalEl = document.getElementById('settingsGoal');
+        var wrap = document.getElementById('settingsGoalDetailsWrap');
+        var label = document.getElementById('settingsGoalDetailsLabel');
+        var detailsEl = document.getElementById('settingsGoalDetails');
+        if (!goalEl || !wrap || !label || !detailsEl) return;
+        var g = String(goalEl.value || '').trim();
+        if (!g) {
+          wrap.style.display = 'none';
+          return;
+        }
+        wrap.style.display = '';
+        if (g === 'Sales or traffic') {
+          label.textContent = 'What are you selling?';
+          detailsEl.placeholder = 'e.g. My new fitness program, merchandise, booking page...';
+        } else if (g === 'Narrative building') {
+          label.textContent = 'What is the narrative?';
+          detailsEl.placeholder = 'e.g. Overcoming adversity, industry leader, underdog...';
+        } else if (g === 'Positioning') {
+          label.textContent = 'What positioning?';
+          detailsEl.placeholder = 'e.g. Premium quality, accessible for everyone, innovative...';
+        } else {
+          label.textContent = 'Please provide details';
+          detailsEl.placeholder = 'Enter details...';
+        }
+      }
 
       async function loadCampaignData() {
         if (bypass || !campaignId || campaignId === 'demo') return;
@@ -588,12 +619,11 @@
             campaignDetailsState.loaded = true;
             var c = document.getElementById('settingsContentLinks');
             var g = document.getElementById('settingsGoal');
-            var a = document.getElementById('settingsAngle');
-            var n = document.getElementById('settingsNarrative');
+            var d = document.getElementById('settingsGoalDetails');
             if (c) c.value = data.contentLinks || '';
             if (g) g.value = data.goal || '';
-            if (a) a.value = data.niche || '';
-            if (n) n.value = data.description || '';
+            if (d) d.value = data.description || data.niche || '';
+            updateSettingsGoalDetailsUi();
             setContentLinksInCalendar(data.contentLinks || '');
           })
           .catch(function() {});
@@ -626,8 +656,7 @@
         const autoCb = document.getElementById('settingsAutoCharge');
         const linksEl = document.getElementById('settingsContentLinks');
         const goalEl = document.getElementById('settingsGoal');
-        const angleEl = document.getElementById('settingsAngle');
-        const narrativeEl = document.getElementById('settingsNarrative');
+        const detailsEl = document.getElementById('settingsGoalDetails');
         var activeAccountIds = [];
         var checkedEls = document.querySelectorAll('#settingsAccountsList input[type="checkbox"][data-account-id]');
         checkedEls.forEach(function(el) {
@@ -665,8 +694,7 @@
             body: JSON.stringify({
               contentLinks: linksEl ? linksEl.value : '',
               goal: goalEl ? goalEl.value : '',
-              niche: angleEl ? angleEl.value : '',
-              description: narrativeEl ? narrativeEl.value : ''
+              description: detailsEl ? detailsEl.value : ''
             })
           })
         ]);
@@ -745,6 +773,9 @@
       });
       document.getElementById('settingsAllowWatermark')?.addEventListener('change', function() {
         updateQuotePreviewFromControls();
+      });
+      document.getElementById('settingsGoal')?.addEventListener('change', function() {
+        updateSettingsGoalDetailsUi();
       });
 
       (function initAutoChargeCheckbox() {

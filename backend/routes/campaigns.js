@@ -346,12 +346,19 @@ router.put('/:id/details', requireAuth, async (req, res) => {
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
 
-  const nextDescription = String((req.body || {}).description || '').trim();
-  const nextNiche = String((req.body || {}).niche || '').trim();
-  const nextGoal = String((req.body || {}).goal || '').trim();
-  const contentLinksInput = (req.body || {}).contentLinks;
+  const body = req.body || {};
+  const hasDescription = Object.prototype.hasOwnProperty.call(body, 'description');
+  const hasNiche = Object.prototype.hasOwnProperty.call(body, 'niche');
+  const hasGoal = Object.prototype.hasOwnProperty.call(body, 'goal');
+  const hasContentLinks = Object.prototype.hasOwnProperty.call(body, 'contentLinks');
+  const nextDescription = hasDescription ? String(body.description || '').trim() : String(campaign.description || '');
+  const nextNiche = hasNiche ? String(body.niche || '').trim() : String(campaign.niche || '');
+  const nextGoal = hasGoal ? String(body.goal || '').trim() : String(campaign.goal || '');
+  const contentLinksInput = body.contentLinks;
   let nextContentLink = '';
-  if (Array.isArray(contentLinksInput)) {
+  if (!hasContentLinks) {
+    nextContentLink = String(campaign.content_link || '');
+  } else if (Array.isArray(contentLinksInput)) {
     nextContentLink = contentLinksInput.map((v) => String(v || '').trim()).filter(Boolean).join('\n');
   } else {
     nextContentLink = String(contentLinksInput || '').trim();
