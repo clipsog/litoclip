@@ -1049,6 +1049,9 @@
       let startCampaignPendingDate = null;
       const START_CAMPAIGN_WIZARD_STEPS = 4;
       let startCampaignWizardStep = 0;
+      const WIZARD_AUTOSAVE_KEY = 'litoclips_start_campaign_autosave_' + ((user && user.id) ? user.id : 'anon');
+      let wizardAutosaveTimer = null;
+      let suppressWizardAutosave = false;
       /** From GET /campaigns/saved-drafts; demo bypass uses session-only entries. */
       var savedCampaignsCache = [];
 
@@ -1246,6 +1249,87 @@
       function getSavedCampaigns() {
         return savedCampaignsCache;
       }
+      function buildWizardPayload() {
+        var title = (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '';
+        var acceptSponsorOffers = !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked);
+        var includeWatermark = !!(document.getElementById('wzWatermark') && document.getElementById('wzWatermark').checked);
+        var contentUrls = getWzContentLinkUrls();
+        var content = contentUrls.join('\n');
+        var narrative = (document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim()) || '';
+        var goal = (document.getElementById('wzGoal') && document.getElementById('wzGoal').value) || '';
+        var postsPerDay = parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3;
+
+        var rowEls = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
+        var rows = [];
+        for (var r = 0; r < rowEls.length; r++) {
+          var sel = rowEls[r].querySelector('select[data-wz-platform]');
+          var numInp = rowEls[r].querySelector('input[data-wz-accounts]');
+          if (!sel || !numInp) continue;
+          if (!sel.value) continue;
+          rows.push({
+            platform: sel.value,
+            num_accounts: parseInt(numInp.value, 10) || 1
+          });
+        }
+
+        return {
+          step: startCampaignWizardStep,
+          title: title,
+          acceptSponsorOffers: acceptSponsorOffers,
+          includeWatermark: includeWatermark,
+          content: content,
+          contentLinks: contentUrls,
+          narrative: narrative,
+          goal: goal,
+          postsPerDay: postsPerDay,
+          rows: rows
+        };
+      }
+      function hasWizardMeaningfulData(payload) {
+        if (!payload) return false;
+        if ((payload.title || '').trim()) return true;
+        if ((payload.narrative || '').trim()) return true;
+        if (Array.isArray(payload.contentLinks) && payload.contentLinks.some(function(x) { return (x || '').trim(); })) return true;
+        if (Array.isArray(payload.rows) && payload.rows.length > 0) return true;
+        if ((payload.goal || '').trim()) return true;
+        return false;
+      }
+      function clearWizardAutosave() {
+        try { localStorage.removeItem(WIZARD_AUTOSAVE_KEY); } catch (_) {}
+      }
+      function persistWizardAutosaveNow() {
+        if (suppressWizardAutosave) return;
+        var modal = document.getElementById('startCampaignModal');
+        if (!modal || !modal.classList.contains('open')) return;
+        var payload = buildWizardPayload();
+        if (!hasWizardMeaningfulData(payload)) {
+          clearWizardAutosave();
+          return;
+        }
+        try {
+          localStorage.setItem(WIZARD_AUTOSAVE_KEY, JSON.stringify({
+            savedAt: Date.now(),
+            payload: payload
+          }));
+        } catch (_) {}
+      }
+      function scheduleWizardAutosave() {
+        if (suppressWizardAutosave) return;
+        if (wizardAutosaveTimer) clearTimeout(wizardAutosaveTimer);
+        wizardAutosaveTimer = setTimeout(function() {
+          persistWizardAutosaveNow();
+        }, 350);
+      }
+      function loadWizardAutosave() {
+        try {
+          var raw = localStorage.getItem(WIZARD_AUTOSAVE_KEY);
+          if (!raw) return null;
+          var parsed = JSON.parse(raw);
+          return parsed && parsed.payload ? parsed.payload : null;
+        } catch (_) {
+          return null;
+        }
+      }
       function updateSavedCampaignsButton() {
         var list = getSavedCampaigns();
         var count = list.length;
@@ -1347,40 +1431,7 @@
         if (modal) modal.classList.remove('open');
       }
       async function saveWizardForLater() {
-        var title = (document.getElementById('wzTitle') && document.getElementById('wzTitle').value.trim()) || '';
-        var acceptSponsorOffers = !!(document.getElementById('wzSponsor') && document.getElementById('wzSponsor').checked);
-        var includeWatermark = !!(document.getElementById('wzWatermark') && document.getElementById('wzWatermark').checked);
-        var contentUrls = getWzContentLinkUrls();
-        var content = contentUrls.join('\n');
-        var narrative = (document.getElementById('wzNarrative') && document.getElementById('wzNarrative').value.trim()) || '';
-        var goal = (document.getElementById('wzGoal') && document.getElementById('wzGoal').value) || '';
-        var postsPerDay = parseInt(document.getElementById('wzPostsPerDay') && document.getElementById('wzPostsPerDay').value, 10) || 3;
-
-        var rowEls = document.querySelectorAll('#wzPlatformRows .wz-platform-row');
-        var rows = [];
-        for (var r = 0; r < rowEls.length; r++) {
-          var sel = rowEls[r].querySelector('select[data-wz-platform]');
-          var numInp = rowEls[r].querySelector('input[data-wz-accounts]');
-          if (!sel || !numInp) continue;
-          if (!sel.value) continue;
-          rows.push({
-            platform: sel.value,
-            num_accounts: parseInt(numInp.value, 10) || 1
-          });
-        }
-
-        var payload = {
-          step: startCampaignWizardStep,
-          title: title,
-          acceptSponsorOffers: acceptSponsorOffers,
-          includeWatermark: includeWatermark,
-          content: content,
-          contentLinks: contentUrls,
-          narrative: narrative,
-          goal: goal,
-          postsPerDay: postsPerDay,
-          rows: rows
-        };
+        var payload = buildWizardPayload();
 
         if (bypass) {
           var demoSaved = Object.assign({}, payload, {
@@ -1390,6 +1441,7 @@
           savedCampaignsCache.unshift(demoSaved);
           updateSavedCampaignsButton();
           renderSavedCampaignsList();
+          clearWizardAutosave();
           closeStartCampaignModal();
           return;
         }
@@ -1411,6 +1463,7 @@
           savedCampaignsCache.unshift(saved);
           updateSavedCampaignsButton();
           renderSavedCampaignsList();
+          clearWizardAutosave();
           closeStartCampaignModal();
         } catch (err) {
           alert(err && err.message ? err.message : 'Could not save campaign');
@@ -1571,13 +1624,20 @@
       function openStartCampaignModal(startDate, prefill) {
         startCampaignPendingDate = startDate || null;
         startCampaignWizardStep = 0;
+        suppressWizardAutosave = true;
         resetStartCampaignWizardForm();
         if (prefill) applySavedCampaignToWizard(prefill);
+        else {
+          var autosaved = loadWizardAutosave();
+          if (autosaved) applySavedCampaignToWizard(autosaved);
+        }
         document.getElementById('startCampaignModal').classList.add('open');
         document.body.style.overflow = 'hidden';
+        suppressWizardAutosave = false;
         syncStartCampaignWizard();
       }
       function closeStartCampaignModal() {
+        persistWizardAutosaveNow();
         document.getElementById('startCampaignModal').classList.remove('open');
         document.body.style.overflow = '';
         startCampaignPendingDate = null;
@@ -1747,6 +1807,7 @@
           }
 
           closeStartCampaignModal();
+          clearWizardAutosave();
           try {
             await launchStripeEmbeddedCheckoutForCampaign(createData.id, amountCents);
           } catch (stripeErr) {
@@ -1761,6 +1822,8 @@
       document.getElementById('startCampaignWizardForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
       });
+      document.getElementById('startCampaignWizardForm')?.addEventListener('input', scheduleWizardAutosave);
+      document.getElementById('startCampaignWizardForm')?.addEventListener('change', scheduleWizardAutosave);
       document.getElementById('wzAddPlatform')?.addEventListener('click', function() {
         var wrap = document.getElementById('wzPlatformRows');
         if (wrap) {
@@ -1796,12 +1859,14 @@
         if (startCampaignWizardStep < START_CAMPAIGN_WIZARD_STEPS - 1) {
           startCampaignWizardStep++;
           syncStartCampaignWizard();
+          scheduleWizardAutosave();
         }
       });
       document.getElementById('startCampaignWizardBack')?.addEventListener('click', function() {
         if (startCampaignWizardStep > 0) {
           startCampaignWizardStep--;
           syncStartCampaignWizard();
+          scheduleWizardAutosave();
         }
       });
       document.getElementById('startCampaignModalFinish')?.addEventListener('click', startCampaignAndPayWithStripe);
@@ -1818,6 +1883,9 @@
       });
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && document.getElementById('startCampaignModal').classList.contains('open')) closeStartCampaignModal();
+      });
+      window.addEventListener('beforeunload', function() {
+        persistWizardAutosaveNow();
       });
 
       document.getElementById('calendarGrid')?.addEventListener('click', function(e) {
