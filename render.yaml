@@ -24,3 +24,11 @@ services:
     # DATABASE_URL (Supabase PostgreSQL) or DATABASE_PATH (SQLite + persistent disk),
     # GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL (e.g. https://YOUR_DOMAIN/auth/google/callback),
     # Stripe keys, SMTP_* for email, etc. See docs/RENDER_DEPLOY.md for the full list.
+
+  # Keep-alive ping for free-tier fallback (not needed on Starter+).
+  - type: cron
+    name: litoclips-keepalive
+    runtime: node
+    schedule: "*/5 * * * *"
+    buildCommand: "echo keepalive"
+    startCommand: "curl -fsS https://www.litoclips.com/api/health >/dev/null || exit 1"
