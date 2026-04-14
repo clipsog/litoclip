@@ -107,6 +107,31 @@
     }
     .campaign-settings-list textarea { min-height: 86px; resize: vertical; }
     .campaign-settings-list .row { display: flex; align-items: center; gap: 10px; }
+    .settings-links-list { display: grid; gap: 8px; }
+    .settings-link-row { display: flex; align-items: center; gap: 8px; }
+    .settings-link-row input[type="text"] { flex: 1; }
+    .settings-link-remove {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #64748b;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 34px;
+      height: 34px;
+      font-size: 18px;
+      line-height: 1;
+      padding: 0;
+    }
+    .settings-link-add {
+      border: 1px dashed #93c5fd;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
     .settings-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 12px; }
     .settings-save { padding: 10px 14px; border: 0; border-radius: 8px; background: #2563eb; color: white; font-weight: 600; cursor: pointer; }
     .settings-save:hover { opacity: 0.95; }
@@ -284,8 +309,9 @@
             <span>Auto-charge every week (saved on this device)</span>
           </label>
           <div>
-            <div style="font-size:13px;color:#334155;font-weight:600;margin-bottom:6px;">Content links (one per line)</div>
-            <textarea id="settingsContentLinks" placeholder="https://..."></textarea>
+            <div style="font-size:13px;color:#334155;font-weight:600;margin-bottom:6px;">Content links</div>
+            <div id="settingsContentLinksList" class="settings-links-list"></div>
+            <button type="button" id="settingsAddContentLink" class="settings-link-add">+ Add another link</button>
           </div>
           <label>
             Purpose
@@ -608,6 +634,44 @@
           return '<a href="' + href + '" target="_blank" rel="noopener" style="color:#2563eb; text-decoration:none; display:inline-block; margin-right:12px; margin-bottom:4px;">&#8594; ' + sanitized + '</a>';
         }).join('');
       }
+      function getSettingsContentLinksJoined() {
+        var rows = document.querySelectorAll('#settingsContentLinksList input[data-link-row]');
+        var vals = [];
+        rows.forEach(function(el) {
+          var v = String(el.value || '').trim();
+          if (v) vals.push(v);
+        });
+        return vals.join('\n');
+      }
+      function renderSettingsContentLinksRows(values) {
+        var listEl = document.getElementById('settingsContentLinksList');
+        if (!listEl) return;
+        var rows = (Array.isArray(values) ? values : []).map(function(v) { return String(v || '').trim(); }).filter(Boolean);
+        if (!rows.length) rows = [''];
+        listEl.innerHTML = rows.map(function(v, idx) {
+          var safe = String(v).replace(/"/g, '&quot;');
+          var removeBtn = rows.length > 1
+            ? ('<button type="button" class="settings-link-remove" data-link-remove="' + idx + '" aria-label="Remove link">&times;</button>')
+            : '';
+          return '<div class="settings-link-row">' +
+            '<input type="text" data-link-row="' + idx + '" placeholder="https://..." value="' + safe + '">' +
+            removeBtn +
+          '</div>';
+        }).join('');
+        listEl.querySelectorAll('button[data-link-remove]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var current = [];
+            listEl.querySelectorAll('input[data-link-row]').forEach(function(el) { current.push(el.value || ''); });
+            var rmIdx = parseInt(btn.getAttribute('data-link-remove'), 10);
+            current = current.filter(function(_, i) { return i !== rmIdx; });
+            renderSettingsContentLinksRows(current);
+          });
+        });
+      }
+      function setSettingsContentLinksFromRaw(raw) {
+        var rows = String(raw || '').split(/\n+/).map(function(v) { return String(v || '').trim(); }).filter(Boolean);
+        renderSettingsContentLinksRows(rows);
+      }
       function loadCampaignDetailsSettings() {
         if (bypass || !campaignId || campaignId === 'demo') return Promise.resolve();
         return fetch(API_URL + '/campaigns/' + encodeURIComponent(campaignId) + '/details', {
@@ -617,10 +681,9 @@
           .then(function(data) {
             if (!data) return;
             campaignDetailsState.loaded = true;
-            var c = document.getElementById('settingsContentLinks');
             var g = document.getElementById('settingsGoal');
             var d = document.getElementById('settingsGoalDetails');
-            if (c) c.value = data.contentLinks || '';
+            setSettingsContentLinksFromRaw(data.contentLinks || '');
             if (g) g.value = data.goal || '';
             if (d) d.value = data.description || data.niche || '';
             updateSettingsGoalDetailsUi();
@@ -654,9 +717,9 @@
         const sponsorCb = document.getElementById('settingsAcceptSponsorOffers');
         const wmCb = document.getElementById('settingsAllowWatermark');
         const autoCb = document.getElementById('settingsAutoCharge');
-        const linksEl = document.getElementById('settingsContentLinks');
         const goalEl = document.getElementById('settingsGoal');
         const detailsEl = document.getElementById('settingsGoalDetails');
+        var contentLinksJoined = getSettingsContentLinksJoined();
         var activeAccountIds = [];
         var checkedEls = document.querySelectorAll('#settingsAccountsList input[type="checkbox"][data-account-id]');
         checkedEls.forEach(function(el) {
@@ -692,13 +755,13 @@
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
             body: JSON.stringify({
-              contentLinks: linksEl ? linksEl.value : '',
+              contentLinks: contentLinksJoined,
               goal: goalEl ? goalEl.value : '',
               description: detailsEl ? detailsEl.value : ''
             })
           })
         ]);
-        setContentLinksInCalendar(linksEl ? linksEl.value : '');
+        setContentLinksInCalendar(contentLinksJoined);
         document.getElementById('campaignSettingsModal')?.classList.remove('active');
         loadSponsorSettings();
         loadPaymentSettings();
@@ -765,6 +828,7 @@
       }
       loadSponsorSettings();
       loadPaymentSettings();
+      renderSettingsContentLinksRows(['']);
       loadCampaignDetailsSettings();
       document.getElementById('campaignSettingsSave')?.addEventListener('click', function() {
         saveCampaignSettings().catch(function() {
@@ -776,6 +840,13 @@
       });
       document.getElementById('settingsGoal')?.addEventListener('change', function() {
         updateSettingsGoalDetailsUi();
+      });
+      document.getElementById('settingsAddContentLink')?.addEventListener('click', function() {
+        var listEl = document.getElementById('settingsContentLinksList');
+        var current = [];
+        if (listEl) listEl.querySelectorAll('input[data-link-row]').forEach(function(el) { current.push(el.value || ''); });
+        current.push('');
+        renderSettingsContentLinksRows(current);
       });
 
       (function initAutoChargeCheckbox() {
