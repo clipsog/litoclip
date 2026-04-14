@@ -489,7 +489,7 @@ router.get('/:id/renewal-quote', requireAuth, async (req, res) => {
   let row;
   try {
     row = await db.prepare(`
-      SELECT id, owner_id, num_accounts, posts_per_day, allow_watermark
+      SELECT id, owner_id, num_accounts, posts_per_day, allow_watermark, watermark_coupon_percent
       FROM campaigns WHERE id = ?
     `).get(id);
   } catch (e) {
@@ -500,6 +500,7 @@ router.get('/:id/renewal-quote', requireAuth, async (req, res) => {
           FROM campaigns WHERE id = ?
         `).get(id);
         if (row) row.posts_per_day = 3;
+        if (row) row.watermark_coupon_percent = 10;
       } catch (e2) {
         return res.status(500).json({ error: 'Failed to load campaign schema fallback' });
       }
@@ -516,8 +517,11 @@ router.get('/:id/renewal-quote', requireAuth, async (req, res) => {
 
   let baseUsd = (n * BASE_PRICE) + (n * Math.max(0, posts - 3) * EXTRA_POST_PRICE);
   
+  let discountPercent = 0;
   if (row.allow_watermark) {
-    baseUsd *= 0.9;
+    const pct = Math.min(100, Math.max(0, parseFloat(row.watermark_coupon_percent) || 10));
+    discountPercent = pct;
+    baseUsd *= (1 - (pct / 100));
   }
   
   const amountCents = Math.max(100, Math.round(baseUsd * 100));
@@ -526,8 +530,29 @@ router.get('/:id/renewal-quote', requireAuth, async (req, res) => {
     amountUsd: Math.round(baseUsd * 100) / 100,
     numAccounts: n,
     postsPerDay: posts,
+    discountPercent,
+    allowWatermark: !!row.allow_watermark,
     pricingTier: 'standard'
   });
+});
+
+// GET /api/campaigns/:id/payment-settings – owner payment controls for next renewal
+router.get('/:id/payment-settings', requireAuth, async (req, res) => {
+  const row = await db.prepare('SELECT owner_id, num_accounts FROM campaigns WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Campaign not found' });
+  if (row.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+  res.json({ numAccounts: Math.max(1, parseInt(row.num_accounts, 10) || 1) });
+});
+
+// PUT /api/campaigns/:id/payment-settings – update next renewal account count
+router.put('/:id/payment-settings', requireAuth, async (req, res) => {
+  const campaign = await db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(req.params.id);
+  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+  if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+  const numRaw = parseInt((req.body || {}).numAccounts, 10);
+  const num = Math.min(50, Math.max(1, Number.isFinite(numRaw) ? numRaw : 1));
+  await db.prepare('UPDATE campaigns SET num_accounts = ? WHERE id = ?').run(num, req.params.id);
+  res.json({ ok: true, numAccounts: num });
 });
 
 // PUT /api/campaigns/:id/sponsor-settings – update (creator, own campaign)

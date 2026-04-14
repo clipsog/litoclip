@@ -47,24 +47,19 @@
     .cal-day .views { color: #2563eb; font-weight: 600; }
     .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #e2e8f0; margin-bottom: 1px; border-radius: 8px 8px 0 0; overflow: hidden; }
     .cal-header span { padding: 10px; font-size: 11px; font-weight: 600; color: #64748b; text-align: center; background: #f1f5f9; }
-    .pay-section { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 24px; margin-top: 24px; }
-    .pay-section h3 { font-size: 16px; margin-bottom: 8px; }
-    .pay-section p { font-size: 14px; color: #0c4a6e; margin-bottom: 16px; }
-    .pay-section .auto-charge { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; font-size: 14px; }
-    .pay-section .auto-charge input { accent-color: #2563eb; }
     .btn-pay { padding: 12px 24px; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; }
     .btn-pay:hover { opacity: 0.95; }
-    .end-campaign-wrap { margin-top: 24px; text-align: center; }
-    .btn-end-campaign {
-      background: transparent;
+    .btn-settings {
+      padding: 10px 12px;
       border: 1px solid #e2e8f0;
-      color: #64748b;
-      font-size: 12px;
-      padding: 8px 12px;
-      border-radius: 999px;
+      border-radius: 10px;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
     }
-    .btn-end-campaign:hover { color: #475569; border-color: #cbd5e1; background: #f8fafc; }
+    .btn-settings:hover { background: #f1f5f9; }
     .day-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .day-modal-overlay.active { display: flex; }
     .day-modal { background: #fff; border-radius: 16px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -96,6 +91,15 @@
     .nav-avatar-dropdown a:hover { background: rgba(255,255,255,0.08); color: white; }
     .sponsor-settings-section { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 24px; margin-top: 24px; }
     .sponsor-settings-section h3 { font-size: 16px; margin-bottom: 8px; }
+    .campaign-settings-list { display: grid; gap: 14px; margin-top: 10px; }
+    .campaign-settings-list label { display: grid; gap: 6px; font-size: 13px; color: #334155; font-weight: 600; }
+    .campaign-settings-list input[type="number"] { width: 160px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
+    .campaign-settings-list .row { display: flex; align-items: center; gap: 10px; }
+    .settings-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 12px; }
+    .settings-save { padding: 10px 14px; border: 0; border-radius: 8px; background: #2563eb; color: white; font-weight: 600; cursor: pointer; }
+    .settings-save:hover { opacity: 0.95; }
+    .settings-end { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 999px; color: #64748b; background: transparent; font-size: 12px; cursor: pointer; }
+    .settings-end:hover { background: #f8fafc; color: #475569; }
     .stripe-pay-modal-overlay {
       display: none;
       position: fixed;
@@ -216,7 +220,10 @@
     <div class="accounts-section">
       <div class="accounts-section-top">
       <h3>Linked accounts</h3>
-        <button type="button" class="btn-pay" id="payBtn">Start campaign</button>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button type="button" class="btn-settings" id="campaignSettingsBtn">⚙ Campaign settings</button>
+          <button type="button" class="btn-pay" id="payBtn">Start campaign</button>
+        </div>
       </div>
       <div id="accountsList">
         <span class="account-pill pending">Linking once we start...</span>
@@ -241,30 +248,43 @@
       </div>
       <div class="calendar-grid" id="calendarGrid"></div>
 
-      <div class="sponsor-settings-section" id="sponsorSettingsSection">
-        <h3>Sponsor offers</h3>
-        <p style="font-size: 14px; color: #64748b; margin-bottom: 12px;">Let sponsors discover your campaign and make offers. When enabled, sponsors can browse and send sponsorship deals to your campaign.</p>
-        <label class="auto-charge">
-          <input type="checkbox" id="acceptSponsorOffers" />
-          Allow sponsors to view and offer on this campaign
-        </label>
-      </div>
-
-      <div class="pay-section" id="paySection">
-        <h3>Keep it going</h3>
-        <p><strong>Pricing:</strong> $19.99 per account per week (3 posts/day after warm up). Want more? +$2 per extra post per day (e.g. 5 posts/day = $23.99 per account per week).</p>
-        <label class="auto-charge">
-          <input type="checkbox" id="autoCharge" checked>
-          Automatically charge me each week so I don't have to pay manually
-        </label>
-        <p id="autoChargeNote" style="font-size:12px;color:#0c4a6e;margin:-8px 0 0;line-height:1.45;">True card auto-billing each week is not wired yet. We save this preference on this device for now. Use <strong>Start campaign</strong> at the top to pay for the next week with Stripe when you are ready.</p>
-      </div>
-
-      <div class="end-campaign-wrap">
-        <button type="button" class="btn-end-campaign" id="endCampaignBtn">End campaign</button>
-      </div>
     </div>
   </main>
+
+  <div class="day-modal-overlay" id="campaignSettingsModal">
+    <div class="day-modal">
+      <div class="day-modal-header">
+        <h3>Campaign settings</h3>
+        <button type="button" class="day-modal-close" id="campaignSettingsClose">&times;</button>
+      </div>
+      <div class="day-modal-body">
+        <p style="font-size:13px;color:#64748b;margin:0 0 10px 0;">Changes here apply to future renewals/checkouts.</p>
+        <div class="campaign-settings-list">
+          <label>
+            Next payment account count
+            <input type="number" id="settingsNumAccounts" min="1" max="50" value="1">
+          </label>
+          <label class="row">
+            <input type="checkbox" id="settingsAllowWatermark">
+            <span>Enable watermark discount (10%)</span>
+          </label>
+          <label class="row">
+            <input type="checkbox" id="settingsAcceptSponsorOffers">
+            <span>Allow sponsors to view and offer on this campaign</span>
+          </label>
+          <label class="row">
+            <input type="checkbox" id="settingsAutoCharge">
+            <span>Auto-charge every week (saved on this device)</span>
+          </label>
+          <div id="settingsQuoteLine" style="font-size:12px;color:#475569;"></div>
+        </div>
+        <div class="settings-actions">
+          <button type="button" class="settings-end" id="endCampaignBtn">End campaign</button>
+          <button type="button" class="settings-save" id="campaignSettingsSave">Save settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="day-modal-overlay" id="dayModal">
     <div class="day-modal">
@@ -391,6 +411,16 @@
         localStorage.removeItem('user');
         window.location.href = 'index.html';
       });
+      document.getElementById('campaignSettingsBtn')?.addEventListener('click', function() {
+        document.getElementById('campaignSettingsModal')?.classList.add('active');
+        refreshRenewalQuote();
+      });
+      document.getElementById('campaignSettingsClose')?.addEventListener('click', function() {
+        document.getElementById('campaignSettingsModal')?.classList.remove('active');
+      });
+      document.getElementById('campaignSettingsModal')?.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+      });
       document.getElementById('endCampaignBtn')?.addEventListener('click', async function() {
         if (bypass || !campaignId || campaignId === 'demo') return;
         var ok = window.confirm('End this campaign? This will remove it from your dashboard.');
@@ -455,6 +485,10 @@
           if (myCampsRes.ok) {
             window._myCampaignsCache = await myCampsRes.json();
             var mc = window._myCampaignsCache.find(function(x) { return String(x.id) === String(campaignId); });
+            if (mc) {
+              var numEl = document.getElementById('settingsNumAccounts');
+              if (numEl && mc.num_accounts != null) numEl.value = String(Math.max(1, parseInt(mc.num_accounts, 10) || 1));
+            }
             if (mc && mc.contentLinks) {
               var linkWrap = document.getElementById('calendarContentLinksWrap');
               var linkList = document.getElementById('calendarContentLinksList');
@@ -504,8 +538,10 @@
         fetch(API_URL + '/campaigns/' + campaignId + '/sponsor-settings', { headers: { Authorization: 'Bearer ' + token } })
           .then(r => r.ok ? r.json() : null)
           .then(data => {
-            const cb = document.getElementById('acceptSponsorOffers');
-            if (cb) cb.checked = !!data?.acceptSponsorOffers;
+            const sponsorCb = document.getElementById('settingsAcceptSponsorOffers');
+            const wmCb = document.getElementById('settingsAllowWatermark');
+            if (sponsorCb) sponsorCb.checked = !!data?.acceptSponsorOffers;
+            if (wmCb) wmCb.checked = !!data?.allowWatermark;
             var strip = document.getElementById('campaignChoicesStrip');
             var wmLine = document.getElementById('watermarkChoiceLine');
             var spLine = document.getElementById('sponsorChoiceLine');
@@ -524,21 +560,77 @@
           })
           .catch(() => {});
       }
-      function saveSponsorSettings() {
+      async function saveCampaignSettings() {
         if (bypass || !campaignId || campaignId === 'demo') return;
-        const cb = document.getElementById('acceptSponsorOffers');
-        if (!cb) return;
-        fetch(API_URL + '/campaigns/' + campaignId + '/sponsor-settings', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ acceptSponsorOffers: cb.checked })
-        }).catch(() => {});
+        const sponsorCb = document.getElementById('settingsAcceptSponsorOffers');
+        const wmCb = document.getElementById('settingsAllowWatermark');
+        const numEl = document.getElementById('settingsNumAccounts');
+        const autoCb = document.getElementById('settingsAutoCharge');
+        const n = Math.max(1, Math.min(50, parseInt(numEl && numEl.value, 10) || 1));
+        if (numEl) numEl.value = String(n);
+        if (autoCb && autoCb.checked) {
+          try { localStorage.setItem('litoclips_auto_charge_' + campaignId, '1'); } catch (_) {}
+        } else {
+          try { localStorage.removeItem('litoclips_auto_charge_' + campaignId); } catch (_) {}
+        }
+        await Promise.all([
+          fetch(API_URL + '/campaigns/' + campaignId + '/sponsor-settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({
+              acceptSponsorOffers: !!(sponsorCb && sponsorCb.checked),
+              allowWatermark: !!(wmCb && wmCb.checked),
+              watermarkCouponPercent: (wmCb && wmCb.checked) ? 10 : 0
+            })
+          }),
+          fetch(API_URL + '/campaigns/' + campaignId + '/payment-settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ numAccounts: n })
+          })
+        ]);
+        document.getElementById('campaignSettingsModal')?.classList.remove('active');
+        loadSponsorSettings();
+        refreshRenewalQuote();
+      }
+      function refreshRenewalQuote() {
+        if (bypass || !campaignId || campaignId === 'demo') return;
+        fetch(API_URL + '/campaigns/' + encodeURIComponent(campaignId) + '/renewal-quote', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(qData) {
+            var quoteLine = document.getElementById('settingsQuoteLine');
+            if (!quoteLine || !qData || qData.amountUsd == null) return;
+            quoteLine.textContent = 'Next renewal estimate: $' + Number(qData.amountUsd).toFixed(2) +
+              (qData.discountPercent ? (' (includes ' + qData.discountPercent + '% watermark discount)') : '');
+          })
+          .catch(function() {});
+      }
+      function loadPaymentSettings() {
+        if (bypass || !campaignId || campaignId === 'demo') return;
+        fetch(API_URL + '/campaigns/' + encodeURIComponent(campaignId) + '/payment-settings', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(data) {
+            if (!data) return;
+            var numEl = document.getElementById('settingsNumAccounts');
+            if (numEl && data.numAccounts != null) numEl.value = String(Math.max(1, parseInt(data.numAccounts, 10) || 1));
+            refreshRenewalQuote();
+          })
+          .catch(function() {});
       }
       loadSponsorSettings();
-      document.getElementById('acceptSponsorOffers')?.addEventListener('change', saveSponsorSettings);
+      loadPaymentSettings();
+      document.getElementById('campaignSettingsSave')?.addEventListener('click', function() {
+        saveCampaignSettings().catch(function() {
+          alert('Could not save campaign settings right now.');
+        });
+      });
 
       (function initAutoChargeCheckbox() {
-        var ac = document.getElementById('autoCharge');
+        var ac = document.getElementById('settingsAutoCharge');
         if (!ac || bypass || !campaignId || campaignId === 'demo') return;
         try {
           var saved = localStorage.getItem('litoclips_auto_charge_' + campaignId);
@@ -663,7 +755,7 @@
       buildCalendar();
 
       document.getElementById('payBtn').addEventListener('click', async function() {
-        const autoCharge = document.getElementById('autoCharge').checked;
+        const autoCharge = !!(document.getElementById('settingsAutoCharge') && document.getElementById('settingsAutoCharge').checked);
         if (bypass) {
           alert('Demo: In production this opens Stripe Checkout. Auto-charge preference: ' + (autoCharge ? 'on' : 'off') + '.');
           return;
@@ -689,6 +781,11 @@
           try { qData = await qRes.json(); } catch (e2) {}
           if (!qRes.ok || !qData || qData.amountCents == null) {
             throw new Error((qData && qData.error) ? qData.error : 'Could not calculate your renewal amount.');
+          }
+          var quoteLine = document.getElementById('settingsQuoteLine');
+          if (quoteLine && qData && qData.amountUsd != null) {
+            quoteLine.textContent = 'Next renewal estimate: $' + Number(qData.amountUsd).toFixed(2) +
+              (qData.discountPercent ? (' (includes ' + qData.discountPercent + '% watermark discount)') : '');
           }
           var payRes = await fetch(API_URL + '/payments/create', {
             method: 'POST',
