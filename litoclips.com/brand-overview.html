@@ -23,6 +23,15 @@
     .welcome-banner p { opacity: 0.95; font-size: 15px; }
     .dashboard-section { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; margin-bottom: 24px; }
     .dashboard-section h2 { font-size: 18px; color: #0f172a; margin-bottom: 20px; font-weight: 600; }
+    .section-heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .section-heading-row h2 { margin: 0; }
     .empty-state { text-align: center; padding: 48px 24px; }
     .empty-state-icon { width: 64px; height: 64px; margin: 0 auto 16px; background: #f1f5f9; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #94a3b8; }
     .empty-state h3 { font-size: 18px; color: #0f172a; margin-bottom: 8px; }
@@ -545,12 +554,12 @@
 
     <!-- Your Campaigns: shown when user has campaigns -->
     <div class="dashboard-section" id="campaignsSection" style="display: none;">
-      <h2>Your Accounts</h2>
+      <div class="section-heading-row">
+        <h2>Your Accounts</h2>
+        <a href="#" id="newCampaignQuickLink">Launch new campaign</a>
+      </div>
       <div id="campaignsContainer">
         <div id="campaignList" class="campaign-list"></div>
-      </div>
-      <div class="quick-actions" id="quickActions">
-        <a href="#" id="newCampaignQuickLink">+ Launch new accounts</a>
       </div>
     </div>
 

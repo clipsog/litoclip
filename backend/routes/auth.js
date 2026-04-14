@@ -17,10 +17,13 @@ function generateReferralCode() {
 }
 
 router.post('/signup', async (req, res) => {
-  const { name, email, password, userType, firstName, lastName, position, creatorContentTypes, creatorNicheTags } = req.body || {};
+  const { name, email, password, userType, firstName, lastName, position, creatorContentTypes, creatorNicheTags, acceptTerms } = req.body || {};
   const displayName = [firstName, lastName].filter(Boolean).join(' ') || name || '';
   if (!displayName || !email || !password) {
     return res.status(400).json({ error: 'Name, email and password required' });
+  }
+  if (acceptTerms !== true && acceptTerms !== 1 && acceptTerms !== 'true') {
+    return res.status(400).json({ error: 'You must accept the Terms of Service to register' });
   }
   const existing = await db.prepare('SELECT id FROM users WHERE email = ?').get(email);
   if (existing) return res.status(400).json({ error: 'Email already registered' });
@@ -34,17 +37,30 @@ router.post('/signup', async (req, res) => {
     if (ct.length < 1) return res.status(400).json({ error: 'Select at least one content type' });
     if (nicheTags.length < 1) return res.status(400).json({ error: 'Add at least one niche tag' });
   }
+  const termsAt = new Date().toISOString();
   try {
     await db.prepare(`
-    INSERT INTO users (id, email, password_hash, name, user_type, referral_code, first_name, last_name, user_position)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, email, passwordHash, displayName, ut, referralCode, firstName || null, lastName || null, position || null);
+    INSERT INTO users (id, email, password_hash, name, user_type, referral_code, first_name, last_name, user_position, terms_accepted_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(id, email, passwordHash, displayName, ut, referralCode, firstName || null, lastName || null, position || null, termsAt);
   } catch (e) {
     if (e.message && e.message.includes('no such column')) {
-      await db.prepare(`
-        INSERT INTO users (id, email, password_hash, name, user_type, referral_code)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).run(id, email, passwordHash, displayName, ut, referralCode);
+      try {
+        await db.prepare(`
+          INSERT INTO users (id, email, password_hash, name, user_type, referral_code, first_name, last_name, user_position)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(id, email, passwordHash, displayName, ut, referralCode, firstName || null, lastName || null, position || null);
+      } catch (e2) {
+        if (e2.message && e2.message.includes('no such column')) {
+          await db.prepare(`
+            INSERT INTO users (id, email, password_hash, name, user_type, referral_code)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `).run(id, email, passwordHash, displayName, ut, referralCode);
+        } else throw e2;
+      }
+      try {
+        await db.prepare('UPDATE users SET terms_accepted_at = ? WHERE id = ?').run(termsAt, id);
+      } catch (_) {}
     } else throw e;
   }
   await db.prepare('INSERT OR IGNORE INTO wallet_balances (user_id) VALUES (?)').run(id);

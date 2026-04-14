@@ -94,6 +94,18 @@
     .campaign-settings-list { display: grid; gap: 14px; margin-top: 10px; }
     .campaign-settings-list label { display: grid; gap: 6px; font-size: 13px; color: #334155; font-weight: 600; }
     .campaign-settings-list input[type="number"] { width: 160px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
+    .campaign-settings-list textarea,
+    .campaign-settings-list input[type="text"] {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #0f172a;
+      font-family: inherit;
+      background: #fff;
+    }
+    .campaign-settings-list textarea { min-height: 86px; resize: vertical; }
     .campaign-settings-list .row { display: flex; align-items: center; gap: 10px; }
     .settings-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 12px; }
     .settings-save { padding: 10px 14px; border: 0; border-radius: 8px; background: #2563eb; color: white; font-weight: 600; cursor: pointer; }
@@ -271,6 +283,22 @@
             <input type="checkbox" id="settingsAutoCharge">
             <span>Auto-charge every week (saved on this device)</span>
           </label>
+          <div>
+            <div style="font-size:13px;color:#334155;font-weight:600;margin-bottom:6px;">Content links (one per line)</div>
+            <textarea id="settingsContentLinks" placeholder="https://..."></textarea>
+          </div>
+          <label>
+            Purpose
+            <input type="text" id="settingsGoal" placeholder="e.g. Drive leads, grow followers">
+          </label>
+          <label>
+            Angle
+            <input type="text" id="settingsAngle" placeholder="Your campaign angle">
+          </label>
+          <label>
+            Narrative
+            <textarea id="settingsNarrative" placeholder="Describe the story/message to push"></textarea>
+          </label>
           <div id="settingsQuoteLine" style="font-size:12px;color:#475569;"></div>
         </div>
         <div class="settings-actions">
@@ -409,6 +437,7 @@
       document.getElementById('campaignSettingsBtn')?.addEventListener('click', function() {
         document.getElementById('campaignSettingsModal')?.classList.add('active');
         refreshRenewalQuote();
+        loadCampaignDetailsSettings();
       });
       document.getElementById('campaignSettingsClose')?.addEventListener('click', function() {
         document.getElementById('campaignSettingsModal')?.classList.remove('active');
@@ -468,6 +497,7 @@
       const dayData = [];
       var paymentSettingsState = { accounts: [] };
       var quotePreviewState = { postsPerDay: 3, watermarkCouponPercent: 10 };
+      var campaignDetailsState = { loaded: false };
 
       async function loadCampaignData() {
         if (bypass || !campaignId || campaignId === 'demo') return;
@@ -482,26 +512,7 @@
           if (myCampsRes.ok) {
             window._myCampaignsCache = await myCampsRes.json();
             var mc = window._myCampaignsCache.find(function(x) { return String(x.id) === String(campaignId); });
-            if (mc && mc.contentLinks) {
-              var linkWrap = document.getElementById('calendarContentLinksWrap');
-              var linkList = document.getElementById('calendarContentLinksList');
-              if (linkWrap && linkList) {
-                try {
-                  var rawArr = JSON.parse(mc.contentLinks);
-                  if (Array.isArray(rawArr)) mc.contentLinks = rawArr.join(' ');
-                } catch(e) {}
-                var links = mc.contentLinks.split(/\s+/).filter(Boolean);
-                if (links.length) {
-                  linkWrap.style.display = 'block';
-                  linkList.innerHTML = links.map(function(l) {
-                    var sanitized = String(l).replace(/["'[\]]/g, '').trim();
-                    if (!sanitized) return '';
-                    var href = sanitized.startsWith('http') ? sanitized : 'https://' + sanitized;
-                    return '<a href="' + href + '" target="_blank" rel="noopener" style="color:#2563eb; text-decoration:none; display:inline-block; margin-right:12px; margin-bottom:4px;">&#8594; ' + sanitized + '</a>';
-                  }).join('');
-                }
-              }
-            }
+            if (mc) setContentLinksInCalendar(mc.contentLinks || '');
           }
           renderAccounts();
           buildCalendar();
@@ -542,6 +553,51 @@
           })
           .catch(() => {});
       }
+      function setContentLinksInCalendar(rawValue) {
+        var linkWrap = document.getElementById('calendarContentLinksWrap');
+        var linkList = document.getElementById('calendarContentLinksList');
+        if (!linkWrap || !linkList) return;
+        var raw = String(rawValue || '').trim();
+        if (!raw) {
+          linkWrap.style.display = 'none';
+          linkList.innerHTML = '';
+          return;
+        }
+        var links = raw.split(/\n+/).map(function(v) { return String(v || '').trim(); }).filter(Boolean);
+        if (!links.length) {
+          linkWrap.style.display = 'none';
+          linkList.innerHTML = '';
+          return;
+        }
+        linkWrap.style.display = 'block';
+        linkList.innerHTML = links.map(function(l) {
+          var sanitized = String(l).replace(/["'[\]]/g, '').trim();
+          if (!sanitized) return '';
+          var href = sanitized.startsWith('http') ? sanitized : ('https://' + sanitized);
+          return '<a href="' + href + '" target="_blank" rel="noopener" style="color:#2563eb; text-decoration:none; display:inline-block; margin-right:12px; margin-bottom:4px;">&#8594; ' + sanitized + '</a>';
+        }).join('');
+      }
+      function loadCampaignDetailsSettings() {
+        if (bypass || !campaignId || campaignId === 'demo') return Promise.resolve();
+        return fetch(API_URL + '/campaigns/' + encodeURIComponent(campaignId) + '/details', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(data) {
+            if (!data) return;
+            campaignDetailsState.loaded = true;
+            var c = document.getElementById('settingsContentLinks');
+            var g = document.getElementById('settingsGoal');
+            var a = document.getElementById('settingsAngle');
+            var n = document.getElementById('settingsNarrative');
+            if (c) c.value = data.contentLinks || '';
+            if (g) g.value = data.goal || '';
+            if (a) a.value = data.niche || '';
+            if (n) n.value = data.description || '';
+            setContentLinksInCalendar(data.contentLinks || '');
+          })
+          .catch(function() {});
+      }
       function getSelectedSettingsAccountCount() {
         var checkedEls = document.querySelectorAll('#settingsAccountsList input[type="checkbox"][data-account-id]:checked');
         if (checkedEls && checkedEls.length) return checkedEls.length;
@@ -568,6 +624,10 @@
         const sponsorCb = document.getElementById('settingsAcceptSponsorOffers');
         const wmCb = document.getElementById('settingsAllowWatermark');
         const autoCb = document.getElementById('settingsAutoCharge');
+        const linksEl = document.getElementById('settingsContentLinks');
+        const goalEl = document.getElementById('settingsGoal');
+        const angleEl = document.getElementById('settingsAngle');
+        const narrativeEl = document.getElementById('settingsNarrative');
         var activeAccountIds = [];
         var checkedEls = document.querySelectorAll('#settingsAccountsList input[type="checkbox"][data-account-id]');
         checkedEls.forEach(function(el) {
@@ -598,8 +658,19 @@
             body: JSON.stringify({
               activeAccountIds: activeAccountIds
             })
+          }),
+          fetch(API_URL + '/campaigns/' + campaignId + '/details', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({
+              contentLinks: linksEl ? linksEl.value : '',
+              goal: goalEl ? goalEl.value : '',
+              niche: angleEl ? angleEl.value : '',
+              description: narrativeEl ? narrativeEl.value : ''
+            })
           })
         ]);
+        setContentLinksInCalendar(linksEl ? linksEl.value : '');
         document.getElementById('campaignSettingsModal')?.classList.remove('active');
         loadSponsorSettings();
         loadPaymentSettings();
@@ -666,6 +737,7 @@
       }
       loadSponsorSettings();
       loadPaymentSettings();
+      loadCampaignDetailsSettings();
       document.getElementById('campaignSettingsSave')?.addEventListener('click', function() {
         saveCampaignSettings().catch(function() {
           alert('Could not save campaign settings right now.');

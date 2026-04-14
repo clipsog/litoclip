@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   is_admin INTEGER DEFAULT 0,
   referral_code TEXT UNIQUE,
   referred_by TEXT,
+  terms_accepted_at TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   FOREIGN KEY (referred_by) REFERENCES users(id)
 );

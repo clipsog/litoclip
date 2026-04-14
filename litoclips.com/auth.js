@@ -140,7 +140,8 @@ function showOAuthError(error) {
     'discord_failed': 'Discord authentication failed. Please check the server logs for details and try again.',
     'google_no_code': 'Google did not provide an authorization code. Please try again.',
     'google_no_email': 'Could not get your email from Google. Please try again.',
-    'google_failed': 'Google authentication failed. Please check the server logs for details and try again.'
+    'google_failed': 'Google authentication failed. Please check the server logs for details and try again.',
+    'terms_required': 'Accept the Terms of Service on the sign-up page, then try again (required for new accounts).'
   };
   
   const message = errorMessages[error] || 'Authentication failed. Please try again.';
@@ -236,11 +237,29 @@ function initAuthHandlers() {
   // Use our backend OAuth URLs when using API (localhost or same origin)
   var oauthBase = (typeof window.AUTH_API_URL !== 'undefined' ? window.AUTH_API_URL : '').replace(/\/api\/auth\/?$/, '');
   if (oauthBase) {
-    document.querySelectorAll('a.oauth-btn.discord').forEach(function (a) {
+    document.querySelectorAll('#loginModal a.oauth-btn.discord').forEach(function (a) {
       a.href = oauthBase + '/auth/discord';
     });
-    document.querySelectorAll('a.oauth-btn.google').forEach(function (a) {
+    document.querySelectorAll('#loginModal a.oauth-btn.google').forEach(function (a) {
       a.href = oauthBase + '/auth/google';
+    });
+    document.querySelectorAll('#signupModal a.oauth-btn.discord, #signupModal a.oauth-btn.google').forEach(function (a) {
+      a.addEventListener('click', async function (e) {
+        e.preventDefault();
+        const terms = document.getElementById('signupModalAcceptTerms');
+        if (!terms || !terms.checked) {
+          if (signupError) signupError.textContent = 'Please accept the Terms of Service and Privacy Policy to register with Google or Discord.';
+          return;
+        }
+        if (signupError) signupError.textContent = '';
+        try {
+          await fetch(oauthBase + '/auth/terms-consent', { method: 'GET', credentials: 'include' });
+        } catch (_) {}
+        const url = a.classList.contains('discord')
+          ? oauthBase + '/auth/discord'
+          : oauthBase + '/auth/google?state=creator';
+        window.location.href = url;
+      });
     });
   }
 
@@ -317,6 +336,11 @@ function initAuthHandlers() {
       const email = document.getElementById('signupEmail').value;
       const password = document.getElementById('signupPassword').value;
       const userType = document.getElementById('userType').value;
+      const termsEl = document.getElementById('signupModalAcceptTerms');
+      if (!termsEl || !termsEl.checked) {
+        if (signupError) signupError.textContent = 'Please accept the Terms of Service and Privacy Policy to create your account.';
+        return;
+      }
 
       try {
         const response = await fetch(`${API_URL}/signup`, {
@@ -324,7 +348,7 @@ function initAuthHandlers() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name, email, password, userType }),
+          body: JSON.stringify({ name, email, password, userType, acceptTerms: true }),
         });
 
         const data = await response.json();

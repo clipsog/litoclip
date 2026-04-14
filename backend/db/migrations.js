@@ -126,6 +126,7 @@ function run(sqlite) {
     CREATE INDEX IF NOT EXISTS idx_campaign_drafts_owner ON campaign_drafts(owner_id);
   `);
   try { sqlite.prepare('ALTER TABLE campaigns ADD COLUMN content_bank TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+  try { sqlite.prepare('ALTER TABLE users ADD COLUMN terms_accepted_at TEXT').run(); } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
 }
 
 module.exports = { run };

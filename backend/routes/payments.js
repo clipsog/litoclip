@@ -115,6 +115,9 @@ router.post('/create', requireAuth, async (req, res) => {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
+        // Let Stripe compute and add applicable sales tax/VAT at checkout.
+        automatic_tax: { enabled: true },
+        billing_address_collection: 'auto',
         client_reference_id: paymentId,
         metadata: { campaign_id: campaignId, payment_id: paymentId },
       };

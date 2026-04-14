@@ -168,6 +168,12 @@
             <button type="button" class="btn btn-primary" id="addTagBtn" style="padding:10px 16px;white-space:nowrap;">Add</button>
           </div>
           <div class="tag-pills" id="tagPills"></div>
+          <div class="form-group" id="onboardingTermsWrap" style="margin-bottom: 16px;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.45; cursor: pointer;">
+              <input type="checkbox" id="onboardingAcceptTerms" style="margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; accent-color: #2563eb;">
+              <span>I agree to the <a href="terms.html" target="_blank" rel="noopener noreferrer" style="color: #2563eb;">Terms of Service</a> and <a href="privacy.html" target="_blank" rel="noopener noreferrer" style="color: #2563eb;">Privacy Policy</a>.</span>
+            </label>
+          </div>
           <div class="step-actions">
             <button type="submit" class="btn btn-primary btn-full" id="finalSubmitBtn">Complete setup</button>
             <button type="button" class="btn-outline" data-back="3">Back</button>
@@ -396,6 +402,8 @@
         document.getElementById('email').value = user.email || '';
         document.getElementById('passwordGroup').style.display = 'none';
         document.getElementById('positionBack').style.display = 'none';
+        var termsWrapG = document.getElementById('onboardingTermsWrap');
+        if (termsWrapG) termsWrapG.style.display = 'none';
         showStep(2);
       }
 
@@ -417,6 +425,13 @@
         if (!position) { formError.textContent = 'Please select what describes you.'; showStep(2); return; }
         if (selectedContentTypes.size < 1) { formError.textContent = 'Select at least one content type.'; showStep(3); return; }
         if (nicheTags.length < 1) { formError.textContent = 'Add at least one niche tag.'; return; }
+        if (!(fromGoogle && token)) {
+          var acceptTermsOb = document.getElementById('onboardingAcceptTerms');
+          if (!acceptTermsOb || !acceptTermsOb.checked) {
+            formError.textContent = 'Please accept the Terms of Service and Privacy Policy.';
+            return;
+          }
+        }
 
         const body = {
           position: position,
@@ -479,6 +494,7 @@
               position: position,
               creatorContentTypes: body.creatorContentTypes,
               creatorNicheTags: body.creatorNicheTags,
+              acceptTerms: true,
             }),
           });
           const data = await res.json().catch(function() { return {}; });

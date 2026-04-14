@@ -255,7 +255,7 @@ router.get('/created', requireAuth, async (req, res) => {
     let rows;
     try {
       rows = await db.prepare(`
-        SELECT id, title, description, niche, platform, platforms, num_accounts, budget, rpm, status, created_at, content_link,
+        SELECT id, title, description, niche, goal, platform, platforms, num_accounts, budget, rpm, status, created_at, content_link,
                accept_sponsor_offers, allow_watermark, watermark_coupon_percent
         FROM campaigns WHERE owner_id = ? ORDER BY created_at DESC
       `).all(req.user.id);
@@ -272,6 +272,7 @@ router.get('/created', requireAuth, async (req, res) => {
       title: r.title,
       description: r.description,
       niche: r.niche,
+      goal: r.goal,
       platform: r.platform,
       platforms: r.platforms,
       num_accounts: r.num_accounts,
@@ -288,6 +289,127 @@ router.get('/created', requireAuth, async (req, res) => {
       res.json([]);
     } else throw e;
   }
+});
+
+// GET /api/campaigns/:id/details – editable campaign details (owner only)
+router.get('/:id/details', requireAuth, async (req, res) => {
+  let campaign;
+  try {
+    campaign = await db.prepare(`
+      SELECT id, owner_id, title, description, niche, goal, platform, platforms, content_link
+      FROM campaigns WHERE id = ?
+    `).get(req.params.id);
+  } catch (e) {
+    if (e.message && e.message.includes('no such column')) {
+      campaign = await db.prepare(`
+        SELECT id, owner_id, title, description, niche, platform, platforms, content_link
+        FROM campaigns WHERE id = ?
+      `).get(req.params.id);
+    } else {
+      throw e;
+    }
+  }
+  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+  if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+  res.json({
+    id: campaign.id,
+    title: campaign.title || '',
+    description: campaign.description || '',
+    niche: campaign.niche || '',
+    goal: campaign.goal || '',
+    platform: campaign.platform || '',
+    platforms: campaign.platforms || '',
+    contentLinks: campaign.content_link || '',
+  });
+});
+
+// PUT /api/campaigns/:id/details – update editable campaign details (owner only)
+router.put('/:id/details', requireAuth, async (req, res) => {
+  let campaign;
+  let supportsGoalColumn = true;
+  try {
+    campaign = await db.prepare(`
+      SELECT id, owner_id, description, niche, goal, content_link
+      FROM campaigns WHERE id = ?
+    `).get(req.params.id);
+  } catch (e) {
+    if (e.message && e.message.includes('no such column')) {
+      supportsGoalColumn = false;
+      campaign = await db.prepare(`
+        SELECT id, owner_id, description, niche, content_link
+        FROM campaigns WHERE id = ?
+      `).get(req.params.id);
+    } else {
+      throw e;
+    }
+  }
+  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+  if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+
+  const nextDescription = String((req.body || {}).description || '').trim();
+  const nextNiche = String((req.body || {}).niche || '').trim();
+  const nextGoal = String((req.body || {}).goal || '').trim();
+  const contentLinksInput = (req.body || {}).contentLinks;
+  let nextContentLink = '';
+  if (Array.isArray(contentLinksInput)) {
+    nextContentLink = contentLinksInput.map((v) => String(v || '').trim()).filter(Boolean).join('\n');
+  } else {
+    nextContentLink = String(contentLinksInput || '').trim();
+  }
+
+  if (supportsGoalColumn) {
+    await db.prepare(`
+      UPDATE campaigns
+      SET description = ?, niche = ?, goal = ?, content_link = ?
+      WHERE id = ?
+    `).run(
+      nextDescription || null,
+      nextNiche || null,
+      nextGoal || null,
+      nextContentLink || null,
+      req.params.id
+    );
+  } else {
+    await db.prepare(`
+      UPDATE campaigns
+      SET description = ?, niche = ?, content_link = ?
+      WHERE id = ?
+    `).run(
+      nextDescription || null,
+      nextNiche || null,
+      nextContentLink || null,
+      req.params.id
+    );
+  }
+
+  try {
+    const owner = await db.prepare('SELECT name, email FROM users WHERE id = ?').get(req.user.id);
+    const changes = [];
+    if ((campaign.description || '') !== nextDescription) changes.push('narrative');
+    if ((campaign.niche || '') !== nextNiche) changes.push('angle');
+    if ((campaign.goal || '') !== nextGoal) changes.push('purpose');
+    if ((campaign.content_link || '') !== nextContentLink) changes.push('content links');
+    if (changes.length) {
+      await db.prepare(`
+        INSERT INTO admin_alerts (id, type, entity_type, entity_id, title, message, read)
+        VALUES (?, 'campaign_details_updated', 'campaign', ?, ?, ?, 0)
+      `).run(
+        uuid(),
+        req.params.id,
+        'Campaign details updated',
+        (owner ? owner.name + ' (' + owner.email + ')' : 'User') +
+          ' updated campaign details: ' + changes.join(', ')
+      );
+    }
+  } catch (_) {}
+
+  res.json({
+    ok: true,
+    description: nextDescription,
+    niche: nextNiche,
+    goal: nextGoal,
+    contentLinks: nextContentLink
+  });
 });
 
 // GET /api/campaigns/my-campaigns
