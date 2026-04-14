@@ -23,6 +23,7 @@ function getTransporter() {
     host: config.smtp.host,
     port: config.smtp.port,
     secure: !!config.smtp.secure,
+    family: Number.isFinite(config.smtp.family) ? config.smtp.family : 4,
     auth: {
       user: config.smtp.user,
       pass: config.smtp.pass,
