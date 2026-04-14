@@ -97,6 +97,15 @@
     .start-campaign-wiz-price-line { font-size: 15px; font-weight: 600; color: white; margin: 0 0 6px 0; line-height: 1.35; }
     .start-campaign-wiz-price-line .muted { display: block; font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.55); margin-top: 4px; }
     .start-campaign-wiz-price-note { font-size: 12px; color: rgba(255,255,255,0.55); margin: 0 0 14px 0; line-height: 1.45; }
+    .start-campaign-step[data-wizard-step="3"] .start-campaign-wiz-pricing {
+      background: rgba(248, 250, 252, 0.92);
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+    }
+    .start-campaign-step[data-wizard-step="3"] .start-campaign-wiz-pricing strong { color: #0f172a; }
+    .start-campaign-step[data-wizard-step="3"] .start-campaign-wiz-price-line { color: #0f172a; }
+    .start-campaign-step[data-wizard-step="3"] .start-campaign-wiz-price-line .muted { color: #475569; }
+    .start-campaign-step[data-wizard-step="3"] .start-campaign-wiz-price-note { color: #64748b; }
     .start-campaign-wiz-platform-rows { margin-bottom: 0; }
     .start-campaign-wiz-platform-row {
       display: grid;
@@ -703,7 +712,7 @@
           <p class="start-campaign-wiz-lead">You are about to start secure checkout for your first week. Optional: include the LitoClips watermark and save <strong>10%</strong> on this payment.</p>
           <div class="start-campaign-wiz-pricing" style="margin-bottom: 10px;">
             <div style="font-weight: 600; margin-bottom: 6px; color: #0f172a;">Accounts configuration:</div>
-            <ul class="start-campaign-wiz-accounts-summary" id="wzCheckoutAccountsSummary" style="margin-top: 0px; padding-left: 20px; font-size: 14px; color: #475569; margin-bottom: 15px;"></ul>
+            <ul class="start-campaign-wiz-accounts-summary" id="wzCheckoutAccountsSummary" style="margin-top: 0px; padding-left: 20px; font-size: 14px; color: #334155; margin-bottom: 15px;"></ul>
             <hr style="border:0; border-top: 1px solid #e2e8f0; margin-bottom: 12px;"/>
             <div class="start-campaign-wiz-price-line" id="wzCheckoutPriceLine"></div>
             <div class="start-campaign-wiz-price-note" id="wzCheckoutPriceNote"></div>
