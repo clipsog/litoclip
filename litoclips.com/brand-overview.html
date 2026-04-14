@@ -247,6 +247,19 @@
     .calendar-toolbar .btn-start-campaign { margin: 0; }
     .calendar-toolbar > div:first-child { flex: 1 1 auto; min-width: 0; }
     .calendar-toolbar-actions { display:flex; align-items:center; gap:12px; flex-wrap:nowrap; justify-content:flex-end; margin-left: auto; }
+    .calendar-nav { display: inline-flex; align-items: center; gap: 8px; }
+    .calendar-nav button {
+      border: 1px solid #dbe3ef;
+      background: #fff;
+      color: #334155;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .calendar-nav button:hover { background: #f8fafc; }
+    .calendar-nav .label { font-size: 12px; color: #64748b; min-width: 140px; text-align: center; }
     @media (max-width: 740px) {
       .calendar-toolbar { flex-wrap: wrap; }
       .calendar-toolbar-actions { width: 100%; justify-content: flex-start; }
@@ -540,6 +553,11 @@
           <p style="font-size: 13px; color: #64748b; margin: 0;"><strong>Days 1–2:</strong> Warming up. <strong>Day 3+:</strong> Posts and views. Click a date or Start campaign to begin.</p>
         </div>
         <div class="calendar-toolbar-actions">
+          <div class="calendar-nav">
+            <button type="button" id="calendarPrevBtn" aria-label="Previous 14 days">&larr; Back</button>
+            <span class="label" id="calendarRangeLabel">Starting today</span>
+            <button type="button" id="calendarTodayBtn" aria-label="Back to today">Today</button>
+          </div>
           <button type="button" class="btn-saved-campaigns" id="savedCampaignsBtn" disabled>
             Saved campaigns <span id="savedCampaignsCount" class="saved-pill">0</span>
           </button>
@@ -858,6 +876,8 @@
       loadAccountBalance();
 
       let campaignsList = [];
+      const CALENDAR_WINDOW_DAYS = 14;
+      let calendarOffsetDays = 0;
 
       function renderCampaigns(campaigns) {
         const campaignsSection = document.getElementById('campaignsSection');
@@ -1920,14 +1940,30 @@
         });
       });
 
+      function updateCalendarRangeLabel(startDate) {
+        const label = document.getElementById('calendarRangeLabel');
+        if (!label) return;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const s = new Date(startDate);
+        s.setHours(0, 0, 0, 0);
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        if (s.getTime() === today.getTime()) {
+          label.textContent = 'Starting today';
+          return;
+        }
+        label.textContent = 'Starting ' + s.getDate() + ' ' + months[s.getMonth()];
+      }
+
       function buildCalendar(posts, campaignId, campaignTitle) {
         const today = new Date();
         const start = new Date(today);
-        start.setDate(start.getDate() - 13);
+        start.setDate(start.getDate() + calendarOffsetDays);
+        updateCalendarRangeLabel(start);
         const grid = document.getElementById('calendarGrid');
         const ctaEl = document.getElementById('calendarCta');
         grid.innerHTML = '';
-        const DAYS = 14;
+        const DAYS = CALENDAR_WINDOW_DAYS;
         const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         const postsByDate = {};
         if (Array.isArray(posts) && posts.length) {
@@ -2044,6 +2080,15 @@
       }
 
       loadCalendarData();
+
+      document.getElementById('calendarPrevBtn')?.addEventListener('click', function() {
+        calendarOffsetDays -= CALENDAR_WINDOW_DAYS;
+        loadCalendarData();
+      });
+      document.getElementById('calendarTodayBtn')?.addEventListener('click', function() {
+        calendarOffsetDays = 0;
+        loadCalendarData();
+      });
     })();
   </script>
   <script src="notifications-ui.js"></script>
