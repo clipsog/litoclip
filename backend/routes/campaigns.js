@@ -169,25 +169,28 @@ router.post('/', requireAuth, async (req, res) => {
   } catch (e) {
     // Ignore if admin_alerts table doesn't exist yet
   }
-  try {
-    const emailResult = await sendAdminNewCampaignEmail({
-      campaignId: id,
-      campaignTitle: title.trim(),
-      ownerName: owner && owner.name,
-      ownerEmail: owner && owner.email,
-      contentLink: contentLinkStored,
-      platforms: platformsForEmail,
-      numAccounts: num_accounts != null ? parseInt(num_accounts, 10) : null,
-      allowWatermark: notifyAllowWm,
-      watermarkCouponPercent: notifyWmPct,
-      acceptSponsorOffers: notifyAcceptSponsor,
+  // Send admin email asynchronously so slow SMTP never blocks campaign creation response.
+  Promise.resolve()
+    .then(async () => {
+      const emailResult = await sendAdminNewCampaignEmail({
+        campaignId: id,
+        campaignTitle: title.trim(),
+        ownerName: owner && owner.name,
+        ownerEmail: owner && owner.email,
+        contentLink: contentLinkStored,
+        platforms: platformsForEmail,
+        numAccounts: num_accounts != null ? parseInt(num_accounts, 10) : null,
+        allowWatermark: notifyAllowWm,
+        watermarkCouponPercent: notifyWmPct,
+        acceptSponsorOffers: notifyAcceptSponsor,
+      });
+      if (emailResult && emailResult.skipped) {
+        console.warn('[campaigns.create] admin email skipped:', emailResult.reason || 'unknown reason');
+      }
+    })
+    .catch((emailErr) => {
+      console.warn('[campaigns.create] admin email failed:', emailErr && emailErr.message ? emailErr.message : emailErr);
     });
-    if (emailResult && emailResult.skipped) {
-      console.warn('[campaigns.create] admin email skipped:', emailResult.reason || 'unknown reason');
-    }
-  } catch (emailErr) {
-    console.warn('[campaigns.create] admin email failed:', emailErr && emailErr.message ? emailErr.message : emailErr);
-  }
   try {
     const ownerRow = await db.prepare('SELECT creator_content_types, creator_niche_tags FROM users WHERE id = ?').get(ownerId);
     const bodyTypes = normalizeContentTypes(req.body?.contentTypes);
