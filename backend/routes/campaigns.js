@@ -7,6 +7,22 @@ const { sendAdminNewCampaignEmail } = require('../services/mailer');
 
 const router = express.Router();
 
+async function ensureCampaignAccountPaymentSettingsTable() {
+  try {
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS campaign_account_payment_settings (
+        campaign_id TEXT NOT NULL,
+        campaign_account_id TEXT NOT NULL,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (campaign_id, campaign_account_id)
+      )
+    `).run();
+  } catch (_) {
+    /* best effort */
+  }
+}
+
 function mapDraftRowToClient(r) {
   if (!r) return null;
   let p = {};
@@ -511,7 +527,24 @@ router.get('/:id/renewal-quote', requireAuth, async (req, res) => {
   if (!row) return res.status(404).json({ error: 'Campaign not found' });
   if (row.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
 
-  const n = Math.max(1, parseInt(row.num_accounts, 10) || 1);
+  let n = Math.max(1, parseInt(row.num_accounts, 10) || 1);
+  await ensureCampaignAccountPaymentSettingsTable();
+  try {
+    const accountRows = await db.prepare('SELECT id FROM campaign_accounts WHERE campaign_id = ? ORDER BY created_at').all(id);
+    if (Array.isArray(accountRows) && accountRows.length > 0) {
+      const settingsRows = await db.prepare(`
+        SELECT campaign_account_id, is_active
+        FROM campaign_account_payment_settings
+        WHERE campaign_id = ?
+      `).all(id);
+      const activeMap = {};
+      (settingsRows || []).forEach((s) => { activeMap[s.campaign_account_id] = s.is_active !== 0; });
+      const activeCount = accountRows.filter((a) => activeMap[a.id] !== false).length;
+      n = Math.max(1, activeCount || accountRows.length);
+    }
+  } catch (_) {
+    /* fallback to campaign.num_accounts */
+  }
   const postsRaw = parseInt(row.posts_per_day, 10);
   const posts = Number.isFinite(postsRaw) ? Math.min(10, Math.max(3, postsRaw)) : 3;
 
@@ -541,18 +574,63 @@ router.get('/:id/payment-settings', requireAuth, async (req, res) => {
   const row = await db.prepare('SELECT owner_id, num_accounts FROM campaigns WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Campaign not found' });
   if (row.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
-  res.json({ numAccounts: Math.max(1, parseInt(row.num_accounts, 10) || 1) });
+  await ensureCampaignAccountPaymentSettingsTable();
+  let accounts = [];
+  try {
+    const accountRows = await db.prepare('SELECT id, platform, handle FROM campaign_accounts WHERE campaign_id = ? ORDER BY created_at').all(req.params.id);
+    const settingsRows = await db.prepare(`
+      SELECT campaign_account_id, is_active
+      FROM campaign_account_payment_settings
+      WHERE campaign_id = ?
+    `).all(req.params.id);
+    const activeMap = {};
+    (settingsRows || []).forEach((s) => { activeMap[s.campaign_account_id] = s.is_active !== 0; });
+    accounts = (accountRows || []).map((a) => ({
+      id: a.id,
+      platform: a.platform,
+      handle: a.handle,
+      activeForPayment: activeMap[a.id] !== false,
+    }));
+  } catch (_) {
+    accounts = [];
+  }
+  res.json({
+    numAccounts: Math.max(1, parseInt(row.num_accounts, 10) || 1),
+    accounts
+  });
 });
 
-// PUT /api/campaigns/:id/payment-settings – update next renewal account count
+// PUT /api/campaigns/:id/payment-settings – update next renewal active accounts
 router.put('/:id/payment-settings', requireAuth, async (req, res) => {
   const campaign = await db.prepare('SELECT owner_id FROM campaigns WHERE id = ?').get(req.params.id);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (campaign.owner_id !== req.user.id) return res.status(403).json({ error: 'Not your campaign' });
+  await ensureCampaignAccountPaymentSettingsTable();
+  const activeIds = Array.isArray((req.body || {}).activeAccountIds)
+    ? (req.body || {}).activeAccountIds.map((x) => String(x))
+    : [];
+  try {
+    const accountRows = await db.prepare('SELECT id FROM campaign_accounts WHERE campaign_id = ? ORDER BY created_at').all(req.params.id);
+    const validIds = new Set((accountRows || []).map((a) => String(a.id)));
+    if ((accountRows || []).length > 0) {
+      const filtered = activeIds.filter((id) => validIds.has(id));
+      if (filtered.length < 1) return res.status(400).json({ error: 'At least one account must stay active for next payment' });
+      await db.prepare('DELETE FROM campaign_account_payment_settings WHERE campaign_id = ?').run(req.params.id);
+      for (const a of accountRows) {
+        const isActive = filtered.includes(String(a.id)) ? 1 : 0;
+        await db.prepare(`
+          INSERT INTO campaign_account_payment_settings (campaign_id, campaign_account_id, is_active)
+          VALUES (?, ?, ?)
+        `).run(req.params.id, a.id, isActive);
+      }
+      await db.prepare('UPDATE campaigns SET num_accounts = ? WHERE id = ?').run(filtered.length, req.params.id);
+      return res.json({ ok: true, activeAccountIds: filtered, numAccounts: filtered.length });
+    }
+  } catch (_) {}
   const numRaw = parseInt((req.body || {}).numAccounts, 10);
   const num = Math.min(50, Math.max(1, Number.isFinite(numRaw) ? numRaw : 1));
   await db.prepare('UPDATE campaigns SET num_accounts = ? WHERE id = ?').run(num, req.params.id);
-  res.json({ ok: true, numAccounts: num });
+  res.json({ ok: true, numAccounts: num, activeAccountIds: [] });
 });
 
 // PUT /api/campaigns/:id/sponsor-settings – update (creator, own campaign)

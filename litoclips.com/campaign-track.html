@@ -260,10 +260,11 @@
       <div class="day-modal-body">
         <p style="font-size:13px;color:#64748b;margin:0 0 10px 0;">Changes here apply to future renewals/checkouts.</p>
         <div class="campaign-settings-list">
-          <label>
-            Next payment account count
-            <input type="number" id="settingsNumAccounts" min="1" max="50" value="1">
-          </label>
+          <div>
+            <div style="font-size:13px;color:#334155;font-weight:600;margin-bottom:8px;">Accounts for next payment</div>
+            <div id="settingsAccountsList" style="display:grid;gap:8px;"></div>
+            <p id="settingsAccountsHint" style="font-size:12px;color:#64748b;margin:8px 0 0 0;">Pause any account to exclude it from the next renewal payment.</p>
+          </div>
           <label class="row">
             <input type="checkbox" id="settingsAllowWatermark">
             <span>Enable watermark discount (10%)</span>
@@ -471,6 +472,7 @@
       let accounts = [];
       let posts = [];
       const dayData = [];
+      var paymentSettingsState = { accounts: [] };
 
       async function loadCampaignData() {
         if (bypass || !campaignId || campaignId === 'demo') return;
@@ -485,10 +487,6 @@
           if (myCampsRes.ok) {
             window._myCampaignsCache = await myCampsRes.json();
             var mc = window._myCampaignsCache.find(function(x) { return String(x.id) === String(campaignId); });
-            if (mc) {
-              var numEl = document.getElementById('settingsNumAccounts');
-              if (numEl && mc.num_accounts != null) numEl.value = String(Math.max(1, parseInt(mc.num_accounts, 10) || 1));
-            }
             if (mc && mc.contentLinks) {
               var linkWrap = document.getElementById('calendarContentLinksWrap');
               var linkList = document.getElementById('calendarContentLinksList');
@@ -564,10 +562,16 @@
         if (bypass || !campaignId || campaignId === 'demo') return;
         const sponsorCb = document.getElementById('settingsAcceptSponsorOffers');
         const wmCb = document.getElementById('settingsAllowWatermark');
-        const numEl = document.getElementById('settingsNumAccounts');
         const autoCb = document.getElementById('settingsAutoCharge');
-        const n = Math.max(1, Math.min(50, parseInt(numEl && numEl.value, 10) || 1));
-        if (numEl) numEl.value = String(n);
+        var activeAccountIds = [];
+        var checkedEls = document.querySelectorAll('#settingsAccountsList input[type="checkbox"][data-account-id]');
+        checkedEls.forEach(function(el) {
+          if (el.checked) activeAccountIds.push(el.getAttribute('data-account-id'));
+        });
+        if (paymentSettingsState.accounts.length > 0 && activeAccountIds.length < 1) {
+          alert('Keep at least one account active for next payment.');
+          return;
+        }
         if (autoCb && autoCb.checked) {
           try { localStorage.setItem('litoclips_auto_charge_' + campaignId, '1'); } catch (_) {}
         } else {
@@ -586,11 +590,14 @@
           fetch(API_URL + '/campaigns/' + campaignId + '/payment-settings', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-            body: JSON.stringify({ numAccounts: n })
+            body: JSON.stringify({
+              activeAccountIds: activeAccountIds
+            })
           })
         ]);
         document.getElementById('campaignSettingsModal')?.classList.remove('active');
         loadSponsorSettings();
+        loadPaymentSettings();
         refreshRenewalQuote();
       }
       function refreshRenewalQuote() {
@@ -615,11 +622,32 @@
           .then(function(r) { return r.ok ? r.json() : null; })
           .then(function(data) {
             if (!data) return;
-            var numEl = document.getElementById('settingsNumAccounts');
-            if (numEl && data.numAccounts != null) numEl.value = String(Math.max(1, parseInt(data.numAccounts, 10) || 1));
+            paymentSettingsState.accounts = Array.isArray(data.accounts) ? data.accounts : [];
+            renderPaymentSettingsAccounts();
             refreshRenewalQuote();
           })
           .catch(function() {});
+      }
+      function renderPaymentSettingsAccounts() {
+        var listEl = document.getElementById('settingsAccountsList');
+        var hintEl = document.getElementById('settingsAccountsHint');
+        if (!listEl) return;
+        var rows = paymentSettingsState.accounts || [];
+        if (!rows.length) {
+          listEl.innerHTML = '<div style="font-size:12px;color:#64748b;">Accounts are not linked yet. Once linked, you can pause individual accounts for next payment.</div>';
+          if (hintEl) hintEl.style.display = 'none';
+          return;
+        }
+        if (hintEl) hintEl.style.display = '';
+        listEl.innerHTML = rows.map(function(a) {
+          var label = '@' + String(a.handle || '').replace(/^@/, '') + (a.platform ? (' (' + a.platform + ')') : '');
+          return '<label class="row" style="justify-content:space-between;">' +
+            '<span style="font-size:13px;color:#1e293b;">' + label + '</span>' +
+            '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#64748b;">' +
+              '<input type="checkbox" data-account-id="' + a.id + '"' + (a.activeForPayment ? ' checked' : '') + '> Bill next cycle' +
+            '</span>' +
+          '</label>';
+        }).join('');
       }
       loadSponsorSettings();
       loadPaymentSettings();
