@@ -154,8 +154,8 @@ router.post('/', requireAuth, async (req, res) => {
     } else throw e;
   }
   // Notify admins when a user starts a campaign
+  const owner = await db.prepare('SELECT name, email FROM users WHERE id = ?').get(ownerId);
   try {
-    const owner = await db.prepare('SELECT name, email FROM users WHERE id = ?').get(ownerId);
     const alertId = uuid();
     await db.prepare(`
       INSERT INTO admin_alerts (id, type, entity_type, entity_id, title, message, read)
@@ -166,24 +166,27 @@ router.post('/', requireAuth, async (req, res) => {
       'New campaign: ' + title.trim(),
       (owner ? owner.name + ' (' + owner.email + ')' : 'User') + ' started campaign "' + title.trim() + '"'
     );
-    try {
-      await sendAdminNewCampaignEmail({
-        campaignId: id,
-        campaignTitle: title.trim(),
-        ownerName: owner && owner.name,
-        ownerEmail: owner && owner.email,
-        contentLink: contentLinkStored,
-        platforms: platformsForEmail,
-        numAccounts: num_accounts != null ? parseInt(num_accounts, 10) : null,
-        allowWatermark: notifyAllowWm,
-        watermarkCouponPercent: notifyWmPct,
-        acceptSponsorOffers: notifyAcceptSponsor,
-      });
-    } catch (_) {
-      /* optional email — ignore transport errors */
-    }
   } catch (e) {
     // Ignore if admin_alerts table doesn't exist yet
+  }
+  try {
+    const emailResult = await sendAdminNewCampaignEmail({
+      campaignId: id,
+      campaignTitle: title.trim(),
+      ownerName: owner && owner.name,
+      ownerEmail: owner && owner.email,
+      contentLink: contentLinkStored,
+      platforms: platformsForEmail,
+      numAccounts: num_accounts != null ? parseInt(num_accounts, 10) : null,
+      allowWatermark: notifyAllowWm,
+      watermarkCouponPercent: notifyWmPct,
+      acceptSponsorOffers: notifyAcceptSponsor,
+    });
+    if (emailResult && emailResult.skipped) {
+      console.warn('[campaigns.create] admin email skipped:', emailResult.reason || 'unknown reason');
+    }
+  } catch (emailErr) {
+    console.warn('[campaigns.create] admin email failed:', emailErr && emailErr.message ? emailErr.message : emailErr);
   }
   try {
     const ownerRow = await db.prepare('SELECT creator_content_types, creator_niche_tags FROM users WHERE id = ?').get(ownerId);

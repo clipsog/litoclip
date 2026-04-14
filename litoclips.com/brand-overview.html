@@ -1939,6 +1939,15 @@
         }
         const hasData = Object.keys(postsByDate).length > 0;
         const noCampaigns = campaignsList.length === 0;
+        let campaignStartDate = null;
+        if (!noCampaigns && campaignsList[0]) {
+          const firstCampaign = campaignsList[0];
+          const rawStart = firstCampaign.startedAt || firstCampaign.createdAt;
+          if (rawStart) {
+            const parsed = new Date(rawStart);
+            if (!Number.isNaN(parsed.getTime())) campaignStartDate = parsed;
+          }
+        }
 
         for (let i = 0; i < DAYS; i++) {
           const d = new Date(start);
@@ -1946,7 +1955,16 @@
           const dateKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
           const dayPosts = postsByDate[dateKey] || [];
           const isFirstDay = !hasData && i === 0 && noCampaigns;
-          const isWarmup = false;
+          let isWarmup = false;
+          if (!noCampaigns && campaignStartDate && dayPosts.length === 0) {
+            const warmupStart = new Date(campaignStartDate);
+            warmupStart.setHours(0, 0, 0, 0);
+            const warmupEnd = new Date(warmupStart);
+            warmupEnd.setDate(warmupEnd.getDate() + 2);
+            const cellDate = new Date(d);
+            cellDate.setHours(0, 0, 0, 0);
+            isWarmup = cellDate >= warmupStart && cellDate < warmupEnd;
+          }
           const isPost = dayPosts.length > 0;
           const dayEl = document.createElement('div');
           if (noCampaigns) {
