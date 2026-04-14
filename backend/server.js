@@ -1,8 +1,12 @@
 const express = require('express');
 const cors = require('cors');
+const dns = require('dns');
 const config = require('./config');
 const { ensureSchema } = require('./db');
 const Stripe = require('stripe');
+
+// Render can have broken outbound IPv6 for some SMTP endpoints; prefer IPv4 first.
+try { dns.setDefaultResultOrder('ipv4first'); } catch (_) {}
 
 const authRoutes = require('./routes/auth');
 const campaignsRoutes = require('./routes/campaigns');
