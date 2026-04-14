@@ -54,6 +54,17 @@
     .pay-section .auto-charge input { accent-color: #2563eb; }
     .btn-pay { padding: 12px 24px; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; }
     .btn-pay:hover { opacity: 0.95; }
+    .end-campaign-wrap { margin-top: 24px; text-align: center; }
+    .btn-end-campaign {
+      background: transparent;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .btn-end-campaign:hover { color: #475569; border-color: #cbd5e1; background: #f8fafc; }
     .day-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
     .day-modal-overlay.active { display: flex; }
     .day-modal { background: #fff; border-radius: 16px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -248,6 +259,10 @@
         </label>
         <p id="autoChargeNote" style="font-size:12px;color:#0c4a6e;margin:-8px 0 0;line-height:1.45;">True card auto-billing each week is not wired yet. We save this preference on this device for now. Use <strong>Start campaign</strong> at the top to pay for the next week with Stripe when you are ready.</p>
       </div>
+
+      <div class="end-campaign-wrap">
+        <button type="button" class="btn-end-campaign" id="endCampaignBtn">End campaign</button>
+      </div>
     </div>
   </main>
 
@@ -375,6 +390,27 @@
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = 'index.html';
+      });
+      document.getElementById('endCampaignBtn')?.addEventListener('click', async function() {
+        if (bypass || !campaignId || campaignId === 'demo') return;
+        var ok = window.confirm('End this campaign? This will remove it from your dashboard.');
+        if (!ok) return;
+        var btn = this;
+        var old = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Ending...';
+        try {
+          var res = await fetch(API_URL + '/campaigns/' + encodeURIComponent(campaignId), {
+            method: 'DELETE',
+            headers: { Authorization: 'Bearer ' + token }
+          });
+          if (!res.ok) throw new Error('Could not end campaign');
+          window.location.href = 'brand-overview.html';
+        } catch (e) {
+          alert('Could not end campaign right now. Please try again.');
+          btn.disabled = false;
+          btn.textContent = old;
+        }
       });
 
       function loadAccountBalance() {
