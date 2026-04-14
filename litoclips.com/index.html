@@ -123,18 +123,6 @@
     </div>
   </section>
 
-  <!-- Mission -->
-  <section class="mission-section gradient-section-bg" id="mission">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Our mission</span>
-        <h2 class="section-title">Your success, <em>on your terms</em></h2>
-        <p class="section-subtitle mission-lead">We believe success is personal. Everyone carries a different picture of what it means to win—whether that’s reach, independence, sustainability, or the mark you want to leave on your community and the wider world.</p>
-        <p class="section-subtitle mission-follow">LitoClips exists to help you pursue <em>your</em> definition of success, not a one-size-fits-all script. We’re committed to doing everything we can to support you on that path and to amplify the positive impact you want to have on society.</p>
-      </div>
-    </div>
-  </section>
-
   <!-- Who This Is For Section -->
   <section class="audience-section gradient-section-bg" id="who-its-for">
     <div class="container">
@@ -148,11 +136,11 @@
         <table class="creator-table">
           <thead>
             <tr>
-              <th><a href="#" class="subsection-cta" data-brand-type="podcast">Podcasts</a></th>
-              <th><a href="#" class="subsection-cta" data-brand-type="streamer">Content creators</a></th>
-              <th><a href="#" class="subsection-cta" data-brand-type="artist">Artists</a></th>
-              <th><a href="#" class="subsection-cta" data-brand-type="app">Apps</a></th>
-              <th><a href="#" class="subsection-cta" data-brand-type="tv">TV Shows</a></th>
+              <th>Podcasts</th>
+              <th>Content creators</th>
+              <th>Artists</th>
+              <th>Apps</th>
+              <th>TV Shows</th>
             </tr>
           </thead>
           <tbody>
@@ -161,6 +149,14 @@
             <tr><td>Increase sales</td><td>Narrative building (PR)</td><td>Ticket & merch sales</td><td>Increase sales</td><td>Increase sales</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="mission-section" id="mission" style="padding: 56px 0 32px; border-bottom: 0;">
+        <div class="section-header">
+          <span class="section-tag">Our mission</span>
+          <h2 class="section-title">Your success, <em>on your terms</em></h2>
+          <p class="section-subtitle mission-follow">LitoClips exists to help you pursue <em>your</em> definition of success, not a one-size-fits-all script. We’re committed to doing everything we can to support you on that path and to amplify the positive impact you want to have on society.</p>
+        </div>
       </div>
 
       <!-- Sponsors -->
@@ -199,19 +195,6 @@
   </section>
 
   <script>
-    // Subsection CTAs open brand modal (optionally pre-select type)
-    document.querySelectorAll('.subsection-cta').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        var type = this.getAttribute('data-brand-type');
-        var brandTypeSelect = document.getElementById('brandType');
-        if (brandTypeSelect && type) {
-          brandTypeSelect.value = type;
-        }
-        document.getElementById('brandModal')?.classList.add('active');
-      });
-    });
-
     // Header Scroll Effect
     const header = document.querySelector('.header');
     const handleHeaderScroll = () => {
