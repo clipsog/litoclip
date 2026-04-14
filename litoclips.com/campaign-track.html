@@ -230,12 +230,6 @@
       </div>
     </div>
 
-    <div class="sponsor-settings-section" id="campaignChoicesStrip" style="display:none; margin-top: 24px;">
-      <h3>Your campaign choices</h3>
-      <p id="watermarkChoiceLine" style="font-size: 14px; color: #0f172a; margin: 0 0 8px 0;"></p>
-      <p id="sponsorChoiceLine" style="font-size: 14px; color: #64748b; margin: 0;"></p>
-    </div>
-
     <div class="calendar-section">
       <h3>Calendar</h3>
       <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;"><strong>Days 1–2:</strong> Warming up — we interact with your niche so when we start posting we have more reach and target the right audience. <strong>Day 3+:</strong> See what was posted and the views. 3 posts/day per account (or more for +$2/post/day).</p>
@@ -473,6 +467,7 @@
       let posts = [];
       const dayData = [];
       var paymentSettingsState = { accounts: [] };
+      var quotePreviewState = { postsPerDay: 3, watermarkCouponPercent: 10 };
 
       async function loadCampaignData() {
         if (bypass || !campaignId || campaignId === 'demo') return;
@@ -540,23 +535,33 @@
             const wmCb = document.getElementById('settingsAllowWatermark');
             if (sponsorCb) sponsorCb.checked = !!data?.acceptSponsorOffers;
             if (wmCb) wmCb.checked = !!data?.allowWatermark;
-            var strip = document.getElementById('campaignChoicesStrip');
-            var wmLine = document.getElementById('watermarkChoiceLine');
-            var spLine = document.getElementById('sponsorChoiceLine');
-            if (strip && wmLine && data) {
-              strip.style.display = 'block';
-              var pct = data.watermarkCouponPercent != null ? Number(data.watermarkCouponPercent) : 10;
-              wmLine.innerHTML = data.allowWatermark
-                ? '<strong>Watermark pricing:</strong> Yes — you agreed to run sponsor watermarks for a <strong>' + pct + '%</strong> discount on weekly pricing.'
-                : '<strong>Watermark pricing:</strong> No — standard weekly pricing (no watermark discount).';
-              if (spLine) {
-                spLine.textContent = data.acceptSponsorOffers
-                  ? 'Sponsor offers: enabled — brands can discover and send offers on this campaign.'
-                  : 'Sponsor offers: disabled.';
-              }
+            if (data && data.watermarkCouponPercent != null) {
+              quotePreviewState.watermarkCouponPercent = Number(data.watermarkCouponPercent) || 10;
             }
+            updateQuotePreviewFromControls();
           })
           .catch(() => {});
+      }
+      function getSelectedSettingsAccountCount() {
+        var checkedEls = document.querySelectorAll('#settingsAccountsList input[type="checkbox"][data-account-id]:checked');
+        if (checkedEls && checkedEls.length) return checkedEls.length;
+        var rows = paymentSettingsState.accounts || [];
+        if (rows.length) return rows.filter(function(a) { return !!a.activeForPayment; }).length || rows.length;
+        return 1;
+      }
+      function updateQuotePreviewFromControls() {
+        var quoteLine = document.getElementById('settingsQuoteLine');
+        if (!quoteLine) return;
+        var wmCb = document.getElementById('settingsAllowWatermark');
+        var activeCount = getSelectedSettingsAccountCount();
+        var postsPerDay = Number(quotePreviewState.postsPerDay || 3);
+        var couponPct = Number(quotePreviewState.watermarkCouponPercent || 10);
+        var perAccount = 19.99 + Math.max(0, postsPerDay - 3) * 2.0;
+        var total = perAccount * Math.max(1, activeCount);
+        var hasDiscount = !!(wmCb && wmCb.checked && couponPct > 0);
+        if (hasDiscount) total = total * (1 - (couponPct / 100));
+        quoteLine.textContent = 'Next renewal estimate: $' + Number(total).toFixed(2) +
+          (hasDiscount ? (' (includes ' + couponPct + '% watermark discount)') : '');
       }
       async function saveCampaignSettings() {
         if (bypass || !campaignId || campaignId === 'demo') return;
@@ -609,6 +614,10 @@
           .then(function(qData) {
             var quoteLine = document.getElementById('settingsQuoteLine');
             if (!quoteLine || !qData || qData.amountUsd == null) return;
+            if (qData.postsPerDay != null) quotePreviewState.postsPerDay = Number(qData.postsPerDay) || 3;
+            if (qData.discountPercent != null && Number(qData.discountPercent) > 0) {
+              quotePreviewState.watermarkCouponPercent = Number(qData.discountPercent);
+            }
             quoteLine.textContent = 'Next renewal estimate: $' + Number(qData.amountUsd).toFixed(2) +
               (qData.discountPercent ? (' (includes ' + qData.discountPercent + '% watermark discount)') : '');
           })
@@ -648,6 +657,12 @@
             '</span>' +
           '</label>';
         }).join('');
+        listEl.querySelectorAll('input[type="checkbox"][data-account-id]').forEach(function(el) {
+          el.addEventListener('change', function() {
+            updateQuotePreviewFromControls();
+          });
+        });
+        updateQuotePreviewFromControls();
       }
       loadSponsorSettings();
       loadPaymentSettings();
@@ -655,6 +670,9 @@
         saveCampaignSettings().catch(function() {
           alert('Could not save campaign settings right now.');
         });
+      });
+      document.getElementById('settingsAllowWatermark')?.addEventListener('change', function() {
+        updateQuotePreviewFromControls();
       });
 
       (function initAutoChargeCheckbox() {

@@ -610,9 +610,10 @@ router.put('/:id/payment-settings', requireAuth, async (req, res) => {
     ? (req.body || {}).activeAccountIds.map((x) => String(x))
     : [];
   try {
-    const accountRows = await db.prepare('SELECT id FROM campaign_accounts WHERE campaign_id = ? ORDER BY created_at').all(req.params.id);
+    const accountRows = await db.prepare('SELECT id, handle, platform FROM campaign_accounts WHERE campaign_id = ? ORDER BY created_at').all(req.params.id);
     const validIds = new Set((accountRows || []).map((a) => String(a.id)));
     if ((accountRows || []).length > 0) {
+      const owner = await db.prepare('SELECT name, email FROM users WHERE id = ?').get(req.user.id);
       const filtered = activeIds.filter((id) => validIds.has(id));
       if (filtered.length < 1) return res.status(400).json({ error: 'At least one account must stay active for next payment' });
       await db.prepare('DELETE FROM campaign_account_payment_settings WHERE campaign_id = ?').run(req.params.id);
@@ -624,6 +625,24 @@ router.put('/:id/payment-settings', requireAuth, async (req, res) => {
         `).run(req.params.id, a.id, isActive);
       }
       await db.prepare('UPDATE campaigns SET num_accounts = ? WHERE id = ?').run(filtered.length, req.params.id);
+      try {
+        const activeHandles = accountRows
+          .filter((a) => filtered.includes(String(a.id)))
+          .map((a) => '@' + String(a.handle || '').replace(/^@/, ''))
+          .filter(Boolean)
+          .join(', ');
+        await db.prepare(`
+          INSERT INTO admin_alerts (id, type, entity_type, entity_id, title, message, read)
+          VALUES (?, 'campaign_payment_settings_updated', 'campaign', ?, ?, ?, 0)
+        `).run(
+          uuid(),
+          req.params.id,
+          'Campaign account choices updated',
+          (owner ? owner.name + ' (' + owner.email + ')' : 'User') +
+            ' updated active accounts for next renewal: ' + filtered.length + '/' + accountRows.length +
+            (activeHandles ? (' — ' + activeHandles) : '')
+        );
+      } catch (_) {}
       return res.json({ ok: true, activeAccountIds: filtered, numAccounts: filtered.length });
     }
   } catch (_) {}
@@ -646,6 +665,20 @@ router.put('/:id/sponsor-settings', requireAuth, async (req, res) => {
     UPDATE campaigns SET accept_sponsor_offers = ?, allow_watermark = ?, watermark_coupon_percent = ?
     WHERE id = ?
   `).run(accept ? 1 : 0, allow ? 1 : 0, coupon, req.params.id);
+  try {
+    const owner = await db.prepare('SELECT name, email FROM users WHERE id = ?').get(req.user.id);
+    await db.prepare(`
+      INSERT INTO admin_alerts (id, type, entity_type, entity_id, title, message, read)
+      VALUES (?, 'campaign_sponsor_settings_updated', 'campaign', ?, ?, ?, 0)
+    `).run(
+      uuid(),
+      req.params.id,
+      'Campaign sponsor/watermark settings updated',
+      (owner ? owner.name + ' (' + owner.email + ')' : 'User') +
+        ' changed watermark to ' + (allow ? ('ON (' + coupon + '% discount)') : 'OFF') +
+        ' and sponsor offers to ' + (accept ? 'ON' : 'OFF')
+    );
+  } catch (_) {}
   res.json({ acceptSponsorOffers: accept, allowWatermark: allow, watermarkCouponPercent: coupon });
 });
 
