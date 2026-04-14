@@ -72,12 +72,37 @@
         return 'brand-overview.html';
       }
 
+      function getPreferredUserType(user) {
+        const roles = Array.isArray(user?.userRoles) ? user.userRoles : [user?.userType || 'creator'];
+        if (roles.includes('creator')) return 'creator';
+        if (roles.includes('sponsor')) return 'sponsor';
+        return user?.userType || 'creator';
+      }
+
       function redirectAfterLogin(user) {
+        if (user) user.userType = getPreferredUserType(user);
         if (wantsAdmin && user && user.isAdmin) {
           window.location.href = 'admin.html';
           return;
         }
         window.location.href = getDashboardHref(user.userType);
+      }
+
+      async function tryAutoRestoreSession() {
+        const existingToken = localStorage.getItem('token');
+        if (!existingToken) return;
+        try {
+          const res = await fetch(API_URL.replace('/auth', '') + '/auth/me', {
+            headers: { 'Authorization': 'Bearer ' + existingToken }
+          });
+          if (!res.ok) return;
+          const user = await res.json();
+          if (!user) return;
+          user.userType = getPreferredUserType(user);
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('userType', user.userType || 'creator');
+          redirectAfterLogin(user);
+        } catch (e) {}
       }
 
       form.addEventListener('submit', async function(e) {
@@ -93,6 +118,7 @@
           });
           const data = await res.json().catch(function() { return {}; });
           if (res.ok) {
+            data.user.userType = getPreferredUserType(data.user);
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             localStorage.setItem('userType', data.user.userType || 'creator');
@@ -118,6 +144,7 @@
           .then(function(r) { return r.ok ? r.json() : null; })
           .then(function(user) {
             if (user) {
+              user.userType = getPreferredUserType(user);
               localStorage.setItem('user', JSON.stringify(user));
               localStorage.setItem('userType', user.userType || 'creator');
               if (wantsAdmin && user.isAdmin) {
@@ -129,6 +156,8 @@
           })
           .catch(function() { window.history.replaceState({}, '', 'login.html'); });
       }
+
+      tryAutoRestoreSession();
     })();
   </script>
 </body>

@@ -18,6 +18,13 @@
     return true; // All authenticated users are natively creators
   }
 
+  function getPreferredRole(u) {
+    var roles = getRoles(u);
+    if (roles.indexOf('creator') >= 0) return 'creator';
+    if (roles.indexOf('sponsor') >= 0) return 'sponsor';
+    return (u && (u.userType || u.user_type)) ? (u.userType || u.user_type) : 'creator';
+  }
+
   function persistUser(u) {
     if (!u) return;
     try {
@@ -43,7 +50,7 @@
       var raw = localStorage.getItem('user');
       var u = raw ? JSON.parse(raw) : {};
       u.userRoles = me.userRoles || getRoles(me);
-      u.userType = u.userType || me.userType || 'creator';
+      u.userType = getPreferredRole({ userRoles: u.userRoles, userType: me.userType || u.userType });
       u.isAdmin = me.isAdmin;
       if (me.firstName != null) u.firstName = me.firstName;
       if (me.lastName != null) u.lastName = me.lastName;
@@ -76,6 +83,7 @@
     getRoles: getRoles,
     hasSponsorRole: hasSponsorRole,
     hasCreatorRole: hasCreatorRole,
+    getPreferredRole: getPreferredRole,
     persistUser: persistUser,
     switchToRole: switchToRole,
     syncUserFromApi: syncUserFromApi,

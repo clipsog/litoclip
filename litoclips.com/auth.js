@@ -48,6 +48,14 @@ function getDashboardHref(userType) {
   // Creator and brand both get the dashboard with calendar (brand-overview → campaign-track)
   return 'brand-overview.html';
 }
+function getPreferredUserType(user) {
+  var roles = [];
+  if (user && Array.isArray(user.userRoles)) roles = user.userRoles.slice();
+  else if (user && user.userType) roles = [user.userType];
+  if (roles.indexOf('creator') >= 0) return 'creator';
+  if (roles.indexOf('sponsor') >= 0) return 'sponsor';
+  return (user && user.userType) ? user.userType : 'creator';
+}
 
 // Check if user is logged in on page load
 window.addEventListener('DOMContentLoaded', () => {
@@ -74,6 +82,7 @@ window.addEventListener('DOMContentLoaded', () => {
       .then(r => r.ok ? r.json() : null)
       .then(user => {
         if (user) {
+          user.userType = getPreferredUserType(user);
           localStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('userType', user.userType || urlUserType || 'creator');
           if (user.needsOnboarding) {
@@ -280,8 +289,10 @@ function initAuthHandlers() {
         const data = await response.json();
 
         if (response.ok) {
+          data.user.userType = getPreferredUserType(data.user);
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('userType', data.user.userType || 'creator');
           closeModal(loginModal);
           updateUI(data.user);
           showNotification('Login successful!', 'success');
@@ -319,8 +330,10 @@ function initAuthHandlers() {
         const data = await response.json();
 
         if (response.ok) {
+          data.user.userType = getPreferredUserType(data.user);
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('userType', data.user.userType || 'creator');
           closeModal(signupModal);
           updateUI(data.user);
           showNotification('Account created successfully!', 'success');
@@ -466,6 +479,7 @@ async function checkAuthStatus() {
 
     if (response.ok) {
       const user = await response.json();
+      user.userType = getPreferredUserType(user);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('userType', user.userType);
       const path = window.location.pathname || '';

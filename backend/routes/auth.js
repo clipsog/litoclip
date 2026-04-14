@@ -120,6 +120,7 @@ router.get('/me', requireAuth, async (req, res) => {
     name: u.name,
     email: u.email,
     userType: u.user_type,
+    userRoles: Array.isArray(u.roles) && u.roles.length ? u.roles : [u.user_type || 'creator'],
     referralCode: u.referral_code,
     isAdmin: !!(full && full.is_admin),
     firstName: full && full.first_name ? full.first_name : null,
