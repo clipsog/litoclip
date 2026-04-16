@@ -58,8 +58,8 @@
     <div class="header-container">
       <a href="index.html" class="logo">
         <img src="assets/logo.png" alt="Logo">
-        <span class="logo-text">LitoClips</span>
-      </a>
+      <span class="logo-text">LitoClips</span>
+    </a>
       <nav class="nav-links">
         <a href="faq.html">FAQ</a>
         <a href="#" id="navDashboard">Dashboard</a>
@@ -104,140 +104,140 @@
       <div class="wallet-stat">
         <div class="label">Pending Payouts</div>
         <div class="value" id="pendingPayouts">$0.00</div>
-      </div>
+          </div>
       <div class="wallet-stat">
         <div class="label">Total Paid Out</div>
         <div class="value" id="totalPaid">$0.00</div>
       </div>
-    </div>
+      </div>
 
     <div class="wallet-grid">
       <div class="wallet-section">
         <h3>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-          Request Payout
-        </h3>
+              Request Payout
+            </h3>
         <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px;">Withdraw your available balance. Minimum: $10.00</p>
-        <form id="withdrawForm">
+          <form id="withdrawForm">
           <div class="wallet-form-group">
-            <label>Amount (USD)</label>
-            <input type="number" id="withdrawAmount" step="0.01" min="10" placeholder="0.00" required>
-            <small>Available: <span id="availableAmount">$0.00</span></small>
-          </div>
+              <label>Amount (USD)</label>
+              <input type="number" id="withdrawAmount" step="0.01" min="10" placeholder="0.00" required>
+              <small>Available: <span id="availableAmount">$0.00</span></small>
+            </div>
           <div class="wallet-form-group">
-            <label>Payment Method</label>
-            <select id="paymentMethod" required>
-              <option value="">Select payment method</option>
-              <option value="paypal">PayPal</option>
-              <option value="wise">Wise (TransferWise)</option>
-              <option value="bank">Bank Transfer</option>
-              <option value="crypto">Cryptocurrency</option>
-            </select>
-          </div>
-          <div id="paypalFields" class="payment-fields" style="display: none;">
+              <label>Payment Method</label>
+              <select id="paymentMethod" required>
+                <option value="">Select payment method</option>
+                <option value="paypal">PayPal</option>
+                <option value="wise">Wise (TransferWise)</option>
+                <option value="bank">Bank Transfer</option>
+                <option value="crypto">Cryptocurrency</option>
+              </select>
+            </div>
+            <div id="paypalFields" class="payment-fields" style="display: none;">
             <div class="wallet-form-group">
-              <label>PayPal Email</label>
-              <input type="email" id="paypalEmail" placeholder="your@email.com">
+                <label>PayPal Email</label>
+                <input type="email" id="paypalEmail" placeholder="your@email.com">
               <small>Email linked to your PayPal account</small>
             </div>
           </div>
-          <div id="wiseFields" class="payment-fields" style="display: none;">
+            <div id="wiseFields" class="payment-fields" style="display: none;">
             <div class="wallet-form-group">
-              <label>Wise Email</label>
-              <input type="email" id="wiseEmail" placeholder="your@email.com">
-            </div>
+                <label>Wise Email</label>
+                <input type="email" id="wiseEmail" placeholder="your@email.com">
+              </div>
             <div class="wallet-form-group">
               <label>Currency</label>
-              <select id="wiseCurrency">
+                <select id="wiseCurrency">
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
                 <option value="GBP">GBP</option>
                 <option value="CAD">CAD</option>
                 <option value="AUD">AUD</option>
-              </select>
+                </select>
+              </div>
             </div>
-          </div>
-          <div id="bankFields" class="payment-fields" style="display: none;">
+            <div id="bankFields" class="payment-fields" style="display: none;">
             <div class="wallet-form-group">
-              <label>Account Holder Name</label>
-              <input type="text" id="bankAccountName" placeholder="Full name on account">
-            </div>
+                <label>Account Holder Name</label>
+                <input type="text" id="bankAccountName" placeholder="Full name on account">
+              </div>
             <div class="wallet-form-group">
-              <label>Bank Name</label>
-              <input type="text" id="bankName" placeholder="e.g. Chase, Bank of America">
-            </div>
+                <label>Bank Name</label>
+                <input type="text" id="bankName" placeholder="e.g. Chase, Bank of America">
+              </div>
             <div class="wallet-form-group">
-              <label>Account Number / IBAN</label>
-              <input type="text" id="bankAccountNumber" placeholder="Account number or IBAN">
-            </div>
+                <label>Account Number / IBAN</label>
+                <input type="text" id="bankAccountNumber" placeholder="Account number or IBAN">
+              </div>
             <div class="wallet-form-group">
               <label>Routing / SWIFT / BIC</label>
               <input type="text" id="bankRoutingNumber" placeholder="Routing, SWIFT or BIC">
-            </div>
+              </div>
             <div class="wallet-form-group">
-              <label>Country</label>
-              <select id="bankCountry">
-                <option value="">Select country</option>
-                <option value="US">United States</option>
-                <option value="UK">United Kingdom</option>
-                <option value="CA">Canada</option>
-                <option value="AU">Australia</option>
-                <option value="DE">Germany</option>
-                <option value="FR">France</option>
-                <option value="OTHER">Other</option>
-              </select>
+                <label>Country</label>
+                <select id="bankCountry">
+                  <option value="">Select country</option>
+                  <option value="US">United States</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="CA">Canada</option>
+                  <option value="AU">Australia</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div id="cryptoFields" class="payment-fields" style="display: none;">
+            <div id="cryptoFields" class="payment-fields" style="display: none;">
             <div class="wallet-form-group">
-              <label>Coin</label>
-              <select id="cryptoType" onchange="updateNetworkOptions()">
-                <option value="">Select coin</option>
-                <option value="BTC">Bitcoin (BTC)</option>
-                <option value="ETH">Ethereum (ETH)</option>
+                <label>Coin</label>
+                <select id="cryptoType" onchange="updateNetworkOptions()">
+                  <option value="">Select coin</option>
+                  <option value="BTC">Bitcoin (BTC)</option>
+                  <option value="ETH">Ethereum (ETH)</option>
                 <option value="USDT">USDT</option>
-                <option value="USDC">USDC</option>
-                <option value="LTC">Litecoin (LTC)</option>
-                <option value="SOL">Solana (SOL)</option>
+                  <option value="USDC">USDC</option>
+                  <option value="LTC">Litecoin (LTC)</option>
+                  <option value="SOL">Solana (SOL)</option>
                 <option value="XRP">XRP</option>
-                <option value="BNB">BNB</option>
-              </select>
-            </div>
+                  <option value="BNB">BNB</option>
+                </select>
+              </div>
             <div class="wallet-form-group" id="networkGroup" style="display: none;">
-              <label>Network</label>
-              <select id="cryptoNetwork">
-                <option value="">Select network</option>
-              </select>
-              <small>Select the correct network to avoid lost funds</small>
-            </div>
+                <label>Network</label>
+                <select id="cryptoNetwork">
+                  <option value="">Select network</option>
+                </select>
+                <small>Select the correct network to avoid lost funds</small>
+              </div>
             <div class="wallet-form-group">
-              <label>Wallet Address</label>
+                <label>Wallet Address</label>
               <input type="text" id="cryptoAddress" placeholder="Your wallet address">
               <small>Double-check your address - transactions cannot be reversed</small>
             </div>
           </div>
           <div class="wallet-form-group">
-            <label>Notes (Optional)</label>
+              <label>Notes (Optional)</label>
             <textarea id="withdrawNotes" rows="2" placeholder="Add any notes..."></textarea>
-          </div>
+            </div>
           <button type="submit" class="btn-request">Request Payout</button>
-        </form>
-      </div>
+          </form>
+        </div>
 
       <div class="wallet-section">
         <h3>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Recent Payouts
-        </h3>
-        <div id="payoutsList">
+              Recent Payouts
+            </h3>
+          <div id="payoutsList">
           <div class="payout-item" style="border:none;padding:24px 0;color:rgba(255,255,255,0.5);font-size:14px;">
             <span style="font-size:28px;margin-right:12px;">💸</span>
             <span>No payouts yet. Your payout history will appear here.</span>
           </div>
+          </div>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
 
   <script src="auth.js"></script>
   <script src="notifications-ui.js"></script>
