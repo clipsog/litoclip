@@ -593,16 +593,14 @@
         }
         if (emptyEl) emptyEl.style.display = 'none';
         campaigns.forEach(function(c) {
-          const isMock = (c.id || '').startsWith('mock-');
           const card = document.createElement('div');
           card.className = 'campaign-card';
           const creatorName = c.creatorName || 'Creator';
           const campaignTitle = c.title || 'Untitled';
           const platforms = Array.isArray(c.platforms) ? c.platforms : (c.platform ? [c.platform] : []);
           const platformStr = platforms.length ? platforms.join(', ') : (c.platform || '—');
-          const sampleBadge = isMock ? '<span class="status-badge" style="background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);margin-right:8px;">Sample</span>' : '';
           const tax = campaignTaxonomyLine(c);
-          card.innerHTML = '<div><h4>' + sampleBadge + creatorName + ' · ' + campaignTitle + '</h4><span class="meta">' + tax + '</span><span class="meta" style="display:block;margin-top:4px;">' + platformStr + (c.allowWatermark ? ' · Watermark allowed' : '') + '</span></div><span style="color:rgba(255,255,255,0.6);font-size:14px;">View videos →</span>';
+          card.innerHTML = '<div><h4>' + creatorName + ' · ' + campaignTitle + '</h4><span class="meta">' + tax + '</span><span class="meta" style="display:block;margin-top:4px;">' + platformStr + (c.allowWatermark ? ' · Watermark allowed' : '') + '</span></div><span style="color:rgba(255,255,255,0.6);font-size:14px;">View videos →</span>';
           card.addEventListener('click', function(e) { e.stopPropagation(); openCampaignDetail(c); });
           listEl.appendChild(card);
         });
@@ -684,11 +682,6 @@
         }
         if (!selectedCampaignId) {
           errEl.textContent = 'No campaign selected.';
-          errEl.style.display = 'block';
-          return;
-        }
-        if ((selectedCampaignId || '').startsWith('mock-')) {
-          errEl.textContent = 'This is a sample campaign. Sponsor real campaigns from creators on the platform.';
           errEl.style.display = 'block';
           return;
         }

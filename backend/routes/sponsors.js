@@ -172,15 +172,6 @@ router.get('/offers', requireAuth, requireSponsor, async (req, res) => {
   })));
 });
 
-// Mock campaigns for demo when no real campaigns exist
-const MOCK_CAMPAIGNS = [
-  { id: 'mock-gaming-1', creatorName: 'Alex Rivera', title: 'Gaming Clip Highlights', platform: 'tiktok', platforms: ['tiktok'], acceptSponsorOffers: true, allowWatermark: true, contentTypes: ['youtube_videos'], nicheTags: ['gaming', 'highlights'] },
-  { id: 'mock-podcast-1', creatorName: 'Jamie Chen', title: 'Podcast Clips & Snippets', platform: 'youtube', platforms: ['youtube', 'tiktok'], acceptSponsorOffers: true, allowWatermark: false, contentTypes: ['podcasts'], nicheTags: ['interviews', 'tech'] },
-  { id: 'mock-lifestyle-1', creatorName: 'Morgan Lee', title: 'Lifestyle & Vlog Moments', platform: 'instagram', platforms: ['instagram', 'tiktok'], acceptSponsorOffers: true, allowWatermark: true, contentTypes: ['youtube_videos'], nicheTags: ['lifestyle', 'vlog'] },
-  { id: 'mock-tech-1', creatorName: 'Sam Torres', title: 'Tech Reviews & Tips', platform: 'youtube', platforms: ['youtube'], acceptSponsorOffers: true, allowWatermark: true, contentTypes: ['youtube_videos', 'apps'], nicheTags: ['tech', 'reviews'] },
-  { id: 'mock-music-1', creatorName: 'Jordan Blake', title: 'Music Covers & Originals', platform: 'tiktok', platforms: ['tiktok', 'instagram'], acceptSponsorOffers: true, allowWatermark: false, contentTypes: ['music'], nicheTags: ['covers', 'indie'] },
-];
-
 function effectiveCampaignTaxonomy(row) {
   const cTypes = parseJsonArray(row.content_types);
   const cTags = parseJsonArray(row.niche_tags);
@@ -197,13 +188,6 @@ function campaignMatchesFilters(effective, contentTypeFilter, tagFilters) {
   if (tagFilters.length && !tagFilters.some((t) => effective.nicheTags.includes(t))) return false;
   return true;
 }
-
-// Mock posts for demo campaigns
-const MOCK_POSTS = [
-  { id: 'mock-post-1', platform: 'tiktok', postUrl: 'https://tiktok.com/@example/video/1', views: 12400, postDate: '2025-03-10', accountHandle: '@alexgaming' },
-  { id: 'mock-post-2', platform: 'tiktok', postUrl: 'https://tiktok.com/@example/video/2', views: 8200, postDate: '2025-03-09', accountHandle: '@alexgaming' },
-  { id: 'mock-post-3', platform: 'youtube', postUrl: 'https://youtube.com/shorts/abc123', views: 15600, postDate: '2025-03-08', accountHandle: '@jamiepodcast' },
-];
 
 // GET /api/sponsors/campaigns – list campaigns (optional ?contentType=youtube_videos&tag=gaming — tag can repeat)
 router.get('/campaigns', requireAuth, requireSponsor, async (req, res) => {
@@ -266,28 +250,17 @@ router.get('/campaigns', requireAuth, requireSponsor, async (req, res) => {
       nicheTags: effective.nicheTags,
     };
   };
-  let campaigns = rows.map(mapRow).filter((c) => campaignMatchesFilters(
+  const campaigns = rows.map(mapRow).filter((c) => campaignMatchesFilters(
     { contentTypes: c.contentTypes, nicheTags: c.nicheTags },
     contentTypeFilter,
     tagFilters
   ));
-  // When no real campaigns, include mock campaigns for demo/preview
-  if (rows.length === 0) {
-    campaigns = MOCK_CAMPAIGNS.filter((c) => campaignMatchesFilters(
-      { contentTypes: c.contentTypes || [], nicheTags: c.nicheTags || [] },
-      contentTypeFilter,
-      tagFilters
-    ));
-  }
   res.json(campaigns);
 });
 
 // GET /api/sponsors/campaigns/:id/posts – view campaign posts (videos) for sponsors
 router.get('/campaigns/:id/posts', requireAuth, requireSponsor, async (req, res) => {
   const campaignId = req.params.id;
-  if ((campaignId || '').startsWith('mock-')) {
-    return res.json(MOCK_POSTS);
-  }
   const campaign = await db.prepare('SELECT id, accept_sponsor_offers FROM campaigns WHERE id = ?').get(campaignId);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
   if (!campaign.accept_sponsor_offers) return res.status(403).json({ error: 'Campaign does not accept sponsors' });

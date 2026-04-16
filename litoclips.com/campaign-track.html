@@ -866,8 +866,12 @@
 
       function buildCalendar() {
         const today = new Date();
+        const campaignNotStarted = !bypass && campaignId && campaignId !== 'demo' && accounts.length === 0;
         const start = new Date(today);
-        start.setDate(start.getDate() - 13);
+        if (bypass || !campaignNotStarted) {
+          start.setDate(start.getDate() - 13);
+        }
+        const usePlaceholderSchedule = bypass || (campaignNotStarted && (!Array.isArray(posts) || posts.length === 0));
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = '';
         dayData.length = 0;
@@ -890,7 +894,7 @@
           var totalViews = dayPosts.reduce(function(sum, p) { return sum + (p.views || 0); }, 0);
           var isWarmup = false;
           var isPost = dayPosts.length > 0;
-          if (bypass || (!Array.isArray(posts) || posts.length === 0)) {
+          if (usePlaceholderSchedule) {
             isWarmup = i < 2;
             isPost = i >= 2;
             var mockPlats = ['TikTok', 'Instagram Reels', 'YouTube Shorts'];
