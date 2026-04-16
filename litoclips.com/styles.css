@@ -101,6 +101,14 @@ body.dashboard-theme.gradient-section-bg .dashboard-section h2,
 body.onboarding-theme.gradient-section-bg .dashboard-section h2 {
   color: white;
 }
+body.dashboard-theme.gradient-section-bg #newCampaignQuickLink {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+body.dashboard-theme.gradient-section-bg #newCampaignQuickLink:hover {
+  color: rgba(255, 255, 255, 0.88);
+}
 body.dashboard-theme.gradient-section-bg .empty-state,
 body.onboarding-theme.gradient-section-bg .empty-state {
   color: rgba(255,255,255,0.7);
