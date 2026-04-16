@@ -178,6 +178,12 @@ body.dashboard-theme.gradient-section-bg .cal-day.empty-day {
 body.dashboard-theme.gradient-section-bg .cal-day.empty-day:hover {
   background: rgba(255,255,255,0.08);
 }
+body.dashboard-theme.gradient-section-bg .cal-day.other-month {
+  opacity: 0.45;
+}
+body.dashboard-theme.gradient-section-bg .cal-day.other-month .day-num {
+  color: rgba(255,255,255,0.45);
+}
 body.dashboard-theme.gradient-section-bg .calendar-grid {
   background: rgba(255,255,255,0.1);
 }

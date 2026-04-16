@@ -256,6 +256,8 @@
     .cal-day.empty-day { background: #f8fafc; color: #94a3b8; cursor: pointer; transition: background 0.2s; }
     .cal-day.empty-day:hover { background: #f0f9ff; }
     .cal-day.clickable { cursor: pointer; }
+    .cal-day.other-month { opacity: 0.5; }
+    .cal-day.other-month .day-num { color: #cbd5e1; }
     .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #e2e8f0; margin-bottom: 1px; border-radius: 8px 8px 0 0; overflow: hidden; }
     .cal-header span { padding: 10px; font-size: 11px; font-weight: 600; color: #64748b; text-align: center; background: #f1f5f9; }
     .calendar-cta { margin-top: 16px; font-size: 14px; color: #64748b; }
@@ -277,7 +279,7 @@
       font-size: 12px;
     }
     .calendar-nav button:hover { background: #f8fafc; }
-    .calendar-nav .label { font-size: 12px; color: #64748b; min-width: 140px; text-align: center; }
+    .calendar-nav .label { font-size: 13px; color: #334155; font-weight: 600; min-width: 160px; text-align: center; }
     @media (max-width: 740px) {
       .calendar-toolbar { flex-wrap: wrap; }
       .calendar-toolbar-actions { width: 100%; justify-content: flex-start; }
@@ -572,9 +574,10 @@
         </div>
         <div class="calendar-toolbar-actions">
           <div class="calendar-nav">
-            <button type="button" id="calendarPrevBtn" aria-label="Previous 14 days">&larr; Back</button>
-            <span class="label" id="calendarRangeLabel">Starting today</span>
-            <button type="button" id="calendarTodayBtn" aria-label="Back to today">Today</button>
+            <button type="button" id="calendarPrevBtn" aria-label="Previous month">&larr; Previous</button>
+            <span class="label" id="calendarRangeLabel"></span>
+            <button type="button" id="calendarNextBtn" aria-label="Next month">Next &rarr;</button>
+            <button type="button" id="calendarTodayBtn" aria-label="This month">This month</button>
           </div>
           <button type="button" class="btn-saved-campaigns" id="savedCampaignsBtn" disabled>
             Saved campaigns <span id="savedCampaignsCount" class="saved-pill">0</span>
@@ -894,8 +897,7 @@
       loadAccountBalance();
 
       let campaignsList = [];
-      const CALENDAR_WINDOW_DAYS = 14;
-      let calendarOffsetDays = 0;
+      let calendarMonthOffset = 0;
 
       function renderCampaigns(campaigns) {
         const campaignsSection = document.getElementById('campaignsSection');
@@ -2026,30 +2028,36 @@
         });
       });
 
-      function updateCalendarRangeLabel(startDate) {
+      function monthGridRange(year, month) {
+        const first = new Date(year, month, 1);
+        const last = new Date(year, month + 1, 0);
+        const start = new Date(first);
+        const pad = (first.getDay() + 6) % 7;
+        start.setDate(start.getDate() - pad);
+        const end = new Date(last);
+        while ((end.getDay() + 6) % 7 !== 6) {
+          end.setDate(end.getDate() + 1);
+        }
+        return { start, end };
+      }
+
+      function updateCalendarMonthLabel(viewY, viewM) {
         const label = document.getElementById('calendarRangeLabel');
         if (!label) return;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const s = new Date(startDate);
-        s.setHours(0, 0, 0, 0);
-        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        if (s.getTime() === today.getTime()) {
-          label.textContent = 'Starting today';
-          return;
-        }
-        label.textContent = 'Starting ' + s.getDate() + ' ' + months[s.getMonth()];
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        label.textContent = months[viewM] + ' ' + viewY;
       }
 
       function buildCalendar(posts, campaignId, campaignTitle) {
-        const today = new Date();
-        const start = new Date(today);
-        start.setDate(start.getDate() + calendarOffsetDays);
-        updateCalendarRangeLabel(start);
+        const base = new Date();
+        base.setDate(1);
+        base.setMonth(base.getMonth() + calendarMonthOffset);
+        const viewY = base.getFullYear();
+        const viewM = base.getMonth();
+        updateCalendarMonthLabel(viewY, viewM);
         const grid = document.getElementById('calendarGrid');
         const ctaEl = document.getElementById('calendarCta');
         grid.innerHTML = '';
-        const DAYS = CALENDAR_WINDOW_DAYS;
         const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         const postsByDate = {};
         if (Array.isArray(posts) && posts.length) {
@@ -2071,12 +2079,16 @@
           }
         }
 
-        for (let i = 0; i < DAYS; i++) {
-          const d = new Date(start);
-          d.setDate(d.getDate() + i);
+        const range = monthGridRange(viewY, viewM);
+        let cur = new Date(range.start);
+        const endTime = range.end.getTime();
+        while (cur.getTime() <= endTime) {
+          const d = new Date(cur);
           const dateKey = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+          const isOtherMonth = d.getMonth() !== viewM || d.getFullYear() !== viewY;
           const dayPosts = postsByDate[dateKey] || [];
-          const isFirstDay = !hasData && i === 0 && noCampaigns;
+          const isFirstOfVisibleMonth = d.getDate() === 1 && d.getMonth() === viewM && d.getFullYear() === viewY;
+          const isFirstDay = !hasData && isFirstOfVisibleMonth && noCampaigns;
           let isWarmup = false;
           if (!noCampaigns && campaignStartDate && dayPosts.length === 0) {
             const warmupStart = new Date(campaignStartDate);
@@ -2095,7 +2107,7 @@
             dayEl.setAttribute('tabindex', '0');
             dayEl.setAttribute('aria-label', 'Start campaign — ' + dateKey);
           }
-          dayEl.className = 'cal-day' + (isWarmup ? ' warmup' : '') + (isPost ? ' post' : '') + (!isWarmup && !isPost ? ' empty-day' : '') + (noCampaigns ? ' clickable' : '');
+          dayEl.className = 'cal-day' + (isOtherMonth ? ' other-month' : '') + (isWarmup ? ' warmup' : '') + (isPost ? ' post' : '') + (!isWarmup && !isPost ? ' empty-day' : '') + (noCampaigns ? ' clickable' : '');
           let inner = '<div class="day-num">' + d.getDate() + ' ' + monthNames[d.getMonth()] + '</div>';
           if (isFirstDay && noCampaigns) {
             inner += '<div style="font-size:12px;margin-top:8px;color:#2563eb;font-weight:600;">Start campaign</div>';
@@ -2126,6 +2138,7 @@
             };
           }
           grid.appendChild(dayEl);
+          cur.setDate(cur.getDate() + 1);
         }
 
         if (hasData && campaignId) {
@@ -2168,11 +2181,15 @@
       loadCalendarData();
 
       document.getElementById('calendarPrevBtn')?.addEventListener('click', function() {
-        calendarOffsetDays -= CALENDAR_WINDOW_DAYS;
+        calendarMonthOffset--;
+        loadCalendarData();
+      });
+      document.getElementById('calendarNextBtn')?.addEventListener('click', function() {
+        calendarMonthOffset++;
         loadCalendarData();
       });
       document.getElementById('calendarTodayBtn')?.addEventListener('click', function() {
-        calendarOffsetDays = 0;
+        calendarMonthOffset = 0;
         loadCalendarData();
       });
     })();

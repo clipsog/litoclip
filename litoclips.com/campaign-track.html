@@ -45,6 +45,10 @@
     .cal-day.post .badge { font-size: 10px; padding: 2px 6px; background: #22c55e; color: white; border-radius: 4px; }
     .cal-day .post-item { font-size: 12px; margin-top: 6px; padding: 6px; background: rgba(0,0,0,0.03); border-radius: 4px; }
     .cal-day .views { color: #2563eb; font-weight: 600; }
+    .cal-day.other-month { opacity: 0.45; }
+    .cal-day.other-month .day-num { color: #94a3b8; }
+    .calendar-nav-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .calendar-nav-bar .cal-nav-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #e2e8f0; margin-bottom: 1px; border-radius: 8px 8px 0 0; overflow: hidden; }
     .cal-header span { padding: 10px; font-size: 11px; font-weight: 600; color: #64748b; text-align: center; background: #f1f5f9; }
     .btn-pay { padding: 12px 24px; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; }
@@ -270,6 +274,14 @@
     <div class="calendar-section">
       <h3>Calendar</h3>
       <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;"><strong>Days 1–2:</strong> Warming up — we interact with your niche so when we start posting we have more reach and target the right audience. <strong>Day 3+:</strong> See what was posted and the views. 3 posts/day per account (or more for +$2/post/day).</p>
+      <div class="calendar-nav-bar">
+        <button type="button" class="btn-settings" id="calendarPrevMonth" aria-label="Previous month">&larr; Previous</button>
+        <span id="calendarMonthLabel" style="font-weight: 600; color: #0f172a; font-size: 15px;"></span>
+        <div class="cal-nav-group">
+          <button type="button" class="btn-settings" id="calendarTodayMonth" aria-label="Jump to this month">This month</button>
+          <button type="button" class="btn-settings" id="calendarNextMonth" aria-label="Next month">Next &rarr;</button>
+        </div>
+      </div>
       <div id="calendarContentLinksWrap" style="display:none; margin-bottom: 24px; padding: 12px 14px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0;">
         <h4 style="font-size:13px; margin:0 0 6px 0; color:#0f172a;">Content links provided:</h4>
         <div id="calendarContentLinksList" style="font-size:13px; line-height: 1.6; word-break: break-all;"></div>
@@ -526,6 +538,9 @@
       let accounts = [];
       let posts = [];
       const dayData = [];
+      var calendarViewYear = null;
+      var calendarViewMonth = null;
+      var placeholderStartDate = null;
       var paymentSettingsState = { accounts: [] };
       var quotePreviewState = { postsPerDay: 3, watermarkCouponPercent: 10 };
       var campaignDetailsState = { loaded: false };
@@ -565,6 +580,7 @@
             fetch(API_URL + '/campaigns/created', { headers: { Authorization: 'Bearer ' + token } })
           ]);
           if (accRes.ok) accounts = await accRes.json();
+          if (accounts.length > 0) placeholderStartDate = null;
           if (postsRes.ok) posts = await postsRes.json();
           if (myCampsRes.ok) {
             window._myCampaignsCache = await myCampsRes.json();
@@ -864,19 +880,49 @@
         return y + '-' + m + '-' + day;
       }
 
+      function startOfDay(d) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+
+      function dayDiff(earlier, later) {
+        return Math.round((startOfDay(later) - startOfDay(earlier)) / 86400000);
+      }
+
+      function monthGridRange(year, month) {
+        var first = new Date(year, month, 1);
+        var last = new Date(year, month + 1, 0);
+        var start = new Date(first);
+        var pad = (first.getDay() + 6) % 7;
+        start.setDate(start.getDate() - pad);
+        var end = new Date(last);
+        while ((end.getDay() + 6) % 7 !== 6) {
+          end.setDate(end.getDate() + 1);
+        }
+        return { start: start, end: end };
+      }
+
       function buildCalendar() {
         const today = new Date();
         const campaignNotStarted = !bypass && campaignId && campaignId !== 'demo' && accounts.length === 0;
-        const start = new Date(today);
-        if (bypass || !campaignNotStarted) {
-          start.setDate(start.getDate() - 13);
+        if (calendarViewYear === null || calendarViewMonth === null) {
+          calendarViewYear = today.getFullYear();
+          calendarViewMonth = today.getMonth();
+        }
+        const viewY = calendarViewYear;
+        const viewM = calendarViewMonth;
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var labelEl = document.getElementById('calendarMonthLabel');
+        if (labelEl) {
+          labelEl.textContent = monthNames[viewM] + ' ' + viewY;
         }
         const usePlaceholderSchedule = bypass || (campaignNotStarted && (!Array.isArray(posts) || posts.length === 0));
+        if (campaignNotStarted && usePlaceholderSchedule && !placeholderStartDate) {
+          placeholderStartDate = startOfDay(today);
+        }
+        const range = monthGridRange(viewY, viewM);
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = '';
         dayData.length = 0;
-        const DAYS = 14;
-        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         var postsByDate = {};
         if (Array.isArray(posts)) {
           posts.forEach(function(p) {
@@ -885,39 +931,53 @@
             postsByDate[key].push(p);
           });
         }
-        for (var i = 0; i < DAYS; i++) {
-          var d = new Date(start);
-          d.setDate(d.getDate() + i);
+        var cur = new Date(range.start);
+        var endTime = range.end.getTime();
+        var i = 0;
+        while (cur.getTime() <= endTime) {
+          var d = new Date(cur);
           var dayNum = d.getDate();
           var dateKey = formatDateKey(d);
+          var isOtherMonth = d.getMonth() !== viewM || d.getFullYear() !== viewY;
           var dayPosts = postsByDate[dateKey] || [];
           var totalViews = dayPosts.reduce(function(sum, p) { return sum + (p.views || 0); }, 0);
           var isWarmup = false;
           var isPost = dayPosts.length > 0;
-          if (usePlaceholderSchedule) {
-            isWarmup = i < 2;
-            isPost = i >= 2;
-            var mockPlats = ['TikTok', 'Instagram Reels', 'YouTube Shorts'];
-            if (window._myCampaignsCache && Array.isArray(window._myCampaignsCache)) {
-              var mc = window._myCampaignsCache.find(function(x) { return String(x.id) === String(campaignId); });
-              if (mc && mc.platforms) {
-                var pSplit = mc.platforms.split(',').map(function(s) { return s.replace(/["']/g, '').trim(); }).filter(Boolean);
-                if (pSplit.length > 0) mockPlats = pSplit;
+          if (usePlaceholderSchedule && dayPosts.length === 0) {
+            var anchor = bypass ? startOfDay(new Date(viewY, viewM, 1)) : placeholderStartDate;
+            if (anchor) {
+              var off = dayDiff(anchor, d);
+              if (off >= 0 && off <= 13) {
+                if (off >= 0 && off < 2) {
+                  isWarmup = true;
+                  isPost = false;
+                } else if (off >= 2 && off <= 13) {
+                  isWarmup = false;
+                  isPost = true;
+                  var mockPlats = ['TikTok', 'Instagram Reels', 'YouTube Shorts'];
+                  if (window._myCampaignsCache && Array.isArray(window._myCampaignsCache)) {
+                    var mc = window._myCampaignsCache.find(function(x) { return String(x.id) === String(campaignId); });
+                    if (mc && mc.platforms) {
+                      var pSplit = String(mc.platforms).split(',').map(function(s) { return s.replace(/["']/g, '').trim(); }).filter(Boolean);
+                      if (pSplit.length > 0) mockPlats = pSplit;
+                    }
+                  }
+                  var mappedDayPosts = [];
+                  mockPlats.forEach(function(plat) {
+                    for (var c = 0; c < 3; c++) {
+                      mappedDayPosts.push({ platform: plat, postUrl: '#', isMock: true, accountHandle: '@account_1' });
+                    }
+                  });
+                  dayPosts = mappedDayPosts;
+                  totalViews = dayPosts.reduce(function(s, p) { return s + (p.views || 0); }, 0);
+                }
               }
             }
-            var mappedDayPosts = [];
-            mockPlats.forEach(function(plat) {
-              for (var c = 0; c < 3; c++) {
-                mappedDayPosts.push({ platform: plat, postUrl: '#', isMock: true, accountHandle: '@account_1' });
-              }
-            });
-            dayPosts = isPost ? mappedDayPosts : [];
-            totalViews = dayPosts.reduce(function(s, p) { return s + (p.views || 0); }, 0);
           }
           dayData.push({ dayIndex: i + 1, date: d, dayNum, month: monthNames[d.getMonth()], dateKey, isWarmup, isPost, dayPosts, totalViews });
           var dayEl = document.createElement('div');
-          dayEl.className = 'cal-day' + (isWarmup ? ' warmup' : '') + (isPost ? ' post' : '');
-          dayEl.dataset.dayIndex = i;
+          dayEl.className = 'cal-day' + (isOtherMonth ? ' other-month' : '') + (isWarmup ? ' warmup' : '') + (isPost ? ' post' : '');
+          dayEl.dataset.dayIndex = String(i);
           var inner = '<div class="day-num">' + dayNum + ' ' + monthNames[d.getMonth()] + '</div>';
           if (isWarmup) {
             inner += '<span class="badge">Warming up</span><div style="font-size:11px; margin-top:6px; color:#92400e;">Interacting with niche</div>';
@@ -937,11 +997,47 @@
           dayEl.innerHTML = inner;
           dayEl.addEventListener('click', function() { openDayModal(parseInt(this.dataset.dayIndex, 10)); });
           grid.appendChild(dayEl);
+          cur.setDate(cur.getDate() + 1);
+          i++;
         }
       }
 
+      document.getElementById('calendarPrevMonth')?.addEventListener('click', function() {
+        var t = new Date();
+        if (calendarViewYear === null || calendarViewMonth === null) {
+          calendarViewYear = t.getFullYear();
+          calendarViewMonth = t.getMonth();
+        }
+        calendarViewMonth--;
+        if (calendarViewMonth < 0) {
+          calendarViewMonth = 11;
+          calendarViewYear--;
+        }
+        buildCalendar();
+      });
+      document.getElementById('calendarNextMonth')?.addEventListener('click', function() {
+        var t = new Date();
+        if (calendarViewYear === null || calendarViewMonth === null) {
+          calendarViewYear = t.getFullYear();
+          calendarViewMonth = t.getMonth();
+        }
+        calendarViewMonth++;
+        if (calendarViewMonth > 11) {
+          calendarViewMonth = 0;
+          calendarViewYear++;
+        }
+        buildCalendar();
+      });
+      document.getElementById('calendarTodayMonth')?.addEventListener('click', function() {
+        var t = new Date();
+        calendarViewYear = t.getFullYear();
+        calendarViewMonth = t.getMonth();
+        buildCalendar();
+      });
+
       function openDayModal(dayIndex) {
         var d = dayData[dayIndex];
+        if (!d) return;
         var modal = document.getElementById('dayModal');
         var titleEl = document.getElementById('dayModalTitle');
         var bodyEl = document.getElementById('dayModalBody');
